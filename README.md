@@ -4,7 +4,7 @@ A live, self-updating social media analytics dashboard for HW Media — hosted o
 
 ## 🔗 Live Dashboard
 
-**[View Dashboard →](https://YOUR-USERNAME.github.io/hw-social-dashboard/)**
+**[View Dashboard →](https://bellariverahw.github.io/hw-social-dashboard/)**
 
 ## 🔄 How It Updates
 
@@ -41,10 +41,9 @@ Google Sheet: [HousingWire Social Dashboard](https://docs.google.com/spreadsheet
 
 ## 🚀 Setup
 
-1. Fork or clone this repo
-2. Go to **Settings → Pages** → set Source to **GitHub Actions**
-3. Make sure your Google Sheet is set to **"Anyone with the link can view"**
-4. Push to `main` — your dashboard will be live in ~2 minutes
+1. Go to **Settings → Pages** → set Source to **GitHub Actions**
+2. Make sure your Google Sheet is set to **"Anyone with the link can view"**
+3. The dashboard will be live at `https://bellariverahw.github.io/hw-social-dashboard/`
 
 ## 🛠 Tech Stack
 
