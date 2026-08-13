@@ -5,7 +5,245 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HW Media — Social Analytics Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+// ═══════════════════════════════════════════════════════════════════════════
+// CALENDAR TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  event.currentTarget.classList.add("active");
+  if (tab === "calendar") renderCalendar();
+}
+
+const SCHEDULE = {
+  linkedin: [
+    { day:0, type:"video",    label:"🎬 Logan's Market Video",   cls:"ct-video",    tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the full article in the first comment." },
+    { day:1, type:"stat",     label:"📊 Stat / Data Callout",    cls:"ct-stat",     tip:"Pull a bold number from Logan's tracker: inventory, rate spread (currently 1.92%), price cuts % (36.88%), or purchase apps YoY." },
+    { day:2, type:"carousel", label:"🎠 Carousel / Deep Dive",   cls:"ct-carousel", tip:"Break down a complex topic in 5–8 slides. Best topics: M&A deals, Fed decisions, AI in mortgage, GSE reform." },
+    { day:3, type:"poll",     label:"🗳️ Poll / Question",        cls:"ct-poll",     tip:"Ask your audience something timely. Polls get 3–5x more reach on LinkedIn. Keep it to 2–4 options." },
+    { day:4, type:"hottake",  label:"💬 Industry Hot Take",      cls:"ct-hottake",  tip:"Short punchy opinion post reacting to a trend or news item. 3–5 sentences max. No graphic needed — text posts often outperform on LinkedIn." },
+  ],
+  instagram: [
+    { day:0, type:"video",    label:"🎬 Logan's Reel",           cls:"ct-video",    tip:"Post Logan's video as a Reel. Add captions, use trending audio if possible, and include housing hashtags: #HousingMarket #MortgageRates #RealEstate." },
+    { day:1, type:"news",     label:"📰 Single Graphic News",    cls:"ct-news",     tip:"Top article of the day as a clean graphic. Bold headline, HW branding, link in bio. Breaking news graphics get the most saves and shares." },
+    { day:2, type:"carousel", label:"🎠 Carousel",               cls:"ct-carousel", tip:"Repurpose or adapt the LinkedIn carousel. Instagram carousels average 3.2% engagement — your highest-performing format." },
+    { day:3, type:"stat",     label:"📊 Stat Graphic",           cls:"ct-stat",     tip:"Bold data point as a visual. Keep it simple: big number, short context, HW logo. Logan's tracker numbers work great here." },
+    { day:4, type:"news",     label:"📰 Single Graphic News",    cls:"ct-news",     tip:"End-of-week news graphic. Friday housing market wrap-up or the week's biggest story." },
+  ],
+  x: [
+    { day:0, type:"news",     label:"📰 News x2 + 🎬 Video",    cls:"ct-news",     tip:"Two news posts throughout the day + tweet Logan's video link with a key stat as the hook." },
+    { day:1, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"Breaking news + a follow-up or related story. Morning (8–9am CT) and afternoon (1–2pm CT) cadence." },
+    { day:2, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"Mid-week news push. Wednesday is peak B2B engagement on X." },
+    { day:3, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"News + stat callout. Fannie/Freddie, GSE, rate data, and M&A news performs best on X." },
+    { day:4, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"Friday wrap — top 2 stories of the week. End-of-week recaps get strong retweet activity." },
+  ],
+  facebook: [
+    { day:0, type:"video",    label:"🎬 Logan's Video (share)",  cls:"ct-video",    tip:"Share Logan's video to Facebook. Low effort, keeps the page active. Facebook video gets boosted reach." },
+    { day:1, type:"repurpose",label:"♻️ Repurpose LinkedIn",     cls:"ct-repurpose",tip:"Share the LinkedIn stat graphic to Facebook. Minimal extra work — just adjust the caption tone to be slightly less formal." },
+    { day:3, type:"repurpose",label:"♻️ Repurpose Graphic",      cls:"ct-repurpose",tip:"Repurpose Thursday's Instagram stat graphic to Facebook." },
+    { day:4, type:"repurpose",label:"♻️ Repurpose Graphic",      cls:"ct-repurpose",tip:"Share Friday's Instagram news graphic to Facebook. Good end-of-week touchpoint." },
+  ],
+  tiktok: [
+    { day:0, type:"video",    label:"🎬 Logan's Video Clip",     cls:"ct-video",    tip:"Post a 30–60s clip from Logan's video. Add text overlay with the key stat. TikTok's algorithm rewards consistent weekly posting." },
+    { day:2, type:"hottake",  label:"💬 Hot Take / Trend",       cls:"ct-hottake",  tip:"Quick talking-head or text-overlay video reacting to a housing trend. No production needed — authenticity wins on TikTok." },
+  ],
+};
+
+const PLATFORMS = [
+  { key:"linkedin",  label:"LinkedIn",    color:"#0077b5" },
+  { key:"instagram", label:"Instagram",   color:"#e1306c" },
+  { key:"x",         label:"X (Twitter)", color:"#e7e9ea" },
+  { key:"facebook",  label:"Facebook",    color:"#1877f2" },
+  { key:"tiktok",    label:"TikTok",      color:"#69c9d0" },
+];
+
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+
+const CONTENT_SUGGESTIONS = [
+  { icon:"📊", title:"Stat / Data Callout Ideas", cls:"ct-stat", items:[
+    "Weekly inventory: X homes active (YoY change from Logan's tracker)",
+    "Mortgage rate vs. 10-yr yield spread — currently 1.92%",
+    "Price cut % — currently 36.88% of listings have cut prices",
+    "Purchase apps: up/down X% year over year",
+    "HW total follower milestone (currently 310K across all platforms!)",
+  ]},
+  { icon:"🎠", title:"Carousel / Deep Dive Ideas", cls:"ct-carousel", items:[
+    "Breaking down the Fed rate decision: what it means for mortgages",
+    "5 things to know about the housing market this week",
+    "AI in mortgage: what the top 25 lenders are actually doing right now",
+    "M&A deal breakdown: PennyMac + Cenlar — what it means for servicers",
+    "HW AI Summit: 5 key takeaways from the best minds in housing",
+  ]},
+  { icon:"🗳️", title:"Poll / Question Ideas (LinkedIn)", cls:"ct-poll", items:[
+    "What's your biggest challenge right now: rates, inventory, or affordability?",
+    "Will the Fed cut rates before year end? Yes / No / Too early to say",
+    "Which AI use case excites you most in mortgage? Underwriting / Servicing / Customer experience / Compliance",
+    "Are you seeing more buyers or sellers in your market right now?",
+    "What content do you want more of from HousingWire?",
+  ]},
+  { icon:"💬", title:"Hot Take Ideas (LinkedIn + X)", cls:"ct-hottake", items:[
+    "loanDepot reentering wholesale: bold move or too late to the party?",
+    "The credit bureau 'gaslit' the mortgage industry — MBA's Broeksmit is right",
+    "AI agents for customers are table stakes. The real edge is internal ops.",
+    "Fannie Mae's $14.4B profit: what it actually signals for GSE reform",
+    "The gap between knowing AI and doing AI is where margin lives in 2026",
+  ]},
+  { icon:"📰", title:"Single Graphic News Ideas", cls:"ct-news", items:[
+    "Top HousingWire article of the day (always prioritize breaking news)",
+    "Weekly housing market tracker summary — inventory, rates, price cuts",
+    "Lender / servicer earnings highlights (Fannie, Freddie, major lenders)",
+    "FHFA / GSE policy update or regulatory change",
+    "Mortgage rate movement + context: where rates are vs. where they could be",
+  ]},
+  { icon:"🔥", title:"Breaking News Best Practices", cls:"ct-breaking", items:[
+    "Use 🚨 BREAKING: prefix — historically drives 3–5x more engagement on LinkedIn",
+    "Post within 15 minutes of story going live for maximum algorithmic reach",
+    "Put the article link in the first comment on LinkedIn (not the post itself)",
+    "M&A deals, rate moves, GSE news, and lender strategy = your highest-engagement topics",
+    "Tag companies and executives mentioned when possible to expand reach",
+  ]},
+];
+
+let calWeekOffset = 0;
+
+function getWeekDates(offset) {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+  return Array.from({length:5}, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+}
+
+function isToday(d) {
+  const t = new Date();
+  return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
+}
+
+function renderCalendar() {
+  const dates = getWeekDates(calWeekOffset);
+  const weekLabel = fmtDate(dates[0]) + " – " + fmtDate(dates[4]) + ", " + dates[0].getFullYear();
+
+  let out = "";
+
+  out += '<div class="cal-header">';
+  out += '<h2>📅 Weekly Posting Calendar</h2>';
+  out += '<div class="cal-nav">';
+  out += '<button onclick="calNav(-1)">&#8249;</button>';
+  out += '<span class="cal-week-label">' + weekLabel + '</span>';
+  out += '<button onclick="calNav(1)">&#8250;</button>';
+  out += '<button onclick="calNav(0)" style="width:auto;padding:0 12px;font-size:0.78rem;font-weight:600">Today</button>';
+  out += '</div></div>';
+
+  out += '<div class="cal-legend">';
+  out += '<span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;margin-right:4px">CONTENT TYPES:</span>';
+  const legendItems = [
+    ["#6c63ff","Video"], ["#00d4aa","News"], ["#e1306c","Carousel"],
+    ["#ffd93d","Stat"], ["#00bcd4","Poll"], ["#ff6b6b","Hot Take"],
+    ["#ff9800","Breaking"], ["#9c27b0","Event"], ["#555","Repurpose"]
+  ];
+  legendItems.forEach(([color, label]) => {
+    out += '<div class="legend-item"><div class="legend-dot" style="background:' + color + '"></div>' + label + '</div>';
+  });
+  out += '</div>';
+
+  out += '<div class="cal-grid">';
+  // Header row
+  out += '<div></div>';
+  dates.forEach((d, i) => {
+    out += '<div class="cal-day-header">';
+    out += '<div class="cal-day-name">' + DAYS[i] + '</div>';
+    out += '<div class="cal-day-date' + (isToday(d) ? ' today' : '') + '">' + fmtDate(d) + '</div>';
+    out += '</div>';
+  });
+
+  // Platform rows
+  PLATFORMS.forEach(p => {
+    out += '<div class="cal-platform-label">';
+    out += '<div class="cal-platform-dot" style="background:' + p.color + '"></div>';
+    out += p.label;
+    out += '</div>';
+    for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
+      const posts = (SCHEDULE[p.key] || []).filter(s => s.day === dayIdx);
+      if (!posts.length) {
+        out += '<div class="cal-cell empty"></div>';
+      } else {
+        out += '<div class="cal-cell">';
+        posts.forEach(post => {
+          const safeTip = post.tip.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+          out += '<div class="cal-post ' + post.cls + '" onclick="showTip(this,'' + safeTip + '')">';
+          out += '<div class="cal-post-type">' + post.type.toUpperCase() + '</div>';
+          out += '<div class="cal-post-title">' + post.label + '</div>';
+          out += '</div>';
+        });
+        out += '</div>';
+      }
+    }
+  });
+  out += '</div>';
+
+  // Suggestions
+  out += '<div class="section-title" style="margin-top:32px">💡 Content Suggestions</div>';
+  out += '<div class="suggestions-grid">';
+  CONTENT_SUGGESTIONS.forEach(s => {
+    out += '<div class="suggestion-card">';
+    out += '<h4>' + s.icon + ' ' + s.title + '</h4>';
+    out += '<ul>';
+    s.items.forEach(item => { out += '<li>' + item + '</li>'; });
+    out += '</ul></div>';
+  });
+  out += '</div>';
+
+  // Weekly targets
+  out += '<div class="section-title" style="margin-top:32px">📋 Weekly Posting Targets</div>';
+  out += '<div class="kpi-grid" style="margin-bottom:32px">';
+  const targets = [
+    ["#0077b5","LinkedIn","5","posts / week"],
+    ["#e1306c","Instagram","5","posts / week"],
+    ["#e7e9ea","X (Twitter)","10","posts / week"],
+    ["#1877f2","Facebook","4","posts / week (repurpose)"],
+    ["#69c9d0","TikTok","2","posts / week"],
+    ["#6c63ff","Total / Week","~26","across all platforms"],
+  ];
+  targets.forEach(([color, label, val, sub]) => {
+    out += '<div class="kpi-card" style="--card-color:' + color + '">';
+    out += '<div class="kpi-label">' + label + '</div>';
+    out += '<div class="kpi-value">' + val + '</div>';
+    out += '<div class="kpi-sub ' + (label === "Total / Week" ? "up" : "neutral") + '">' + sub + '</div>';
+    out += '</div>';
+  });
+  out += '</div>';
+
+  document.getElementById("calendar-root").innerHTML = out;
+}
+
+function calNav(dir) {
+  if (dir === 0) calWeekOffset = 0;
+  else calWeekOffset += dir;
+  renderCalendar();
+}
+
+function showTip(el, tip) {
+  document.querySelectorAll(".cal-tip-popup").forEach(e => e.remove());
+  const popup = document.createElement("div");
+  popup.className = "cal-tip-popup";
+  popup.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--accent);border-radius:12px;padding:14px 18px;font-size:0.82rem;color:var(--text);max-width:360px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.5);line-height:1.5;";
+  popup.innerHTML = "<strong>💡 Tip</strong><br>" + tip + "<br><span style='color:var(--text-muted);font-size:0.72rem;margin-top:6px;display:block'>Tap anywhere to dismiss</span>";
+  document.body.appendChild(popup);
+  setTimeout(() => document.addEventListener("click", () => popup.remove(), {once:true}), 100);
+}
+
+</script>
   <style>
     :root {
       --bg: #0f1117;
@@ -372,6 +610,202 @@
       margin-right: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+  
+    /* ── Tab Navigation ── */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      padding: 0 32px;
+      background: #12152a;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 12px 22px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Calendar ── */
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .cal-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .cal-nav { display: flex; align-items: center; gap: 10px; }
+    .cal-nav button {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .cal-nav button:hover { border-color: var(--accent); }
+    .cal-week-label { font-size: 0.9rem; font-weight: 600; min-width: 200px; text-align: center; }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: 110px repeat(5, 1fr);
+      gap: 8px;
+    }
+    .cal-day-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .cal-day-name { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    .cal-day-date { font-size: 1.1rem; font-weight: 800; margin-top: 2px; }
+    .cal-day-date.today { color: var(--accent2); }
+
+    .cal-platform-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .cal-platform-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .cal-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: border-color 0.15s;
+    }
+    .cal-cell:hover { border-color: var(--border); }
+    .cal-cell.empty { background: var(--bg); border-style: dashed; opacity: 0.4; }
+
+    .cal-post {
+      border-radius: 7px;
+      padding: 6px 8px;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .cal-post:hover { opacity: 0.85; transform: translateY(-1px); }
+    .cal-post-type { font-weight: 700; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; opacity: 0.85; }
+    .cal-post-title { font-weight: 500; }
+    .cal-post-badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-top: 3px;
+      opacity: 0.9;
+    }
+
+    /* Content type colors */
+    .ct-video    { background: #1a2744; border-left: 3px solid #6c63ff; color: #c5c0ff; }
+    .ct-news     { background: #1a2a1a; border-left: 3px solid #00d4aa; color: #a0f0dc; }
+    .ct-carousel { background: #2a1a2a; border-left: 3px solid #e1306c; color: #f0a0c0; }
+    .ct-stat     { background: #2a2a1a; border-left: 3px solid #ffd93d; color: #f0e0a0; }
+    .ct-poll     { background: #1a2a2a; border-left: 3px solid #00bcd4; color: #a0e0f0; }
+    .ct-hottake  { background: #2a1a1a; border-left: 3px solid #ff6b6b; color: #f0c0c0; }
+    .ct-breaking { background: #2a1a0a; border-left: 3px solid #ff9800; color: #f0d0a0; }
+    .ct-event    { background: #1a1a2a; border-left: 3px solid #9c27b0; color: #d0a0f0; }
+    .ct-repurpose{ background: #1e1e1e; border-left: 3px solid #555; color: #aaa; }
+
+    /* ── Suggestions Panel ── */
+    .suggestions-section { margin-top: 32px; }
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .suggestion-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .suggestion-card h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .suggestion-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .suggestion-card li {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 6px 10px;
+      background: var(--surface2);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+    .suggestion-card li:hover { color: var(--text); background: var(--border); }
+    .suggestion-card li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+
+    /* ── Legend ── */
+    .cal-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .cal-grid { grid-template-columns: 80px repeat(5, 1fr); }
+      .tab-nav { padding: 0 16px; }
+      .tab-btn { padding: 10px 14px; font-size: 0.78rem; }
+    }
+    @media (max-width: 600px) {
+      .cal-grid { grid-template-columns: 1fr; }
+    }
+
   </style>
 </head>
 <body>
@@ -389,6 +823,13 @@
   </div>
 </header>
 
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('calendar')">📅 Posting Calendar</button>
+</nav>
+
+<div id="tab-dashboard" class="tab-pane active">
 <main>
   <div id="error-banner"></div>
 
@@ -432,7 +873,18 @@
   <div class="section-title">🏆 Top Posts This Week</div>
   <div class="posts-grid" id="posts-grid"></div>
 
+
+  Data source: <a href="https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk" target="_blank">HousingWire Social Dashboard Google Sheet</a>
+  · Industry benchmarks: Hootsuite 2026
+  · Built for HW Media
 </main>
+</div>
+
+<div id="tab-calendar" class="tab-pane">
+<main>
+  <div id="calendar-root"></div>
+</main>
+</div>
 
 <footer>
   Data source: <a href="https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk" target="_blank">HousingWire Social Dashboard Google Sheet</a>
@@ -842,6 +1294,244 @@ function showError(msg) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 loadData();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CALENDAR TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  event.currentTarget.classList.add("active");
+  if (tab === "calendar") renderCalendar();
+}
+
+const SCHEDULE = {
+  linkedin: [
+    { day:0, type:"video",    label:"🎬 Logan's Market Video",   cls:"ct-video",    tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the full article in the first comment." },
+    { day:1, type:"stat",     label:"📊 Stat / Data Callout",    cls:"ct-stat",     tip:"Pull a bold number from Logan's tracker: inventory, rate spread (currently 1.92%), price cuts % (36.88%), or purchase apps YoY." },
+    { day:2, type:"carousel", label:"🎠 Carousel / Deep Dive",   cls:"ct-carousel", tip:"Break down a complex topic in 5–8 slides. Best topics: M&A deals, Fed decisions, AI in mortgage, GSE reform." },
+    { day:3, type:"poll",     label:"🗳️ Poll / Question",        cls:"ct-poll",     tip:"Ask your audience something timely. Polls get 3–5x more reach on LinkedIn. Keep it to 2–4 options." },
+    { day:4, type:"hottake",  label:"💬 Industry Hot Take",      cls:"ct-hottake",  tip:"Short punchy opinion post reacting to a trend or news item. 3–5 sentences max. No graphic needed — text posts often outperform on LinkedIn." },
+  ],
+  instagram: [
+    { day:0, type:"video",    label:"🎬 Logan's Reel",           cls:"ct-video",    tip:"Post Logan's video as a Reel. Add captions, use trending audio if possible, and include housing hashtags: #HousingMarket #MortgageRates #RealEstate." },
+    { day:1, type:"news",     label:"📰 Single Graphic News",    cls:"ct-news",     tip:"Top article of the day as a clean graphic. Bold headline, HW branding, link in bio. Breaking news graphics get the most saves and shares." },
+    { day:2, type:"carousel", label:"🎠 Carousel",               cls:"ct-carousel", tip:"Repurpose or adapt the LinkedIn carousel. Instagram carousels average 3.2% engagement — your highest-performing format." },
+    { day:3, type:"stat",     label:"📊 Stat Graphic",           cls:"ct-stat",     tip:"Bold data point as a visual. Keep it simple: big number, short context, HW logo. Logan's tracker numbers work great here." },
+    { day:4, type:"news",     label:"📰 Single Graphic News",    cls:"ct-news",     tip:"End-of-week news graphic. Friday housing market wrap-up or the week's biggest story." },
+  ],
+  x: [
+    { day:0, type:"news",     label:"📰 News x2 + 🎬 Video",    cls:"ct-news",     tip:"Two news posts throughout the day + tweet Logan's video link with a key stat as the hook." },
+    { day:1, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"Breaking news + a follow-up or related story. Morning (8–9am CT) and afternoon (1–2pm CT) cadence." },
+    { day:2, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"Mid-week news push. Wednesday is peak B2B engagement on X." },
+    { day:3, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"News + stat callout. Fannie/Freddie, GSE, rate data, and M&A news performs best on X." },
+    { day:4, type:"news",     label:"📰 News x2",                cls:"ct-news",     tip:"Friday wrap — top 2 stories of the week. End-of-week recaps get strong retweet activity." },
+  ],
+  facebook: [
+    { day:0, type:"video",    label:"🎬 Logan's Video (share)",  cls:"ct-video",    tip:"Share Logan's video to Facebook. Low effort, keeps the page active. Facebook video gets boosted reach." },
+    { day:1, type:"repurpose",label:"♻️ Repurpose LinkedIn",     cls:"ct-repurpose",tip:"Share the LinkedIn stat graphic to Facebook. Minimal extra work — just adjust the caption tone to be slightly less formal." },
+    { day:3, type:"repurpose",label:"♻️ Repurpose Graphic",      cls:"ct-repurpose",tip:"Repurpose Thursday's Instagram stat graphic to Facebook." },
+    { day:4, type:"repurpose",label:"♻️ Repurpose Graphic",      cls:"ct-repurpose",tip:"Share Friday's Instagram news graphic to Facebook. Good end-of-week touchpoint." },
+  ],
+  tiktok: [
+    { day:0, type:"video",    label:"🎬 Logan's Video Clip",     cls:"ct-video",    tip:"Post a 30–60s clip from Logan's video. Add text overlay with the key stat. TikTok's algorithm rewards consistent weekly posting." },
+    { day:2, type:"hottake",  label:"💬 Hot Take / Trend",       cls:"ct-hottake",  tip:"Quick talking-head or text-overlay video reacting to a housing trend. No production needed — authenticity wins on TikTok." },
+  ],
+};
+
+const PLATFORMS = [
+  { key:"linkedin",  label:"LinkedIn",    color:"#0077b5" },
+  { key:"instagram", label:"Instagram",   color:"#e1306c" },
+  { key:"x",         label:"X (Twitter)", color:"#e7e9ea" },
+  { key:"facebook",  label:"Facebook",    color:"#1877f2" },
+  { key:"tiktok",    label:"TikTok",      color:"#69c9d0" },
+];
+
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+
+const CONTENT_SUGGESTIONS = [
+  { icon:"📊", title:"Stat / Data Callout Ideas", cls:"ct-stat", items:[
+    "Weekly inventory: X homes active (YoY change from Logan's tracker)",
+    "Mortgage rate vs. 10-yr yield spread — currently 1.92%",
+    "Price cut % — currently 36.88% of listings have cut prices",
+    "Purchase apps: up/down X% year over year",
+    "HW total follower milestone (currently 310K across all platforms!)",
+  ]},
+  { icon:"🎠", title:"Carousel / Deep Dive Ideas", cls:"ct-carousel", items:[
+    "Breaking down the Fed rate decision: what it means for mortgages",
+    "5 things to know about the housing market this week",
+    "AI in mortgage: what the top 25 lenders are actually doing right now",
+    "M&A deal breakdown: PennyMac + Cenlar — what it means for servicers",
+    "HW AI Summit: 5 key takeaways from the best minds in housing",
+  ]},
+  { icon:"🗳️", title:"Poll / Question Ideas (LinkedIn)", cls:"ct-poll", items:[
+    "What's your biggest challenge right now: rates, inventory, or affordability?",
+    "Will the Fed cut rates before year end? Yes / No / Too early to say",
+    "Which AI use case excites you most in mortgage? Underwriting / Servicing / Customer experience / Compliance",
+    "Are you seeing more buyers or sellers in your market right now?",
+    "What content do you want more of from HousingWire?",
+  ]},
+  { icon:"💬", title:"Hot Take Ideas (LinkedIn + X)", cls:"ct-hottake", items:[
+    "loanDepot reentering wholesale: bold move or too late to the party?",
+    "The credit bureau 'gaslit' the mortgage industry — MBA's Broeksmit is right",
+    "AI agents for customers are table stakes. The real edge is internal ops.",
+    "Fannie Mae's $14.4B profit: what it actually signals for GSE reform",
+    "The gap between knowing AI and doing AI is where margin lives in 2026",
+  ]},
+  { icon:"📰", title:"Single Graphic News Ideas", cls:"ct-news", items:[
+    "Top HousingWire article of the day (always prioritize breaking news)",
+    "Weekly housing market tracker summary — inventory, rates, price cuts",
+    "Lender / servicer earnings highlights (Fannie, Freddie, major lenders)",
+    "FHFA / GSE policy update or regulatory change",
+    "Mortgage rate movement + context: where rates are vs. where they could be",
+  ]},
+  { icon:"🔥", title:"Breaking News Best Practices", cls:"ct-breaking", items:[
+    "Use 🚨 BREAKING: prefix — historically drives 3–5x more engagement on LinkedIn",
+    "Post within 15 minutes of story going live for maximum algorithmic reach",
+    "Put the article link in the first comment on LinkedIn (not the post itself)",
+    "M&A deals, rate moves, GSE news, and lender strategy = your highest-engagement topics",
+    "Tag companies and executives mentioned when possible to expand reach",
+  ]},
+];
+
+let calWeekOffset = 0;
+
+function getWeekDates(offset) {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+  return Array.from({length:5}, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+}
+
+function isToday(d) {
+  const t = new Date();
+  return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
+}
+
+function renderCalendar() {
+  const dates = getWeekDates(calWeekOffset);
+  const weekLabel = fmtDate(dates[0]) + " – " + fmtDate(dates[4]) + ", " + dates[0].getFullYear();
+
+  let out = "";
+
+  out += '<div class="cal-header">';
+  out += '<h2>📅 Weekly Posting Calendar</h2>';
+  out += '<div class="cal-nav">';
+  out += '<button onclick="calNav(-1)">&#8249;</button>';
+  out += '<span class="cal-week-label">' + weekLabel + '</span>';
+  out += '<button onclick="calNav(1)">&#8250;</button>';
+  out += '<button onclick="calNav(0)" style="width:auto;padding:0 12px;font-size:0.78rem;font-weight:600">Today</button>';
+  out += '</div></div>';
+
+  out += '<div class="cal-legend">';
+  out += '<span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;margin-right:4px">CONTENT TYPES:</span>';
+  const legendItems = [
+    ["#6c63ff","Video"], ["#00d4aa","News"], ["#e1306c","Carousel"],
+    ["#ffd93d","Stat"], ["#00bcd4","Poll"], ["#ff6b6b","Hot Take"],
+    ["#ff9800","Breaking"], ["#9c27b0","Event"], ["#555","Repurpose"]
+  ];
+  legendItems.forEach(([color, label]) => {
+    out += '<div class="legend-item"><div class="legend-dot" style="background:' + color + '"></div>' + label + '</div>';
+  });
+  out += '</div>';
+
+  out += '<div class="cal-grid">';
+  // Header row
+  out += '<div></div>';
+  dates.forEach((d, i) => {
+    out += '<div class="cal-day-header">';
+    out += '<div class="cal-day-name">' + DAYS[i] + '</div>';
+    out += '<div class="cal-day-date' + (isToday(d) ? ' today' : '') + '">' + fmtDate(d) + '</div>';
+    out += '</div>';
+  });
+
+  // Platform rows
+  PLATFORMS.forEach(p => {
+    out += '<div class="cal-platform-label">';
+    out += '<div class="cal-platform-dot" style="background:' + p.color + '"></div>';
+    out += p.label;
+    out += '</div>';
+    for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
+      const posts = (SCHEDULE[p.key] || []).filter(s => s.day === dayIdx);
+      if (!posts.length) {
+        out += '<div class="cal-cell empty"></div>';
+      } else {
+        out += '<div class="cal-cell">';
+        posts.forEach(post => {
+          const safeTip = post.tip.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+          out += '<div class="cal-post ' + post.cls + '" onclick="showTip(this,'' + safeTip + '')">';
+          out += '<div class="cal-post-type">' + post.type.toUpperCase() + '</div>';
+          out += '<div class="cal-post-title">' + post.label + '</div>';
+          out += '</div>';
+        });
+        out += '</div>';
+      }
+    }
+  });
+  out += '</div>';
+
+  // Suggestions
+  out += '<div class="section-title" style="margin-top:32px">💡 Content Suggestions</div>';
+  out += '<div class="suggestions-grid">';
+  CONTENT_SUGGESTIONS.forEach(s => {
+    out += '<div class="suggestion-card">';
+    out += '<h4>' + s.icon + ' ' + s.title + '</h4>';
+    out += '<ul>';
+    s.items.forEach(item => { out += '<li>' + item + '</li>'; });
+    out += '</ul></div>';
+  });
+  out += '</div>';
+
+  // Weekly targets
+  out += '<div class="section-title" style="margin-top:32px">📋 Weekly Posting Targets</div>';
+  out += '<div class="kpi-grid" style="margin-bottom:32px">';
+  const targets = [
+    ["#0077b5","LinkedIn","5","posts / week"],
+    ["#e1306c","Instagram","5","posts / week"],
+    ["#e7e9ea","X (Twitter)","10","posts / week"],
+    ["#1877f2","Facebook","4","posts / week (repurpose)"],
+    ["#69c9d0","TikTok","2","posts / week"],
+    ["#6c63ff","Total / Week","~26","across all platforms"],
+  ];
+  targets.forEach(([color, label, val, sub]) => {
+    out += '<div class="kpi-card" style="--card-color:' + color + '">';
+    out += '<div class="kpi-label">' + label + '</div>';
+    out += '<div class="kpi-value">' + val + '</div>';
+    out += '<div class="kpi-sub ' + (label === "Total / Week" ? "up" : "neutral") + '">' + sub + '</div>';
+    out += '</div>';
+  });
+  out += '</div>';
+
+  document.getElementById("calendar-root").innerHTML = out;
+}
+
+function calNav(dir) {
+  if (dir === 0) calWeekOffset = 0;
+  else calWeekOffset += dir;
+  renderCalendar();
+}
+
+function showTip(el, tip) {
+  document.querySelectorAll(".cal-tip-popup").forEach(e => e.remove());
+  const popup = document.createElement("div");
+  popup.className = "cal-tip-popup";
+  popup.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--accent);border-radius:12px;padding:14px 18px;font-size:0.82rem;color:var(--text);max-width:360px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.5);line-height:1.5;";
+  popup.innerHTML = "<strong>💡 Tip</strong><br>" + tip + "<br><span style='color:var(--text-muted);font-size:0.72rem;margin-top:6px;display:block'>Tap anywhere to dismiss</span>";
+  document.body.appendChild(popup);
+  setTimeout(() => document.addEventListener("click", () => popup.remove(), {once:true}), 100);
+}
+
 </script>
 </body>
 </html>
