@@ -196,7 +196,7 @@ footer a{color:var(--a);text-decoration:none}
     <div class="cc"><div class="ct">📊 YTD Follower Growth</div><div class="cw"><canvas id="c3"></canvas></div></div>
   </div>
   <div class="sec">Engagement Rate vs. Industry Benchmark</div><div class="bg" id="bg"></div>
-  <div class="sec">🏆 Top Posts This Week</div><div class="og" id="og"></div>
+  <div class="sec">🏆 Top Posts — <span id="posts-week-label" style="color:var(--a2);text-transform:none;letter-spacing:0;font-weight:600;font-size:0.8rem"></span></div><div class="og" id="og"></div>
 </main>
 </div>
 
@@ -340,7 +340,9 @@ function renderBench(rows){
 }
 function renderPosts(){
   const wp=POSTS.filter(p=>p.week_ending===selWeek);
-  if(!wp.length){document.getElementById("og").innerHTML='<p style="color:var(--tm);font-size:0.82rem">No top posts data for this week.</p>';return}
+  const lbl=document.getElementById("posts-week-label");
+  if(lbl)lbl.textContent="Week of "+selWeek;
+  if(!wp.length){document.getElementById("og").innerHTML='<p style="color:var(--tm);font-size:0.82rem">No top posts recorded for the week of '+selWeek+'. Data is available for the week of Aug 14, 2026.</p>';return}
   document.getElementById("og").innerHTML=wp.map(p=>{
     const m=PM[p.platform]||{label:p.platform,color:"#6c63ff"},tot=(p.likes||0)+(p.comments||0)+(p.shares||0);
     return`<div class="oc"><div class="oh"><div class="op" style="color:${m.color}"><div class="pd" style="background:${m.color}"></div>${m.label}</div><span class="or">#${p.rank}</span></div><div class="oca">${p.caption}</div><div class="os">${p.likes?`<div class="ost">❤️ <span>${fmt(p.likes)}</span></div>`:""}${p.comments?`<div class="ost">💬 <span>${fmt(p.comments)}</span></div>`:""}${p.shares?`<div class="ost">🔁 <span>${fmt(p.shares)}</span></div>`:""}${tot?`<div class="ost">⚡ <span>${fmt(tot)}</span></div>`:""}</div>${p.link?`<a class="ol" href="${p.link}" target="_blank">View post →</a>`:""}</div>`;
