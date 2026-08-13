@@ -454,6 +454,34 @@ const PLATFORM_META = {
   tiktok:    { label: "TikTok",     color: "#69c9d0", dot: "#69c9d0", benchmark: 1.8 },
 };
 
+// ─── Fallback Top Posts (updated from export data) ──────────────────────────
+const FALLBACK_POSTS = [
+  { week_ending:"2026-08-14", platform:"facebook", rank:1,
+    caption:"The 2026 HousingWire AI Summit is a wrap, and the conversations in that room are going to stick with us. Mortgage, real estate and homebuilding leaders came together to talk about what AI is actually doing for this industry right now. Not the hype. The results. Clayton Collins and Holden Page set the tone early: the gap between knowing and doing is where margin lives.",
+    likes:3, comments:1, shares:0,
+    link:"https://www.facebook.com/HousingWire/posts/pfbid0rhex7HCwgiAHR7UJNqHhFG9Pwr5phT19nk4HixwBVdPAMUB8oAFQiGoe6uYMyLRil" },
+  { week_ending:"2026-08-14", platform:"facebook", rank:2,
+    caption:"(Link post — view on Facebook for full content)",
+    likes:2, comments:0, shares:0,
+    link:"https://www.facebook.com/HousingWire/posts/pfbid02nbgg5D6mVnP68i9k5maG8s9GiZAKsAbYBzz9Xh6HMfjLFG4QKS6Nva89NSokwphvl" },
+  { week_ending:"2026-08-14", platform:"facebook", rank:3,
+    caption:"(Link post — view on Facebook for full content)",
+    likes:1, comments:0, shares:1,
+    link:"https://www.facebook.com/HousingWire/posts/pfbid02H69Jkztp66o2Eg9pDzpySVZx6WkVmjKftacXqGc5G4YQFoj9h8aCNqoeBsxGPULql" },
+  { week_ending:"2026-08-14", platform:"instagram", rank:1,
+    caption:"The 2026 HousingWire AI Summit is a wrap! Some of the sharpest minds in mortgage, real estate and homebuilding in one room, having the conversations that actually matter. Swipe through for a look at the key topics and takeaways from the summit. The gap between knowing and doing is where margin lives. #HousingWire #AISummit #MortgageIndustry #RealEstate #AIinMortgage",
+    likes:35, comments:2, shares:3,
+    link:"https://www.instagram.com/p/Db6uGfZHe86/" },
+  { week_ending:"2026-08-14", platform:"instagram", rank:2,
+    caption:"Looking through the HousingWire AI Summit agenda, I'm grateful to be spending the day alongside people who are building the future of housing from every angle. Thank you to the HousingWire team for creating a space where the conversation is focused on learning, not hype. (via @therealryangrant)",
+    likes:28, comments:1, shares:0,
+    link:"https://www.instagram.com/p/DbyZ1Ecj7lv/" },
+  { week_ending:"2026-08-14", platform:"instagram", rank:3,
+    caption:"August 19, we are launching something we have been building for the people who move the housing market. Stay tuned. Link in bio. #HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData",
+    likes:15, comments:1, shares:0,
+    link:"https://www.instagram.com/p/Db9PVvtoBOK/" },
+];
+
 // ─── State ────────────────────────────────────────────────────────────────────
 let weeklyData = [];
 let postsData  = [];
@@ -746,9 +774,17 @@ function renderBenchmarks(rows) {
 
 // ─── Top Posts ────────────────────────────────────────────────────────────────
 function renderTopPosts() {
-  const weekPosts = postsData.filter(p =>
+  // Merge sheet data with fallback hardcoded posts
+  const sheetPosts = postsData.filter(p =>
     p.week_ending === selectedWeek &&
     p.caption && !p.caption.includes("(add top post)")
+  );
+  const fallback = FALLBACK_POSTS.filter(p => p.week_ending === selectedWeek);
+  // Sheet data takes priority; fill in missing platforms from fallback
+  const sheetPlatforms = new Set(sheetPosts.map(p => p.platform + p.rank));
+  const fallbackToUse = fallback.filter(p => !sheetPlatforms.has(p.platform + p.rank));
+  const weekPosts = [...sheetPosts, ...fallbackToUse].sort((a,b) =>
+    a.platform.localeCompare(b.platform) || a.rank - b.rank
   );
   if (!weekPosts.length) {
     document.getElementById("posts-grid").innerHTML =
