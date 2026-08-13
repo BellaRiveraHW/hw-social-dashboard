@@ -10,19 +10,20 @@
 :root{--bg:#0f1117;--s:#1a1d27;--s2:#22263a;--b:#2e3250;--a:#6c63ff;--a2:#00d4aa;--a3:#ff6b6b;--a4:#ffd93d;--t:#e8eaf6;--tm:#8b92b8}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+/* Header */
 header{background:linear-gradient(135deg,#1a1d27,#12152a);border-bottom:1px solid var(--b);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .hl h1{font-size:1.4rem;font-weight:800;background:linear-gradient(90deg,#6c63ff,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hl p{color:var(--tm);font-size:0.78rem;margin-top:2px}
-.hr{display:flex;align-items:center;gap:10px}
-#lu{font-size:0.75rem;color:var(--tm);background:var(--s2);padding:5px 12px;border-radius:20px;border:1px solid var(--b)}
+/* Nav */
 nav{display:flex;gap:2px;padding:0 28px;background:#12152a;border-bottom:1px solid var(--b)}
 .tb{padding:11px 20px;font-size:0.82rem;font-weight:600;color:var(--tm);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s,border-color .15s;text-decoration:none;display:inline-flex;align-items:center}
-.tb:hover{color:var(--t)}
-.tb.on{color:var(--a);border-bottom-color:var(--a)}
+.tb:hover{color:var(--t)}.tb.on{color:var(--a);border-bottom-color:var(--a)}
 .tp{display:none}.tp.on{display:block}
 main{padding:22px 28px;max-width:1380px;margin:0 auto}
+/* Shared */
 .sec{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .sec::after{content:'';flex:1;height:1px;background:var(--b)}
+/* Dashboard */
 .wbar{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
 .wbar label{font-size:0.82rem;color:var(--tm);font-weight:500}
 #ws{background:var(--s);color:var(--t);border:1px solid var(--b);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:'Inter',sans-serif;cursor:pointer}
@@ -51,8 +52,7 @@ main{padding:22px 28px;max-width:1380px;margin:0 auto}
 .cc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:18px}
 .cc.w{grid-column:1/-1}
 .ct{font-size:0.82rem;font-weight:700;margin-bottom:14px}
-.cw{position:relative;height:230px}
-.cw.t{height:290px}
+.cw{position:relative;height:230px}.cw.t{height:290px}
 .bg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:24px}
 .bc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px}
 .bh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -76,44 +76,101 @@ main{padding:22px 28px;max-width:1380px;margin:0 auto}
 footer{text-align:center;padding:22px;color:var(--tm);font-size:0.73rem;border-top:1px solid var(--b);margin-top:8px}
 footer a{color:var(--a);text-decoration:none}
 
-/* Calendar */
-.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+/* ── Calendar Layout ── */
+.cal-wrap{display:flex;gap:20px;align-items:flex-start}
+.cal-main{flex:1;min-width:0}
+.cal-sidebar{width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:14px;position:sticky;top:20px}
+@media(max-width:1100px){.cal-wrap{flex-direction:column}.cal-sidebar{width:100%;position:static}}
+
+/* Calendar header */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
 .cal-hdr h2{font-size:1.05rem;font-weight:700}
 .cal-nav{display:flex;align-items:center;gap:8px}
-.cal-nav button{background:var(--s);border:1px solid var(--b);color:var(--t);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:1rem;transition:border-color .15s}
+.cal-nav button{background:var(--s);border:1px solid var(--b);color:var(--t);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:1rem;transition:border-color .15s;font-family:'Inter',sans-serif}
 .cal-nav button:hover{border-color:var(--a)}
-.cal-nav button.txt{width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;font-family:'Inter',sans-serif}
+.cal-nav button.txt{width:auto;padding:0 10px;font-size:0.75rem;font-weight:600}
 .cwl{font-size:0.88rem;font-weight:600;min-width:190px;text-align:center}
-.cgrid{display:grid;grid-template-columns:100px repeat(5,1fr);gap:6px;margin-bottom:28px}
-@media(max-width:700px){.cgrid{grid-template-columns:70px repeat(5,1fr)}}
-.cdh{background:var(--s);border:1px solid var(--b);border-radius:9px;padding:8px 10px;text-align:center}
-.cdn{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tm)}
+
+/* Calendar grid */
+.cgrid{display:grid;grid-template-columns:90px repeat(5,1fr);gap:5px;margin-bottom:24px}
+@media(max-width:800px){.cgrid{grid-template-columns:60px repeat(5,1fr)}}
+.cdh{background:var(--s);border:1px solid var(--b);border-radius:9px;padding:8px 6px;text-align:center}
+.cdn{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tm)}
 .cdd{font-size:1rem;font-weight:800;margin-top:2px}
 .cdd.td{color:var(--a2)}
-.cpl{display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:0.75rem;font-weight:700;border-radius:9px;background:var(--s);border:1px solid var(--b)}
+.cpl{display:flex;align-items:center;gap:6px;padding:6px 8px;font-size:0.72rem;font-weight:700;border-radius:9px;background:var(--s);border:1px solid var(--b)}
 .cpd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.cell{background:var(--s);border:1px solid var(--b);border-radius:9px;padding:6px;min-height:72px;display:flex;flex-direction:column;gap:4px}
-.cell.mt{background:var(--bg);border-style:dashed;opacity:.35}
-.cp{border-radius:6px;padding:5px 7px;font-size:0.68rem;line-height:1.4;cursor:pointer;transition:opacity .15s,transform .1s}
+.cell{background:var(--s);border:1px solid var(--b);border-radius:9px;padding:5px;min-height:68px;display:flex;flex-direction:column;gap:3px}
+.cell.mt{background:var(--bg);border-style:dashed;opacity:.3}
+
+/* Post chips */
+.cp{border-radius:6px;padding:4px 6px;font-size:0.65rem;line-height:1.35;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:flex-start;gap:5px;position:relative}
 .cp:hover{opacity:.82;transform:translateY(-1px)}
-.cpt{font-weight:700;font-size:0.62rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:1px;opacity:.85}
-.cv{background:#1a2744;border-left:3px solid #6c63ff;color:#c5c0ff}
-.cn{background:#1a2a1a;border-left:3px solid #00d4aa;color:#a0f0dc}
+.cp.done{opacity:.45!important;text-decoration:line-through}
+.cp-check{width:13px;height:13px;border-radius:3px;border:1.5px solid currentColor;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer}
+.cp-check.checked{background:currentColor}
+.cp-check.checked::after{content:'✓';color:#0f1117;font-weight:900}
+.cp-body{flex:1}
+.cpt{font-weight:700;font-size:0.58rem;text-transform:uppercase;letter-spacing:.04em;opacity:.85;margin-bottom:1px}
+
+/* Content type colors */
+.cv {background:#1a2744;border-left:3px solid #6c63ff;color:#c5c0ff}
+.cn {background:#1a2a1a;border-left:3px solid #00d4aa;color:#a0f0dc}
 .cca{background:#2a1a2a;border-left:3px solid #e1306c;color:#f0a0c0}
 .cst{background:#2a2a1a;border-left:3px solid #ffd93d;color:#f0e0a0}
 .cpo{background:#1a2a2a;border-left:3px solid #00bcd4;color:#a0e0f0}
 .cht{background:#2a1a1a;border-left:3px solid #ff6b6b;color:#f0c0c0}
 .crp{background:#1e1e1e;border-left:3px solid #555;color:#aaa}
-.leg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.li{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--tm)}
-.ld{width:9px;height:9px;border-radius:2px}
-.sgg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px}
-.sgc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px}
-.sgc h4{font-size:0.82rem;font-weight:700;margin-bottom:10px}
-.sgc ul{list-style:none;display:flex;flex-direction:column;gap:6px}
-.sgc li{font-size:0.75rem;color:var(--tm);padding:5px 9px;background:var(--s2);border-radius:6px;cursor:pointer;transition:color .15s,background .15s;line-height:1.4}
+.clp{background:#1f1a2e;border-left:3px solid #9c27b0;color:#d4a0f0}
+.crl{background:#1a2030;border-left:3px solid #ff9800;color:#f0d0a0}
+
+/* Legend */
+.leg{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.li{display:flex;align-items:center;gap:4px;font-size:0.68rem;color:var(--tm)}
+.ld{width:8px;height:8px;border-radius:2px}
+
+/* Suggestions */
+.sgg{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:24px}
+.sgc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px}
+.sgc h4{font-size:0.8rem;font-weight:700;margin-bottom:9px}
+.sgc ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.sgc li{font-size:0.73rem;color:var(--tm);padding:5px 8px;background:var(--s2);border-radius:6px;cursor:pointer;transition:color .15s,background .15s;line-height:1.4}
 .sgc li:hover{color:var(--t);background:var(--b)}
 .sgc li::before{content:"→ ";color:var(--a);font-weight:700}
+
+/* ── Sidebar ── */
+.sb-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px}
+.sb-title{font-size:0.78rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.sb-title span{font-size:0.68rem;color:var(--tm);font-weight:500}
+
+/* Today's tasks */
+.todo-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--s2);border-radius:8px;border:1px solid var(--b);transition:border-color .15s}
+.todo-item:hover{border-color:var(--b)}
+.todo-item.done-item .todo-text{text-decoration:line-through;color:var(--tm)}
+.todo-cb{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--tm);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
+.todo-cb.chk{background:var(--a2);border-color:var(--a2);color:#0f1117;font-weight:900}
+.todo-text{font-size:0.75rem;line-height:1.4;flex:1}
+.todo-plat{font-size:0.62rem;font-weight:700;opacity:.7;margin-top:2px}
+.todo-del{font-size:0.7rem;color:var(--tm);cursor:pointer;opacity:0;transition:opacity .15s;padding:0 3px;flex-shrink:0}
+.todo-item:hover .todo-del{opacity:1}
+.todo-del:hover{color:var(--a3)}
+
+/* Add custom task */
+.add-task{display:flex;gap:6px;margin-top:10px}
+.add-task input{flex:1;background:var(--s2);border:1px solid var(--b);color:var(--t);border-radius:7px;padding:6px 9px;font-size:0.75rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.add-task input:focus{border-color:var(--a)}
+.add-task input::placeholder{color:var(--tm)}
+.add-btn{background:var(--a);color:#fff;border:none;border-radius:7px;padding:6px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;white-space:nowrap}
+.add-btn:hover{opacity:.85}
+
+/* Progress bar */
+.prog-wrap{margin-top:10px}
+.prog-label{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--tm);margin-bottom:5px}
+.prog-bar{height:6px;background:var(--s2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:3px;transition:width .4s ease}
+
+/* Tip popup */
 .tip-pop{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--a);border-radius:11px;padding:13px 16px;font-size:0.8rem;color:var(--t);max-width:340px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.5);line-height:1.5}
 </style>
 </head>
@@ -123,7 +180,6 @@ footer a{color:var(--a);text-decoration:none}
     <h1>⚡ HW Media Social Dashboard</h1>
     <p>Data updated Aug 14, 2026 · HousingWire</p>
   </div>
-  <div class="hr"><span id="lu">Aug 14, 2026</span></div>
 </header>
 <nav>
   <button class="tb on" onclick="tab('dash',this)">📊 Dashboard</button>
@@ -131,9 +187,9 @@ footer a{color:var(--a);text-decoration:none}
   <a href="launch.html" class="tb">🚀 HW Intelligence Launch</a>
 </nav>
 
+<!-- DASHBOARD TAB -->
 <div id="tab-dash" class="tp on">
 <main>
-  <div id="err" style="display:none;background:#2a1a1a;border:1px solid var(--a3);color:var(--a3);padding:10px 16px;border-radius:9px;margin-bottom:18px;font-size:0.82rem"></div>
   <div class="wbar">
     <label>📅 Week ending:</label>
     <select id="ws" onchange="renderWeek()"></select>
@@ -156,205 +212,167 @@ footer a{color:var(--a);text-decoration:none}
 </main>
 </div>
 
+<!-- CALENDAR TAB -->
 <div id="tab-cal" class="tp">
 <main>
-  <div id="cal-root"></div>
+  <div class="cal-wrap">
+    <!-- Main calendar -->
+    <div class="cal-main">
+      <div class="cal-hdr">
+        <h2>📅 Weekly Posting Calendar</h2>
+        <div class="cal-nav">
+          <button onclick="calNav(-1)">&#8249;</button>
+          <span class="cwl" id="cwl"></span>
+          <button onclick="calNav(1)">&#8250;</button>
+          <button class="txt" onclick="calNav(0)">Today</button>
+        </div>
+      </div>
+      <div class="leg">
+        <span style="font-size:.68rem;color:var(--tm);font-weight:700;margin-right:4px">TYPES:</span>
+        <div class="li"><div class="ld" style="background:#6c63ff"></div>Video</div>
+        <div class="li"><div class="ld" style="background:#00d4aa"></div>News</div>
+        <div class="li"><div class="ld" style="background:#e1306c"></div>Carousel</div>
+        <div class="li"><div class="ld" style="background:#ffd93d"></div>Stat</div>
+        <div class="li"><div class="ld" style="background:#00bcd4"></div>Poll</div>
+        <div class="li"><div class="ld" style="background:#ff6b6b"></div>Hot Take</div>
+        <div class="li"><div class="ld" style="background:#ff9800"></div>Reel</div>
+        <div class="li"><div class="ld" style="background:#9c27b0"></div>🚀 Launch</div>
+        <div class="li"><div class="ld" style="background:#555"></div>Repurpose</div>
+      </div>
+      <div class="cgrid" id="cgrid"></div>
+      <div class="sec" style="margin-top:4px">💡 Content Suggestions</div>
+      <div class="sgg" id="sgg"></div>
+      <div class="sec" style="margin-top:4px">📋 Weekly Posting Targets</div>
+      <div class="kg" style="margin-bottom:32px" id="tkg"></div>
+    </div>
+    <!-- Sidebar -->
+    <div class="cal-sidebar">
+      <!-- Today's To-Do -->
+      <div class="sb-card">
+        <div class="sb-title">
+          📋 Today's To-Do
+          <span id="todo-date"></span>
+        </div>
+        <div class="todo-list" id="todo-list"></div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span id="prog-label">0 of 0 done</span><span id="prog-pct">0%</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        </div>
+        <div class="add-task">
+          <input type="text" id="custom-task" placeholder="Add custom task…" onkeydown="if(event.key==='Enter')addCustomTask()"/>
+          <button class="add-btn" onclick="addCustomTask()">+ Add</button>
+        </div>
+      </div>
+      <!-- Weekly progress -->
+      <div class="sb-card">
+        <div class="sb-title">📊 This Week's Progress</div>
+        <div id="week-prog"></div>
+      </div>
+    </div>
+  </div>
 </main>
 </div>
 
 <footer>Data: <a href="https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk" target="_blank">HousingWire Social Dashboard</a> · Benchmarks: Hootsuite 2026 · HW Media</footer>
 
 <script>
-// ── Baked-in data (no fetch needed) ─────────────────────────────────────────
+// ── Baked-in data ─────────────────────────────────────────────────────────────
 const WEEKLY = [{"week_ending": "2025-08-15", "platform": "linkedin", "followers": 59975, "total_engagement": 760}, {"week_ending": "2025-08-22", "platform": "linkedin", "followers": 60099, "total_engagement": 396}, {"week_ending": "2025-08-29", "platform": "linkedin", "followers": 60183, "total_engagement": 179}, {"week_ending": "2025-09-05", "platform": "linkedin", "followers": 60285, "total_engagement": 224}, {"week_ending": "2025-09-12", "platform": "linkedin", "followers": 60373, "total_engagement": 132}, {"week_ending": "2025-09-19", "platform": "linkedin", "followers": 60482, "total_engagement": 213}, {"week_ending": "2025-09-26", "platform": "linkedin", "followers": 60595, "total_engagement": 198}, {"week_ending": "2025-10-03", "platform": "linkedin", "followers": 60697, "total_engagement": 236}, {"week_ending": "2025-10-10", "platform": "linkedin", "followers": 60829, "total_engagement": 933}, {"week_ending": "2025-10-17", "platform": "linkedin", "followers": 60932, "total_engagement": 228}, {"week_ending": "2025-10-24", "platform": "linkedin", "followers": 61006, "total_engagement": 172}, {"week_ending": "2025-10-31", "platform": "linkedin", "followers": 61074, "total_engagement": 370}, {"week_ending": "2025-11-07", "platform": "linkedin", "followers": 61144, "total_engagement": 198}, {"week_ending": "2025-11-14", "platform": "linkedin", "followers": 61196, "total_engagement": 91}, {"week_ending": "2025-11-21", "platform": "linkedin", "followers": 61350, "total_engagement": 354}, {"week_ending": "2025-11-28", "platform": "linkedin", "followers": 61429, "total_engagement": 101}, {"week_ending": "2025-12-05", "platform": "linkedin", "followers": 61519, "total_engagement": 168}, {"week_ending": "2025-12-12", "platform": "linkedin", "followers": 61620, "total_engagement": 171}, {"week_ending": "2025-12-19", "platform": "linkedin", "followers": 61713, "total_engagement": 229}, {"week_ending": "2025-12-26", "platform": "linkedin", "followers": 61778, "total_engagement": 124}, {"week_ending": "2026-01-02", "platform": "linkedin", "followers": 61852, "total_engagement": 76}, {"week_ending": "2026-01-09", "platform": "linkedin", "followers": 61936, "total_engagement": 169}, {"week_ending": "2026-01-16", "platform": "linkedin", "followers": 61999, "total_engagement": 166}, {"week_ending": "2026-01-23", "platform": "linkedin", "followers": 62066, "total_engagement": 76}, {"week_ending": "2026-01-30", "platform": "linkedin", "followers": 62148, "total_engagement": 95}, {"week_ending": "2026-02-06", "platform": "linkedin", "followers": 62254, "total_engagement": 100}, {"week_ending": "2026-02-13", "platform": "linkedin", "followers": 62458, "total_engagement": 815}, {"week_ending": "2026-02-20", "platform": "linkedin", "followers": 62621, "total_engagement": 364}, {"week_ending": "2026-02-27", "platform": "linkedin", "followers": 62770, "total_engagement": 229}, {"week_ending": "2026-03-06", "platform": "linkedin", "followers": 62861, "total_engagement": 188}, {"week_ending": "2026-03-13", "platform": "linkedin", "followers": 62996, "total_engagement": 429}, {"week_ending": "2026-03-20", "platform": "linkedin", "followers": 63132, "total_engagement": 334}, {"week_ending": "2026-03-27", "platform": "linkedin", "followers": 63252, "total_engagement": 244}, {"week_ending": "2026-04-03", "platform": "linkedin", "followers": 63376, "total_engagement": 341}, {"week_ending": "2026-04-10", "platform": "linkedin", "followers": 63477, "total_engagement": 180}, {"week_ending": "2026-04-17", "platform": "linkedin", "followers": 63584, "total_engagement": 76}, {"week_ending": "2026-04-24", "platform": "linkedin", "followers": 63698, "total_engagement": 144}, {"week_ending": "2026-05-01", "platform": "linkedin", "followers": 63845, "total_engagement": 235}, {"week_ending": "2026-05-08", "platform": "linkedin", "followers": 63974, "total_engagement": 257}, {"week_ending": "2026-05-15", "platform": "linkedin", "followers": 64129, "total_engagement": 467}, {"week_ending": "2026-05-22", "platform": "linkedin", "followers": 64246, "total_engagement": 147}, {"week_ending": "2026-05-29", "platform": "linkedin", "followers": 64359, "total_engagement": 213}, {"week_ending": "2026-06-05", "platform": "linkedin", "followers": 64485, "total_engagement": 169}, {"week_ending": "2026-06-12", "platform": "linkedin", "followers": 64579, "total_engagement": 120}, {"week_ending": "2026-06-19", "platform": "linkedin", "followers": 64671, "total_engagement": 49}, {"week_ending": "2026-06-26", "platform": "linkedin", "followers": 64775, "total_engagement": 80}, {"week_ending": "2026-07-03", "platform": "linkedin", "followers": 64848, "total_engagement": 103}, {"week_ending": "2026-07-10", "platform": "linkedin", "followers": 64945, "total_engagement": 86}, {"week_ending": "2026-07-17", "platform": "linkedin", "followers": 65006, "total_engagement": 122}, {"week_ending": "2026-07-24", "platform": "linkedin", "followers": 65090, "total_engagement": 121}, {"week_ending": "2026-07-31", "platform": "linkedin", "followers": 65156, "total_engagement": 151}, {"week_ending": "2026-08-07", "platform": "linkedin", "followers": 65289, "total_engagement": 339}, {"week_ending": "2026-08-14", "platform": "linkedin", "followers": 65354, "total_engagement": 43}, {"week_ending": "2026-01-02", "platform": "instagram", "followers": 49299, "total_engagement": 261}, {"week_ending": "2026-01-09", "platform": "instagram", "followers": 49872, "total_engagement": 873}, {"week_ending": "2026-01-16", "platform": "instagram", "followers": 50574, "total_engagement": 4033}, {"week_ending": "2026-01-23", "platform": "instagram", "followers": 51184, "total_engagement": 1524}, {"week_ending": "2026-01-30", "platform": "instagram", "followers": 51762, "total_engagement": 2352}, {"week_ending": "2026-02-06", "platform": "instagram", "followers": 52373, "total_engagement": 1018}, {"week_ending": "2026-02-13", "platform": "instagram", "followers": 52848, "total_engagement": 1061}, {"week_ending": "2026-02-20", "platform": "instagram", "followers": 53334, "total_engagement": 913}, {"week_ending": "2026-02-27", "platform": "instagram", "followers": 53815, "total_engagement": 1023}, {"week_ending": "2026-03-06", "platform": "instagram", "followers": 54462, "total_engagement": 1434}, {"week_ending": "2026-03-13", "platform": "instagram", "followers": 54918, "total_engagement": 2044}, {"week_ending": "2026-03-20", "platform": "instagram", "followers": 55486, "total_engagement": 6707}, {"week_ending": "2026-03-27", "platform": "instagram", "followers": 55787, "total_engagement": 1693}, {"week_ending": "2026-04-03", "platform": "instagram", "followers": 56013, "total_engagement": 690}, {"week_ending": "2026-04-10", "platform": "instagram", "followers": 56169, "total_engagement": 305}, {"week_ending": "2026-04-17", "platform": "instagram", "followers": 56342, "total_engagement": 197}, {"week_ending": "2026-04-24", "platform": "instagram", "followers": 56508, "total_engagement": 2269}, {"week_ending": "2026-05-01", "platform": "instagram", "followers": 56805, "total_engagement": 3363}, {"week_ending": "2026-05-08", "platform": "instagram", "followers": 57112, "total_engagement": 1080}, {"week_ending": "2026-05-15", "platform": "instagram", "followers": 57398, "total_engagement": 645}, {"week_ending": "2026-05-22", "platform": "instagram", "followers": 57667, "total_engagement": 346}, {"week_ending": "2026-05-29", "platform": "instagram", "followers": 57895, "total_engagement": 590}, {"week_ending": "2026-06-05", "platform": "instagram", "followers": 58132, "total_engagement": 524}, {"week_ending": "2026-06-12", "platform": "instagram", "followers": 58376, "total_engagement": 1183}, {"week_ending": "2026-06-19", "platform": "instagram", "followers": 58584, "total_engagement": 740}, {"week_ending": "2026-06-26", "platform": "instagram", "followers": 58780, "total_engagement": 305}, {"week_ending": "2026-07-03", "platform": "instagram", "followers": 58971, "total_engagement": 341}, {"week_ending": "2026-07-10", "platform": "instagram", "followers": 59147, "total_engagement": 310}, {"week_ending": "2026-07-17", "platform": "instagram", "followers": 59314, "total_engagement": 194}, {"week_ending": "2026-07-24", "platform": "instagram", "followers": 59502, "total_engagement": 141}, {"week_ending": "2026-07-31", "platform": "instagram", "followers": 59714, "total_engagement": 123}, {"week_ending": "2026-08-07", "platform": "instagram", "followers": 59910, "total_engagement": 409}, {"week_ending": "2026-08-14", "platform": "instagram", "followers": 60006, "total_engagement": 178}, {"week_ending": "2026-01-02", "platform": "facebook", "followers": 54839, "total_engagement": 92}, {"week_ending": "2026-01-09", "platform": "facebook", "followers": 55064, "total_engagement": 426}, {"week_ending": "2026-01-16", "platform": "facebook", "followers": 55278, "total_engagement": 459}, {"week_ending": "2026-01-23", "platform": "facebook", "followers": 55474, "total_engagement": 467}, {"week_ending": "2026-01-30", "platform": "facebook", "followers": 55674, "total_engagement": 498}, {"week_ending": "2026-02-06", "platform": "facebook", "followers": 55871, "total_engagement": 391}, {"week_ending": "2026-02-13", "platform": "facebook", "followers": 56010, "total_engagement": 406}, {"week_ending": "2026-02-20", "platform": "facebook", "followers": 56142, "total_engagement": 434}, {"week_ending": "2026-02-27", "platform": "facebook", "followers": 56306, "total_engagement": 382}, {"week_ending": "2026-03-06", "platform": "facebook", "followers": 56444, "total_engagement": 361}, {"week_ending": "2026-03-13", "platform": "facebook", "followers": 56569, "total_engagement": 284}, {"week_ending": "2026-03-20", "platform": "facebook", "followers": 56714, "total_engagement": 289}, {"week_ending": "2026-03-27", "platform": "facebook", "followers": 56749, "total_engagement": 93}, {"week_ending": "2026-04-03", "platform": "facebook", "followers": 56786, "total_engagement": 255}, {"week_ending": "2026-04-10", "platform": "facebook", "followers": 56809, "total_engagement": 246}, {"week_ending": "2026-04-17", "platform": "facebook", "followers": 56822, "total_engagement": 557}, {"week_ending": "2026-04-24", "platform": "facebook", "followers": 56851, "total_engagement": 3248}, {"week_ending": "2026-05-01", "platform": "facebook", "followers": 56885, "total_engagement": 274}, {"week_ending": "2026-05-08", "platform": "facebook", "followers": 56914, "total_engagement": 313}, {"week_ending": "2026-05-15", "platform": "facebook", "followers": 56965, "total_engagement": 145}, {"week_ending": "2026-05-22", "platform": "facebook", "followers": 57011, "total_engagement": 104}, {"week_ending": "2026-05-29", "platform": "facebook", "followers": 57043, "total_engagement": 65}, {"week_ending": "2026-06-05", "platform": "facebook", "followers": 57073, "total_engagement": 67}, {"week_ending": "2026-06-12", "platform": "facebook", "followers": 57115, "total_engagement": 87}, {"week_ending": "2026-06-19", "platform": "facebook", "followers": 57135, "total_engagement": 50}, {"week_ending": "2026-06-26", "platform": "facebook", "followers": 57158, "total_engagement": 64}, {"week_ending": "2026-07-03", "platform": "facebook", "followers": 57178, "total_engagement": 95}, {"week_ending": "2026-07-10", "platform": "facebook", "followers": 57211, "total_engagement": 80}, {"week_ending": "2026-07-17", "platform": "facebook", "followers": 57255, "total_engagement": 84}, {"week_ending": "2026-07-24", "platform": "facebook", "followers": 57300, "total_engagement": 77}, {"week_ending": "2026-07-31", "platform": "facebook", "followers": 57328, "total_engagement": 55}, {"week_ending": "2026-08-07", "platform": "facebook", "followers": 57377, "total_engagement": 209}, {"week_ending": "2026-08-14", "platform": "facebook", "followers": 57406, "total_engagement": 79}, {"week_ending": "2025-08-15", "platform": "x", "followers": 123799, "total_engagement": 43}, {"week_ending": "2025-08-22", "platform": "x", "followers": 123923, "total_engagement": 266}, {"week_ending": "2025-08-29", "platform": "x", "followers": 124081, "total_engagement": 114}, {"week_ending": "2025-09-05", "platform": "x", "followers": 124169, "total_engagement": 169}, {"week_ending": "2025-09-12", "platform": "x", "followers": 124266, "total_engagement": 773}, {"week_ending": "2025-09-19", "platform": "x", "followers": 124336, "total_engagement": 561}, {"week_ending": "2025-09-26", "platform": "x", "followers": 124456, "total_engagement": 689}, {"week_ending": "2025-10-03", "platform": "x", "followers": 124549, "total_engagement": 153}, {"week_ending": "2025-10-10", "platform": "x", "followers": 124609, "total_engagement": 160}, {"week_ending": "2025-10-17", "platform": "x", "followers": 124707, "total_engagement": 128}, {"week_ending": "2025-10-24", "platform": "x", "followers": 124810, "total_engagement": 373}, {"week_ending": "2025-10-31", "platform": "x", "followers": 124878, "total_engagement": 139}, {"week_ending": "2025-11-07", "platform": "x", "followers": 124926, "total_engagement": 93}, {"week_ending": "2025-11-14", "platform": "x", "followers": 125023, "total_engagement": 135}, {"week_ending": "2025-11-21", "platform": "x", "followers": 125092, "total_engagement": 126}, {"week_ending": "2025-11-28", "platform": "x", "followers": 125137, "total_engagement": 56}, {"week_ending": "2025-12-05", "platform": "x", "followers": 125214, "total_engagement": 94}, {"week_ending": "2025-12-12", "platform": "x", "followers": 125288, "total_engagement": 86}, {"week_ending": "2025-12-19", "platform": "x", "followers": 125352, "total_engagement": 17}, {"week_ending": "2025-12-26", "platform": "x", "followers": 125396, "total_engagement": 177}, {"week_ending": "2026-01-02", "platform": "x", "followers": 125459, "total_engagement": 135}, {"week_ending": "2026-01-09", "platform": "x", "followers": 125519, "total_engagement": 305}, {"week_ending": "2026-01-16", "platform": "x", "followers": 125592, "total_engagement": 441}, {"week_ending": "2026-01-23", "platform": "x", "followers": 125663, "total_engagement": 364}, {"week_ending": "2026-01-30", "platform": "x", "followers": 125744, "total_engagement": 520}, {"week_ending": "2026-02-06", "platform": "x", "followers": 125851, "total_engagement": 551}, {"week_ending": "2026-02-13", "platform": "x", "followers": 125913, "total_engagement": 511}, {"week_ending": "2026-02-20", "platform": "x", "followers": 125985, "total_engagement": 312}, {"week_ending": "2026-02-27", "platform": "x", "followers": 126044, "total_engagement": 394}, {"week_ending": "2026-03-06", "platform": "x", "followers": 126110, "total_engagement": 143}, {"week_ending": "2026-03-13", "platform": "x", "followers": 126195, "total_engagement": 223}, {"week_ending": "2026-03-20", "platform": "x", "followers": 126257, "total_engagement": 262}, {"week_ending": "2026-03-27", "platform": "x", "followers": 126341, "total_engagement": 500}, {"week_ending": "2026-04-03", "platform": "x", "followers": 126409, "total_engagement": 155}, {"week_ending": "2026-04-10", "platform": "x", "followers": 126457, "total_engagement": 153}, {"week_ending": "2026-04-17", "platform": "x", "followers": 126519, "total_engagement": 148}, {"week_ending": "2026-04-24", "platform": "x", "followers": 126572, "total_engagement": 196}, {"week_ending": "2026-05-01", "platform": "x", "followers": 126634, "total_engagement": 214}, {"week_ending": "2026-05-08", "platform": "x", "followers": 126682, "total_engagement": 194}, {"week_ending": "2026-05-15", "platform": "x", "followers": 126736, "total_engagement": 223}, {"week_ending": "2026-05-22", "platform": "x", "followers": 126818, "total_engagement": 186}, {"week_ending": "2026-05-29", "platform": "x", "followers": 126861, "total_engagement": 183}, {"week_ending": "2026-06-05", "platform": "x", "followers": 126916, "total_engagement": 222}, {"week_ending": "2026-06-12", "platform": "x", "followers": 126973, "total_engagement": 225}, {"week_ending": "2026-06-19", "platform": "x", "followers": 127034, "total_engagement": 223}, {"week_ending": "2026-06-26", "platform": "x", "followers": 127081, "total_engagement": 248}, {"week_ending": "2026-07-03", "platform": "x", "followers": 127126, "total_engagement": 254}, {"week_ending": "2026-07-10", "platform": "x", "followers": 127172, "total_engagement": 152}, {"week_ending": "2026-07-17", "platform": "x", "followers": 127215, "total_engagement": 217}, {"week_ending": "2026-07-24", "platform": "x", "followers": 127270, "total_engagement": 249}, {"week_ending": "2026-07-31", "platform": "x", "followers": 127329, "total_engagement": 385}, {"week_ending": "2026-08-07", "platform": "x", "followers": 127372, "total_engagement": 254}, {"week_ending": "2026-08-14", "platform": "x", "followers": 127400, "total_engagement": 145}, {"week_ending": "2026-07-31", "platform": "tiktok", "followers": 546, "total_engagement": 0}, {"week_ending": "2026-08-07", "platform": "tiktok", "followers": 551, "total_engagement": 0}, {"week_ending": "2026-08-14", "platform": "tiktok", "followers": 554, "total_engagement": 0}];
 const POSTS  = [{"week_ending": "2026-08-14", "platform": "linkedin", "rank": 1, "caption": "\ud83d\udea8 BREAKING: PENNYMAC Financial Services acquires Cenlar FSB, the nation's 2nd-largest mortgage subservicer.", "likes": 833, "comments": 14, "shares": 78, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7427460877911654400"}, {"week_ending": "2026-08-14", "platform": "linkedin", "rank": 2, "caption": "\ud83d\udea8 BREAKING: loanDepot is reentering the wholesale mortgage channel four years after exiting the segment.", "likes": 268, "comments": 8, "shares": 5, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7436782563060477953"}, {"week_ending": "2026-08-14", "platform": "linkedin", "rank": 3, "caption": "\ud83d\udea8 BREAKING: Two Harbors Investment Corp. has terminated its merger with UWM and agreed to be acquired by CrossCountry Mortgage.", "likes": 177, "comments": 4, "shares": 10, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7443323023480504321"}, {"week_ending": "2026-08-14", "platform": "x", "rank": 1, "caption": "Fannie Mae trims costs, boosts MBS purchases to post $14.4B profit in 2025", "likes": 123, "comments": 13, "shares": 26, "link": "https://x.com/HousingWire/status/2021624673520517155"}, {"week_ending": "2026-08-14", "platform": "x", "rank": 2, "caption": "Bed Bath & Beyond parent eyes mortgages through deals with Figure", "likes": 102, "comments": 8, "shares": 13, "link": "https://x.com/HousingWire/status/2018812631151489272"}, {"week_ending": "2026-08-14", "platform": "x", "rank": 3, "caption": "MBA's Broeksmit says credit bureau trade group 'gaslit' mortgage industry", "likes": 9, "comments": 3, "shares": 1, "link": "https://x.com/HousingWire/status/2018467272390803650"}, {"week_ending": "2026-08-14", "platform": "instagram", "rank": 1, "caption": "The 2026 HousingWire AI Summit is a wrap! Some of the sharpest minds in mortgage, real estate and homebuilding in one room. #HousingWire #AISummit", "likes": 35, "comments": 2, "shares": 3, "link": "https://www.instagram.com/p/Db6uGfZHe86/"}, {"week_ending": "2026-08-14", "platform": "instagram", "rank": 2, "caption": "Looking through the HousingWire AI Summit agenda, grateful to be spending the day alongside people building the future of housing. (via @therealryangrant)", "likes": 28, "comments": 1, "shares": 0, "link": "https://www.instagram.com/p/DbyZ1Ecj7lv/"}, {"week_ending": "2026-08-14", "platform": "instagram", "rank": 3, "caption": "August 19, we are launching something we have been building for the people who move the housing market. Stay tuned. #HousingWire", "likes": 15, "comments": 1, "shares": 0, "link": "https://www.instagram.com/p/Db9PVvtoBOK/"}, {"week_ending": "2026-08-14", "platform": "facebook", "rank": 1, "caption": "The 2026 HousingWire AI Summit is a wrap, and the conversations in that room are going to stick with us. Mortgage, real estate and homebuilding leaders came together to talk about what AI is actually doing for this industry right now.", "likes": 3, "comments": 1, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid0rhex7HCwgiAHR7UJNqHhFG9Pwr5phT19nk4HixwBVdPAMUB8oAFQiGoe6uYMyLRil"}, {"week_ending": "2026-08-14", "platform": "facebook", "rank": 2, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 2, "comments": 0, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid02nbgg5D6mVnP68i9k5maG8s9GiZAKsAbYBzz9Xh6HMfjLFG4QKS6Nva89NSokwphvl"}, {"week_ending": "2026-08-14", "platform": "facebook", "rank": 3, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 1, "comments": 0, "shares": 1, "link": "https://www.facebook.com/HousingWire/posts/pfbid02H69Jkztp66o2Eg9pDzpySVZx6WkVmjKftacXqGc5G4YQFoj9h8aCNqoeBsxGPULql"}];
+const LAUNCH_EVENTS = [{"date": "2026-08-12", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Teaser #1 \u2014 Coming Aug 19", "cls": "clp", "tip": "Post #1: 'Something smarter is coming.' Branded 'Coming Aug. 19' graphic. Click to view full copy on the launch page.", "link": "launch.html#post-1"}, {"date": "2026-08-14", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Teaser #2 \u2014 Market Data", "cls": "clp", "tip": "Post #2: 'How confident are you in your market data right now?' Bold text on branded background. Click to view full copy.", "link": "launch.html#post-2"}, {"date": "2026-08-17", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Countdown \u2014 2 Days", "cls": "clp", "tip": "Post #3: 'The way you follow the housing market is about to change. Two days.' Countdown graphic.", "link": "launch.html#post-3"}, {"date": "2026-08-19", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 LAUNCH \u2014 HW Intelligence", "cls": "clp", "tip": "Post #4 (8am CT): Hero launch graphic. Instagram: 6-slide carousel + Logan Reel. This is the big one!", "link": "launch.html#post-4"}, {"date": "2026-08-19", "platforms": ["linkedin", "x"], "label": "\ud83d\ude80 Pricing Spotlight (12pm)", "cls": "clp", "tip": "Post #5 (12pm CT): Launch pricing spotlight. 'Less than $50/mo \u2014 the lowest it will ever be.'", "link": "launch.html#post-5"}, {"date": "2026-08-21", "platforms": ["linkedin", "x"], "label": "\ud83d\ude80 AI Morning Summary", "cls": "clp", "tip": "Post #6: 'Every morning, HousingWire Intelligence gives you an AI-powered summary...'", "link": "launch.html#post-6"}, {"date": "2026-08-24", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Day in the Life", "cls": "clp", "tip": "Post #7: 'This is what a day looks like when you have HousingWire Intelligence.' Day in the life graphic.", "link": "launch.html#post-7"}, {"date": "2026-08-26", "platforms": ["linkedin", "x"], "label": "\ud83d\ude80 Dashboard Feature", "cls": "clp", "tip": "Post #8: 'Your market. Right now. National. State. Metro. ZIP.' Dashboard screenshot.", "link": "launch.html#post-8"}, {"date": "2026-08-31", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Preview Ends Tomorrow", "cls": "clp", "tip": "Post #9: 'Tomorrow, complimentary preview access to HousingWire Intelligence ends.' Countdown graphic.", "link": "launch.html#post-9"}, {"date": "2026-09-01", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Preview Has Ended", "cls": "clp", "tip": "Post #10: 'Your preview has ended. Your access does not have to.' Upgrade push.", "link": "launch.html#post-10"}, {"date": "2026-09-08", "platforms": ["linkedin", "instagram", "x"], "label": "\ud83d\ude80 CRO Quote", "cls": "clp", "tip": "Post #11: Social proof. 'No other housing publication comes close to this level of operational intelligence.' \u2014 CRO, National Brokerage", "link": "launch.html#post-11"}, {"date": "2026-09-15", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Mortgage Banking Summit", "cls": "clp", "tip": "Post #12: Members get 30% off Mortgage Banking Summit ticket. Event tie-in graphic.", "link": "launch.html#post-12"}, {"date": "2026-09-22", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Homebuilder Summit", "cls": "clp", "tip": "Post #13: Members get 30% off Homebuilder Summit ticket. Event tie-in graphic.", "link": "launch.html#post-13"}, {"date": "2026-09-29", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Market Insight Post", "cls": "clp", "tip": "Post #14: [Insert data point]. Remember to add real HW Intelligence data before posting!", "link": "launch.html#post-14"}];
 
-const PM = {
-  linkedin: {label:"LinkedIn",   color:"#0077b5"},
-  instagram:{label:"Instagram",  color:"#e1306c"},
-  facebook: {label:"Facebook",   color:"#1877f2"},
-  x:        {label:"X (Twitter)",color:"#e7e9ea"},
-  tiktok:   {label:"TikTok",     color:"#69c9d0"},
-};
-const BENCH = {linkedin:2.8,instagram:3.2,facebook:1.75,x:1.7,tiktok:1.8};
+const PM={linkedin:{label:"LinkedIn",color:"#0077b5"},instagram:{label:"Instagram",color:"#e1306c"},facebook:{label:"Facebook",color:"#1877f2"},x:{label:"X (Twitter)",color:"#e7e9ea"},tiktok:{label:"TikTok",color:"#69c9d0"}};
+const BENCH={linkedin:2.8,instagram:3.2,facebook:1.75,x:1.7,tiktok:1.8};
+const allWeeks=[...new Set(WEEKLY.map(r=>r.week_ending))].sort();
+let selWeek=allWeeks[allWeeks.length-1];
+let charts={};
+let calOff=0;
 
-// ── State ────────────────────────────────────────────────────────────────────
-const allWeeks = [...new Set(WEEKLY.map(r=>r.week_ending))].sort();
-let selWeek = allWeeks[allWeeks.length-1];
-let charts = {};
+// ── localStorage helpers ──────────────────────────────────────────────────────
+function loadChecked(){try{return JSON.parse(localStorage.getItem("hw_checked")||"{}")}catch{return{}}}
+function saveChecked(d){localStorage.setItem("hw_checked",JSON.stringify(d))}
+function loadCustomTasks(){try{return JSON.parse(localStorage.getItem("hw_custom")||"[]")}catch{return[]}}
+function saveCustomTasks(t){localStorage.setItem("hw_custom",JSON.stringify(t))}
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
-function tab(id, btn) {
+function tab(id,btn){
   document.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));
   document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
   document.getElementById("tab-"+id).classList.add("on");
   btn.classList.add("on");
-  if(id==="cal") renderCal();
+  if(id==="cal"){renderCal();renderSidebar()}
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(n){if(isNaN(n)||n==null)return"—";return Math.abs(n)>=1000?(n/1000).toFixed(1)+"K":n.toLocaleString()}
 function dc(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
-const CHART_DEFAULTS = {
-  responsive:true,maintainAspectRatio:false,
-  plugins:{legend:{labels:{color:"#8b92b8",font:{size:11}}}},
-  scales:{x:{ticks:{color:"#8b92b8",font:{size:10}},grid:{color:"#2e3250"}},
-          y:{ticks:{color:"#8b92b8",font:{size:10}},grid:{color:"#2e3250"}}}
-};
+function isoDate(d){return d.toISOString().slice(0,10)}
+function todayISO(){return isoDate(new Date())}
+const CD={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#8b92b8",font:{size:11}}}},scales:{x:{ticks:{color:"#8b92b8",font:{size:10}},grid:{color:"#2e3250"}},y:{ticks:{color:"#8b92b8",font:{size:10}},grid:{color:"#2e3250"}}}};
 
-// ── Week selector ─────────────────────────────────────────────────────────────
+// ── Dashboard ─────────────────────────────────────────────────────────────────
 function buildSel(){
-  const s=document.getElementById("ws");
-  s.innerHTML="";
-  [...allWeeks].reverse().forEach((w,i)=>{
-    const o=document.createElement("option");
-    o.value=w; o.textContent="Week of "+w+(i===0?" ✦ Latest":"");
-    s.appendChild(o);
-  });
+  const s=document.getElementById("ws");s.innerHTML="";
+  [...allWeeks].reverse().forEach((w,i)=>{const o=document.createElement("option");o.value=w;o.textContent="Week of "+w+(i===0?" ✦ Latest":"");s.appendChild(o)});
   s.value=selWeek;
 }
-
 function renderWeek(){
   selWeek=document.getElementById("ws").value;
-  const isLatest=selWeek===allWeeks[allWeeks.length-1];
-  document.getElementById("lb").style.display=isLatest?"inline":"none";
+  document.getElementById("lb").style.display=selWeek===allWeeks[allWeeks.length-1]?"inline":"none";
   const rows=WEEKLY.filter(r=>r.week_ending===selWeek);
   const pi=allWeeks.indexOf(selWeek);
   const prev=pi>0?WEEKLY.filter(r=>r.week_ending===allWeeks[pi-1]):[];
-  renderKPIs(rows,prev);
-  renderPlats(rows,prev);
-  renderBench(rows);
-  renderPosts();
-  setTimeout(()=>{renderTrend();renderPie(rows);renderYTD();},50);
+  renderKPIs(rows,prev);renderPlats(rows,prev);renderBench(rows);renderPosts();
+  setTimeout(()=>{renderTrend();renderPie(rows);renderYTD()},50);
 }
-
-// ── KPIs ──────────────────────────────────────────────────────────────────────
 function renderKPIs(rows,prev){
-  const tf=rows.reduce((s,r)=>s+r.followers,0);
-  const te=rows.reduce((s,r)=>s+r.total_engagement,0);
-  const pf=prev.reduce((s,r)=>s+r.followers,0);
-  const pe=prev.reduce((s,r)=>s+r.total_engagement,0);
-  const nf=tf-pf, ec=te-pe;
-  const ep=pe?((ec/pe)*100).toFixed(1):"—";
+  const tf=rows.reduce((s,r)=>s+r.followers,0),te=rows.reduce((s,r)=>s+r.total_engagement,0);
+  const pf=prev.reduce((s,r)=>s+r.followers,0),pe=prev.reduce((s,r)=>s+r.total_engagement,0);
+  const nf=tf-pf,ec=te-pe,ep=pe?((ec/pe)*100).toFixed(1):"—";
   const top=[...rows].sort((a,b)=>b.total_engagement-a.total_engagement)[0];
-  const kpis=[
+  document.getElementById("kg").innerHTML=[
     {l:"Total Followers",v:fmt(tf),s:(nf>=0?"+":"")+fmt(nf)+" this week",d:nf>=0?"up":"dn",c:"#6c63ff"},
     {l:"Total Engagement",v:fmt(te),s:(ec>=0?"+":"")+fmt(ec)+" vs last week ("+ep+"%)",d:ec>=0?"up":"dn",c:"#00d4aa"},
     {l:"New Followers",v:"+"+(fmt(nf)),s:"week over week",d:"ne",c:"#ffd93d"},
     {l:"Top Platform",v:top?PM[top.platform]?.label||top.platform:"—",s:top?fmt(top.total_engagement)+" engagements":"",d:"ne",c:top?PM[top.platform]?.color:"#6c63ff"},
     {l:"Platforms Active",v:rows.filter(r=>r.total_engagement>0).length+"/"+rows.length,s:"with engagement",d:"ne",c:"#ff6b6b"},
-  ];
-  document.getElementById("kg").innerHTML=kpis.map(k=>`
-    <div class="kc" style="--cc:${k.c}">
-      <div class="kl">${k.l}</div>
-      <div class="kv">${k.v}</div>
-      <div class="ks ${k.d}">${k.s}</div>
-    </div>`).join("");
+  ].map(k=>`<div class="kc" style="--cc:${k.c}"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks ${k.d}">${k.s}</div></div>`).join("");
 }
-
-// ── Platform cards ────────────────────────────────────────────────────────────
 function renderPlats(rows,prev){
   document.getElementById("pg").innerHTML=["linkedin","instagram","facebook","x","tiktok"].map(p=>{
-    const c=rows.find(r=>r.platform===p),pr=prev.find(r=>r.platform===p);
-    if(!c)return"";
-    const m=PM[p],fg=pr?c.followers-pr.followers:0,fp=pr?((fg/pr.followers)*100).toFixed(2):"—";
-    const ec=pr?c.total_engagement-pr.total_engagement:0;
-    const er=c.followers>0?((c.total_engagement/c.followers)*100).toFixed(3):"0.000";
-    return`<div class="pc" style="border-top:3px solid ${m.color}">
-      <div class="ph"><div class="pd" style="background:${m.color}"></div><div class="pn">${m.label}</div></div>
-      <div class="ps">
-        <div><div class="sl">Followers</div><div class="sv">${fmt(c.followers)}</div><div class="sc ${fg>=0?"up":"dn"}">${fg>=0?"+":""}${fmt(fg)} (${fp}%)</div></div>
-        <div><div class="sl">Engagement</div><div class="sv">${fmt(c.total_engagement)}</div><div class="sc ${ec>=0?"up":"dn"}">${ec>=0?"+":""}${fmt(ec)} WoW</div></div>
-        <div><div class="sl">Eng. Rate</div><div class="sv">${er}%</div><div class="sc ne">vs ${BENCH[p]}% bench</div></div>
-      </div>
-    </div>`;
+    const c=rows.find(r=>r.platform===p),pr=prev.find(r=>r.platform===p);if(!c)return"";
+    const m=PM[p],fg=pr?c.followers-pr.followers:0,fp=pr?((fg/pr.followers)*100).toFixed(2):"—",ec=pr?c.total_engagement-pr.total_engagement:0,er=c.followers>0?((c.total_engagement/c.followers)*100).toFixed(3):"0.000";
+    return`<div class="pc" style="border-top:3px solid ${m.color}"><div class="ph"><div class="pd" style="background:${m.color}"></div><div class="pn">${m.label}</div></div><div class="ps"><div><div class="sl">Followers</div><div class="sv">${fmt(c.followers)}</div><div class="sc ${fg>=0?"up":"dn"}">${fg>=0?"+":""}${fmt(fg)} (${fp}%)</div></div><div><div class="sl">Engagement</div><div class="sv">${fmt(c.total_engagement)}</div><div class="sc ${ec>=0?"up":"dn"}">${ec>=0?"+":""}${fmt(ec)} WoW</div></div><div><div class="sl">Eng. Rate</div><div class="sv">${er}%</div><div class="sc ne">vs ${BENCH[p]}% bench</div></div></div></div>`;
   }).join("");
 }
-
-// ── Charts ────────────────────────────────────────────────────────────────────
 function renderTrend(){
-  const w8=allWeeks.slice(-9);
-  const plats=["linkedin","instagram","facebook","x"];
-  dc("c1");
-  charts.c1=new Chart(document.getElementById("c1"),{
-    type:"line",
-    data:{labels:w8.map(w=>w.slice(5)),datasets:plats.map(p=>({
-      label:PM[p].label,
-      data:w8.map(w=>{const r=WEEKLY.find(d=>d.week_ending===w&&d.platform===p);return r?r.total_engagement:null}),
-      borderColor:PM[p].color,backgroundColor:PM[p].color+"22",tension:.4,fill:false,pointRadius:3
-    }))},
-    options:{...CHART_DEFAULTS}
-  });
+  const w8=allWeeks.slice(-9),plats=["linkedin","instagram","facebook","x"];
+  dc("c1");charts.c1=new Chart(document.getElementById("c1"),{type:"line",data:{labels:w8.map(w=>w.slice(5)),datasets:plats.map(p=>({label:PM[p].label,data:w8.map(w=>{const r=WEEKLY.find(d=>d.week_ending===w&&d.platform===p);return r?r.total_engagement:null}),borderColor:PM[p].color,backgroundColor:PM[p].color+"22",tension:.4,fill:false,pointRadius:3}))},options:{...CD}});
 }
-
 function renderPie(rows){
   const plats=["linkedin","instagram","facebook","x","tiktok"];
-  dc("c2");
-  charts.c2=new Chart(document.getElementById("c2"),{
-    type:"doughnut",
-    data:{labels:plats.map(p=>PM[p].label),datasets:[{
-      data:plats.map(p=>rows.find(r=>r.platform===p)?.followers||0),
-      backgroundColor:plats.map(p=>PM[p].color),borderColor:"#1a1d27",borderWidth:3
-    }]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"right",labels:{color:"#8b92b8",font:{size:11},padding:10}}}}
-  });
+  dc("c2");charts.c2=new Chart(document.getElementById("c2"),{type:"doughnut",data:{labels:plats.map(p=>PM[p].label),datasets:[{data:plats.map(p=>rows.find(r=>r.platform===p)?.followers||0),backgroundColor:plats.map(p=>PM[p].color),borderColor:"#1a1d27",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"right",labels:{color:"#8b92b8",font:{size:11},padding:10}}}}});
 }
-
 function renderYTD(){
-  const yw=allWeeks.filter(w=>w>="2026-01-01");
-  const plats=["linkedin","instagram","facebook","x"];
-  dc("c3");
-  charts.c3=new Chart(document.getElementById("c3"),{
-    type:"line",
-    data:{labels:yw.map(w=>w.slice(5)),datasets:plats.map(p=>{
-      const base=WEEKLY.find(d=>d.week_ending===yw[0]&&d.platform===p)?.followers||0;
-      return{label:PM[p].label,data:yw.map(w=>{const r=WEEKLY.find(d=>d.week_ending===w&&d.platform===p);return r&&base?r.followers-base:null}),
-        borderColor:PM[p].color,backgroundColor:PM[p].color+"22",tension:.4,fill:false,pointRadius:2};
-    })},
-    options:{...CHART_DEFAULTS,scales:{...CHART_DEFAULTS.scales,x:{...CHART_DEFAULTS.scales.x,ticks:{...CHART_DEFAULTS.scales.x.ticks,maxTicksLimit:8}}}}
-  });
+  const yw=allWeeks.filter(w=>w>="2026-01-01"),plats=["linkedin","instagram","facebook","x"];
+  dc("c3");charts.c3=new Chart(document.getElementById("c3"),{type:"line",data:{labels:yw.map(w=>w.slice(5)),datasets:plats.map(p=>{const base=WEEKLY.find(d=>d.week_ending===yw[0]&&d.platform===p)?.followers||0;return{label:PM[p].label,data:yw.map(w=>{const r=WEEKLY.find(d=>d.week_ending===w&&d.platform===p);return r&&base?r.followers-base:null}),borderColor:PM[p].color,backgroundColor:PM[p].color+"22",tension:.4,fill:false,pointRadius:2}})},options:{...CD,scales:{...CD.scales,x:{...CD.scales.x,ticks:{...CD.scales.x.ticks,maxTicksLimit:8}}}}});
 }
-
-// ── Benchmarks ────────────────────────────────────────────────────────────────
 function renderBench(rows){
   document.getElementById("bg").innerHTML=["linkedin","instagram","facebook","x","tiktok"].map(p=>{
-    const m=PM[p],c=rows.find(r=>r.platform===p);
-    const er=c&&c.followers>0?(c.total_engagement/c.followers)*100:0;
-    const pct=Math.min((er/BENCH[p])*100,100);
-    return`<div class="bc">
-      <div class="bh"><div class="bn"><div class="pd" style="background:${m.color}"></div>${m.label}</div></div>
-      <div class="bb"><div class="bf" style="width:100%;background:${m.color};opacity:.25"></div></div>
-      <div class="bb" style="margin-top:-13px"><div class="bf" style="width:${pct}%;background:${m.color}"></div></div>
-      <div class="bls"><span class="bw">HW: ${er.toFixed(3)}%</span><span class="bi">Bench: ${BENCH[p]}%</span></div>
-    </div>`;
+    const m=PM[p],c=rows.find(r=>r.platform===p),er=c&&c.followers>0?(c.total_engagement/c.followers)*100:0,pct=Math.min((er/BENCH[p])*100,100);
+    return`<div class="bc"><div class="bh"><div class="bn"><div class="pd" style="background:${m.color}"></div>${m.label}</div></div><div class="bb"><div class="bf" style="width:100%;background:${m.color};opacity:.25"></div></div><div class="bb" style="margin-top:-13px"><div class="bf" style="width:${pct}%;background:${m.color}"></div></div><div class="bls"><span class="bw">HW: ${er.toFixed(3)}%</span><span class="bi">Bench: ${BENCH[p]}%</span></div></div>`;
   }).join("");
 }
-
-// ── Top Posts ─────────────────────────────────────────────────────────────────
 function renderPosts(){
   const wp=POSTS.filter(p=>p.week_ending===selWeek);
   if(!wp.length){document.getElementById("og").innerHTML='<p style="color:var(--tm);font-size:0.82rem">No top posts data for this week.</p>';return}
   document.getElementById("og").innerHTML=wp.map(p=>{
-    const m=PM[p.platform]||{label:p.platform,color:"#6c63ff"};
-    const tot=(p.likes||0)+(p.comments||0)+(p.shares||0);
-    return`<div class="oc">
-      <div class="oh">
-        <div class="op" style="color:${m.color}"><div class="pd" style="background:${m.color}"></div>${m.label}</div>
-        <span class="or">#${p.rank}</span>
-      </div>
-      <div class="oca">${p.caption}</div>
-      <div class="os">
-        ${p.likes?`<div class="ost">❤️ <span>${fmt(p.likes)}</span></div>`:""}
-        ${p.comments?`<div class="ost">💬 <span>${fmt(p.comments)}</span></div>`:""}
-        ${p.shares?`<div class="ost">🔁 <span>${fmt(p.shares)}</span></div>`:""}
-        ${tot?`<div class="ost">⚡ <span>${fmt(tot)}</span></div>`:""}
-      </div>
-      ${p.link?`<a class="ol" href="${p.link}" target="_blank">View post →</a>`:""}
-    </div>`;
+    const m=PM[p.platform]||{label:p.platform,color:"#6c63ff"},tot=(p.likes||0)+(p.comments||0)+(p.shares||0);
+    return`<div class="oc"><div class="oh"><div class="op" style="color:${m.color}"><div class="pd" style="background:${m.color}"></div>${m.label}</div><span class="or">#${p.rank}</span></div><div class="oca">${p.caption}</div><div class="os">${p.likes?`<div class="ost">❤️ <span>${fmt(p.likes)}</span></div>`:""}${p.comments?`<div class="ost">💬 <span>${fmt(p.comments)}</span></div>`:""}${p.shares?`<div class="ost">🔁 <span>${fmt(p.shares)}</span></div>`:""}${tot?`<div class="ost">⚡ <span>${fmt(tot)}</span></div>`:""}</div>${p.link?`<a class="ol" href="${p.link}" target="_blank">View post →</a>`:""}</div>`;
   }).join("");
 }
 
-// ── Calendar ──────────────────────────────────────────────────────────────────
+// ── Calendar schedule ─────────────────────────────────────────────────────────
 const SCHED={
   linkedin:[
     {day:0,type:"video",label:"🎬 Logan's Market Video",cls:"cv",tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the article in the first comment."},
@@ -388,24 +406,20 @@ const SCHED={
     {day:2,type:"hottake",label:"💬 Hot Take / Trend",cls:"cht",tip:"Quick talking-head or text-overlay video reacting to a housing trend. Authenticity wins on TikTok."},
   ],
 };
-const PLATS=[
-  {key:"linkedin",label:"LinkedIn",color:"#0077b5"},
-  {key:"instagram",label:"Instagram",color:"#e1306c"},
-  {key:"x",label:"X (Twitter)",color:"#e7e9ea"},
-  {key:"facebook",label:"Facebook",color:"#1877f2"},
-  {key:"tiktok",label:"TikTok",color:"#69c9d0"},
-];
-const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday"];
-const SUGG=[
-  {icon:"📊",title:"Stat / Data Callout Ideas",items:["Weekly inventory number from Logan's tracker","Mortgage rate vs. 10-yr yield spread — currently 1.92%","Price cut % — currently 36.88% of listings","Purchase apps: up/down X% year over year","HW total follower milestone (currently 310K!)"]},
-  {icon:"🎠",title:"Carousel / Deep Dive Ideas",items:["Breaking down the Fed rate decision: what it means for mortgages","5 things to know about the housing market this week","AI in mortgage: what the top 25 lenders are actually doing","M&A deal breakdown: PennyMac + Cenlar explained","HW AI Summit: 5 key takeaways"]},
-  {icon:"🗳️",title:"Poll / Question Ideas (LinkedIn)",items:["What's your biggest challenge: rates, inventory, or affordability?","Will the Fed cut rates before year end?","Which AI use case excites you most in mortgage?","Are you seeing more buyers or sellers in your market?","What content do you want more of from HousingWire?"]},
-  {icon:"💬",title:"Hot Take Ideas (LinkedIn + X)",items:["loanDepot reentering wholesale: bold move or too late?","The credit bureau 'gaslit' the mortgage industry — MBA is right","AI agents for customers are table stakes. The real edge is internal.","Fannie Mae's $14.4B profit: what it signals for GSE reform","The gap between knowing AI and doing AI is where margin lives"]},
-  {icon:"📰",title:"Single Graphic News Ideas",items:["Top HousingWire article of the day (breaking news priority)","Weekly housing market tracker summary graphic","Lender / servicer earnings highlights","FHFA / GSE policy update or regulatory change","Mortgage rate movement + context graphic"]},
-  {icon:"🔥",title:"Breaking News Best Practices",items:["Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn","Post within 15 minutes of story going live","Put the article link in the first comment on LinkedIn","M&A deals, rate moves, GSE news = your highest-engagement topics","Tag companies and executives mentioned when possible"]},
+
+// AI Summit Reels — Tuesday Aug 11, spread across Instagram/TikTok/Facebook
+// 4 reels, spread: IG gets 2 (morning + afternoon), TikTok gets 1, Facebook gets 1
+const SPECIAL_EVENTS=[
+  {date:"2026-08-11",platform:"instagram",type:"reel",label:"🎬 AI Summit Reel #1",cls:"crl",tip:"HW AI Summit Reel — Post in the morning. Use key quote or moment from the summit. Add captions + hashtags: #HousingWire #AISummit #MortgageIndustry"},
+  {date:"2026-08-11",platform:"instagram",type:"reel",label:"🎬 AI Summit Reel #2",cls:"crl",tip:"HW AI Summit Reel — Post in the afternoon. Different clip/angle from Reel #1. Behind-the-scenes or speaker highlight works great."},
+  {date:"2026-08-11",platform:"tiktok",type:"reel",label:"🎬 AI Summit Reel",cls:"crl",tip:"HW AI Summit Reel on TikTok — 30–60s clip. Add text overlay with a key stat or quote. Great opportunity to grow TikTok audience."},
+  {date:"2026-08-11",platform:"facebook",type:"reel",label:"🎬 AI Summit Reel",cls:"crl",tip:"HW AI Summit Reel on Facebook — Share the summit highlight reel. Facebook Reels get boosted reach. Tag speakers if possible."},
 ];
 
-let calOff=0;
+const PLATS=[{key:"linkedin",label:"LinkedIn",color:"#0077b5"},{key:"instagram",label:"Instagram",color:"#e1306c"},{key:"x",label:"X (Twitter)",color:"#e7e9ea"},{key:"facebook",label:"Facebook",color:"#1877f2"},{key:"tiktok",label:"TikTok",color:"#69c9d0"}];
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday"];
+
+// ── Calendar rendering ────────────────────────────────────────────────────────
 function getWeekDates(off){
   const now=new Date(),day=now.getDay(),mon=new Date(now);
   mon.setDate(now.getDate()-(day===0?6:day-1)+off*7);
@@ -414,45 +428,199 @@ function getWeekDates(off){
 function fd(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}
 function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()}
 
+// Generate a stable unique ID for each post slot
+function postId(dateStr,platform,label){return"p_"+dateStr+"_"+platform+"_"+label.replace(/[^a-z0-9]/gi,"_").toLowerCase()}
+
 function renderCal(){
   const dates=getWeekDates(calOff);
-  const wl=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
-  let o="";
-  o+=`<div class="cal-hdr"><h2>📅 Weekly Posting Calendar</h2><div class="cal-nav">
-    <button onclick="calNav(-1)">&#8249;</button>
-    <span class="cwl">${wl}</span>
-    <button onclick="calNav(1)">&#8250;</button>
-    <button class="txt" onclick="calNav(0)">Today</button>
-  </div></div>`;
-  o+=`<div class="leg">
-    <span style="font-size:.7rem;color:var(--tm);font-weight:700;margin-right:4px">TYPES:</span>
-    ${[["#6c63ff","Video"],["#00d4aa","News"],["#e1306c","Carousel"],["#ffd93d","Stat"],["#00bcd4","Poll"],["#ff6b6b","Hot Take"],["#555","Repurpose"]].map(([c,l])=>`<div class="li"><div class="ld" style="background:${c}"></div>${l}</div>`).join("")}
-  </div>`;
-  o+=`<div class="cgrid"><div></div>`;
+  document.getElementById("cwl").textContent=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
+  const checked=loadChecked();
+  let o=`<div class="cgrid"><div></div>`;
   dates.forEach((d,i)=>o+=`<div class="cdh"><div class="cdn">${DAYS[i]}</div><div class="cdd${isToday(d)?" td":""}">${fd(d)}</div></div>`);
+
   PLATS.forEach(p=>{
     o+=`<div class="cpl"><div class="cpd" style="background:${p.color}"></div>${p.label}</div>`;
-    for(let di=0;di<5;di++){
-      const posts=(SCHED[p.key]||[]).filter(s=>s.day===di);
-      if(!posts.length){o+=`<div class="cell mt"></div>`;continue}
+    dates.forEach((d,di)=>{
+      const ds=isoDate(d);
+      // Recurring schedule posts
+      const recurring=(SCHED[p.key]||[]).filter(s=>s.day===di);
+      // Special one-off events for this date+platform
+      const specials=SPECIAL_EVENTS.filter(e=>e.date===ds&&e.platform===p.key);
+      // Launch events for this date+platform
+      const launches=LAUNCH_EVENTS.filter(e=>e.date===ds&&e.platforms.includes(p.key));
+      const all=[...recurring.map(s=>({...s,dateStr:ds})),...specials.map(s=>({...s,dateStr:ds})),...launches.map(e=>({...e,dateStr:ds,type:"launch",cls:"clp"}))];
+      if(!all.length){o+=`<div class="cell mt"></div>`;return}
       o+=`<div class="cell">`;
-      posts.forEach(post=>{
-        const tip=post.tip.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-        o+=`<div class="cp ${post.cls}" onclick="showTip('${tip}')"><div class="cpt">${post.type}</div>${post.label}</div>`;
+      all.forEach(post=>{
+        const pid=postId(ds,p.key,post.label);
+        const isDone=!!checked[pid];
+        const tip=(post.tip||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+        const linkAttr=post.link?` onclick="window.open('${post.link}','_blank')"` : ``;
+        o+=`<div class="cp ${post.cls}${isDone?" done":""}" id="${pid}">
+          <div class="cp-check${isDone?" checked":""}" onclick="toggleCheck(event,'${pid}')"></div>
+          <div class="cp-body" onclick="showTip('${tip}')"${linkAttr}>
+            <div class="cpt">${post.type||"post"}</div>
+            ${post.label}
+          </div>
+        </div>`;
       });
       o+=`</div>`;
-    }
+    });
   });
   o+=`</div>`;
-  o+=`<div class="sec" style="margin-top:28px">💡 Content Suggestions</div>`;
-  o+=`<div class="sgg">${SUGG.map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("")}</div>`;
-  o+=`<div class="sec" style="margin-top:28px">📋 Weekly Posting Targets</div>`;
-  o+=`<div class="kg" style="margin-bottom:32px">${[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","10","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~26","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("")}</div>`;
-  document.getElementById("cal-root").innerHTML=o;
+  document.getElementById("cgrid").innerHTML=o;
+
+  // Suggestions
+  const SUGG=[
+    {icon:"📊",title:"Stat / Data Callout Ideas",items:["Weekly inventory number from Logan's tracker","Mortgage rate vs. 10-yr yield spread — currently 1.92%","Price cut % — currently 36.88% of listings","Purchase apps: up/down X% year over year","HW total follower milestone (currently 310K!)"]},
+    {icon:"🎠",title:"Carousel / Deep Dive Ideas",items:["Breaking down the Fed rate decision: what it means for mortgages","5 things to know about the housing market this week","AI in mortgage: what the top 25 lenders are actually doing","M&A deal breakdown: PennyMac + Cenlar explained","HW AI Summit: 5 key takeaways"]},
+    {icon:"🗳️",title:"Poll / Question Ideas (LinkedIn)",items:["What's your biggest challenge: rates, inventory, or affordability?","Will the Fed cut rates before year end?","Which AI use case excites you most in mortgage?","Are you seeing more buyers or sellers in your market?","What content do you want more of from HousingWire?"]},
+    {icon:"💬",title:"Hot Take Ideas (LinkedIn + X)",items:["loanDepot reentering wholesale: bold move or too late?","The credit bureau 'gaslit' the mortgage industry — MBA is right","AI agents for customers are table stakes. The real edge is internal.","Fannie Mae's $14.4B profit: what it signals for GSE reform","The gap between knowing AI and doing AI is where margin lives"]},
+    {icon:"📰",title:"Single Graphic News Ideas",items:["Top HousingWire article of the day (breaking news priority)","Weekly housing market tracker summary graphic","Lender / servicer earnings highlights","FHFA / GSE policy update or regulatory change","Mortgage rate movement + context graphic"]},
+    {icon:"🔥",title:"Breaking News Best Practices",items:["Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn","Post within 15 minutes of story going live","Put the article link in the first comment on LinkedIn","M&A deals, rate moves, GSE news = your highest-engagement topics","Tag companies and executives mentioned when possible"]},
+  ];
+  document.getElementById("sgg").innerHTML=SUGG.map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
+  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","10","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~26","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
 }
-function calNav(d){calOff=d===0?0:calOff+d;renderCal()}
+
+function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSidebar()}
+
+// ── Checkbox logic ────────────────────────────────────────────────────────────
+function toggleCheck(e,pid){
+  e.stopPropagation();
+  const checked=loadChecked();
+  checked[pid]=!checked[pid];
+  if(!checked[pid])delete checked[pid];
+  saveChecked(checked);
+  // Update UI
+  const el=document.getElementById(pid);
+  if(el){
+    el.classList.toggle("done",!!checked[pid]);
+    el.querySelector(".cp-check").classList.toggle("checked",!!checked[pid]);
+  }
+  renderSidebar();
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const today=todayISO();
+  const todayDate=new Date();
+  document.getElementById("todo-date").textContent=todayDate.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  const checked=loadChecked();
+  const customs=loadCustomTasks();
+
+  // Collect today's scheduled posts
+  const todayDay=todayDate.getDay();
+  const calDay=todayDay===0?6:todayDay-1; // 0=Mon
+  let todayTasks=[];
+
+  PLATS.forEach(p=>{
+    // Recurring
+    (SCHED[p.key]||[]).filter(s=>s.day===calDay).forEach(s=>{
+      todayTasks.push({id:postId(today,p.key,s.label),label:s.label,platform:p.label,color:p.color,type:s.type});
+    });
+    // Special events
+    SPECIAL_EVENTS.filter(e=>e.date===today&&e.platform===p.key).forEach(e=>{
+      todayTasks.push({id:postId(today,p.key,e.label),label:e.label,platform:p.label,color:p.color,type:e.type});
+    });
+    // Launch events
+    LAUNCH_EVENTS.filter(e=>e.date===today&&e.platforms.includes(p.key)).forEach(e=>{
+      todayTasks.push({id:postId(today,p.key,e.label),label:e.label,platform:p.label,color:p.color,type:"launch"});
+    });
+  });
+
+  // Add custom tasks
+  const customItems=customs.filter(t=>t.date===today);
+  customItems.forEach(t=>{
+    todayTasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",type:"custom",isCustom:true});
+  });
+
+  // Render todo list
+  const list=document.getElementById("todo-list");
+  if(!todayTasks.length){
+    list.innerHTML=`<div style="font-size:0.75rem;color:var(--tm);text-align:center;padding:12px">No posts scheduled for today.</div>`;
+  } else {
+    list.innerHTML=todayTasks.map(t=>{
+      const done=!!checked[t.id];
+      return`<div class="todo-item${done?" done-item":""}">
+        <div class="todo-cb${done?" chk":""}" onclick="toggleTodo('${t.id}',this)">${done?"✓":""}</div>
+        <div style="flex:1">
+          <div class="todo-text">${t.label}</div>
+          <div class="todo-plat" style="color:${t.color}">${t.platform}</div>
+        </div>
+        ${t.isCustom?`<div class="todo-del" onclick="deleteCustom('${t.id}')">✕</div>`:""}
+      </div>`;
+    }).join("");
+  }
+
+  // Progress
+  const total=todayTasks.length,done=todayTasks.filter(t=>!!checked[t.id]).length;
+  const pct=total?Math.round((done/total)*100):0;
+  document.getElementById("prog-label").textContent=done+" of "+total+" done";
+  document.getElementById("prog-pct").textContent=pct+"%";
+  document.getElementById("prog-fill").style.width=pct+"%";
+
+  // Weekly progress
+  const dates=getWeekDates(calOff);
+  let weekTotal=0,weekDone=0;
+  dates.forEach(d=>{
+    const ds=isoDate(d),dd=d.getDay()===0?6:d.getDay()-1;
+    PLATS.forEach(p=>{
+      const items=[
+        ...(SCHED[p.key]||[]).filter(s=>s.day===dd).map(s=>postId(ds,p.key,s.label)),
+        ...SPECIAL_EVENTS.filter(e=>e.date===ds&&e.platform===p.key).map(e=>postId(ds,p.key,e.label)),
+        ...LAUNCH_EVENTS.filter(e=>e.date===ds&&e.platforms.includes(p.key)).map(e=>postId(ds,p.key,e.label)),
+      ];
+      weekTotal+=items.length;
+      weekDone+=items.filter(id=>!!checked[id]).length;
+    });
+  });
+  const wpct=weekTotal?Math.round((weekDone/weekTotal)*100):0;
+  document.getElementById("week-prog").innerHTML=`
+    <div style="font-size:0.75rem;color:var(--tm);margin-bottom:8px">${weekDone} of ${weekTotal} posts completed this week</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${wpct}%"></div></div>
+    <div style="font-size:0.68rem;color:var(--tm);margin-top:5px;text-align:right">${wpct}% complete</div>`;
+}
+
+function toggleTodo(pid,el){
+  const checked=loadChecked();
+  checked[pid]=!checked[pid];
+  if(!checked[pid])delete checked[pid];
+  saveChecked(checked);
+  renderSidebar();
+  // Also update calendar chip if visible
+  const chip=document.getElementById(pid);
+  if(chip){
+    chip.classList.toggle("done",!!checked[pid]);
+    chip.querySelector(".cp-check").classList.toggle("checked",!!checked[pid]);
+  }
+}
+
+function addCustomTask(){
+  const inp=document.getElementById("custom-task");
+  const val=inp.value.trim();
+  if(!val)return;
+  const customs=loadCustomTasks();
+  const today=todayISO();
+  const id="custom_"+Date.now();
+  customs.push({id,label:val,date:today});
+  saveCustomTasks(customs);
+  inp.value="";
+  renderSidebar();
+}
+
+function deleteCustom(id){
+  const customs=loadCustomTasks().filter(t=>t.id!==id);
+  saveCustomTasks(customs);
+  const checked=loadChecked();
+  delete checked[id];
+  saveChecked(checked);
+  renderSidebar();
+}
+
 function showTip(tip){
   document.querySelectorAll(".tip-pop").forEach(e=>e.remove());
+  if(!tip)return;
   const p=document.createElement("div");p.className="tip-pop";
   p.innerHTML=`<strong>💡 Tip</strong><br>${tip}<br><span style="color:var(--tm);font-size:.7rem;margin-top:5px;display:block">Tap anywhere to dismiss</span>`;
   document.body.appendChild(p);
