@@ -2,11 +2,11 @@ name: Deploy Dashboard to GitHub Pages
 
 on:
   schedule:
-    # Runs every day at 9 AM UTC (4 AM CT / 5 AM ET)
+    # Runs every day at 9 AM UTC (4 AM CT)
     - cron: '0 9 * * *'
   push:
-    branches: [ main ]
-  workflow_dispatch:  # allows manual trigger from GitHub UI
+    branches: [ master, main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
