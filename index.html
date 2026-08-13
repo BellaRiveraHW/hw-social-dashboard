@@ -353,20 +353,20 @@ function renderPosts(){
 const SCHED={
   linkedin:[
     {day:0,type:"video",label:"🎬 Logan's Market Video",cls:"cv",tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the article in the first comment."},
-    {day:1,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"Pull a bold number from Logan's tracker or HW Intelligence: inventory, rate spread (1.92%), price cuts (36.88%), or purchase apps YoY."},
+    {day:1,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Pull from HW Intelligence this week: Inventory 865,709 (↓7,224 WoW) · Rate 6.91% · Price cuts 36.88% · Spread 1.92% · Purchase apps +5% YoY. Go to housingwire.com/intelligence for your metro-level data."},
     {day:2,type:"carousel",label:"🎠 Carousel / Deep Dive",cls:"cca",tip:"Break down a complex topic in 5–8 slides. Best topics: M&A deals, Fed decisions, AI in mortgage, GSE reform."},
     {day:3,type:"poll",label:"🗳️ Poll / Question",cls:"cpo",tip:"Ask something timely. Polls get 3–5x more reach on LinkedIn. Keep it to 2–4 options."},
-    {day:4,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"Friday stat from HW Intelligence or Logan's tracker. Pull a market insight that sets up the weekend — inventory, rate movement, price cuts. Great for shares."},
+    {day:4,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Friday stat from HW Intelligence: Try a local/metro angle — e.g. Sun Belt price cuts (FL: 43.6%), Northeast absorption (Boston: 21.4%), or months of supply (national: ~2.6). Pull your metro from housingwire.com/intelligence."},
   ],
   instagram:[
     {day:0,type:"video",label:"🎬 Logan's Reel",cls:"cv",tip:"Post Logan's video as a Reel. Add captions, use trending audio, include housing hashtags."},
-    {day:1,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"Top article of the day as a clean graphic. Bold headline, HW branding, link in bio."},
+    {day:1,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 This week's top HW articles: UWM lawsuit 'frivolous' (Two Harbors) · CPI cools in July · Mortgage delinquencies eased Q2 · Figure Q2 revenue jump · Newrez $15.5M settlement · Fix-and-flip strain · Where boomers are moving. Check housingwire.com for today's breaking story."},
     {day:2,type:"carousel",label:"🎠 Carousel",cls:"cca",tip:"Repurpose or adapt the LinkedIn carousel. Instagram carousels average 3.2% engagement."},
-    {day:3,type:"stat",label:"📊 Stat Graphic",cls:"cst",tip:"Bold data point as a visual. Big number, short context, HW logo. Logan's tracker or HW Intelligence numbers work great."},
-    {day:4,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"End-of-week news graphic. Friday housing market wrap-up or the week's biggest story."},
+    {day:3,type:"stat",label:"📊 Stat Graphic",cls:"cst",tip:"📊 This week's bold stats from HW Intelligence: 865,709 active listings · 6.91% rate · 36.88% price cuts · 1.92% spread. Pick ONE number, make it big, add short context. housingwire.com/intelligence for metro data."},
+    {day:4,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 Friday wrap: Use the week's biggest story or Logan's Housing Market Tracker update. This week's top picks: UWM/Two Harbors lawsuit · CPI inflation report · Mortgage delinquencies Q2 · Fix-and-flip strain. housingwire.com for the latest."},
   ],
   x:[
-    {day:0,type:"news",label:"📰 News + 🎬 Video Link",cls:"cn",tip:"Recycle the day's main news story as a tweet. Also tweet Logan's video link with a key stat as the hook."},
+    {day:0,type:"news",label:"📰 News + 🎬 Video Link",cls:"cn",tip:"📰 Recycle today's top HW story as a tweet + Logan's video link. This week: UWM lawsuit · CPI report · Delinquencies · Figure earnings. Keep it under 280 chars. Add the article URL."},
     {day:1,type:"news",label:"📰 News (recycled)",cls:"cn",tip:"Recycle the main story of the day — same content as other platforms, adapted for X. Keep it punchy, under 280 chars."},
     {day:2,type:"news",label:"📰 News (recycled)",cls:"cn",tip:"Recycle the main story. Wednesday is peak B2B engagement on X."},
     {day:3,type:"news",label:"📰 News (recycled)",cls:"cn",tip:"Recycle the main story. Fannie/Freddie, GSE, rate data, and M&A news performs best on X."},
@@ -437,14 +437,91 @@ function renderCal(){
   });
   document.getElementById("cgrid").innerHTML=o;
 
-  document.getElementById("sgg").innerHTML=[
-    {icon:"📊",title:"Stat / Data Callout Ideas",items:["HW Intelligence: weekly inventory at national/metro/ZIP level","Mortgage rate vs. 10-yr yield spread — currently 1.92%","Price cut % from HW Intelligence — currently 36.88%","Purchase apps: up/down X% YoY (Logan's tracker)","HW total follower milestone (currently 310K!)"]},
-    {icon:"🎠",title:"Carousel / Deep Dive Ideas",items:["Breaking down the Fed rate decision: what it means for mortgages","5 things to know about the housing market this week","AI in mortgage: what the top 25 lenders are actually doing","M&A deal breakdown: PennyMac + Cenlar explained","HW AI Summit: 5 key takeaways"]},
-    {icon:"🗳️",title:"Poll / Question Ideas (LinkedIn)",items:["What's your biggest challenge: rates, inventory, or affordability?","Will the Fed cut rates before year end?","Which AI use case excites you most in mortgage?","Are you seeing more buyers or sellers in your market?","What content do you want more of from HousingWire?"]},
-    {icon:"📰",title:"Single Graphic News Ideas",items:["Top HousingWire article of the day (breaking news priority)","Weekly housing market tracker summary graphic","Lender / servicer earnings highlights","FHFA / GSE policy update or regulatory change","Mortgage rate movement + context graphic"]},
-    {icon:"🎬",title:"Reel / Video Ideas",items:["Logan's weekly market breakdown (Monday anchor)","AI Summit speaker highlight clips","Housing market myth-busting (30s format)","'What does this rate move mean for you?' explainer","Behind the scenes at a HousingWire event"]},
-    {icon:"🔥",title:"Breaking News Best Practices",items:["Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn","Post within 15 minutes of story going live","Put the article link in the first comment on LinkedIn","M&A deals, rate moves, GSE news = your highest-engagement topics","Tag companies and executives mentioned when possible"]},
-  ].map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
+  // ── Suggestions with live HW data + real article links ──────────────────
+  const SUGG_DATA = [
+    {
+      icon:"📊",
+      title:"Stat / Data Callout — This Week (from HW Intelligence)",
+      cls:"cst",
+      items:[
+        "📦 Inventory: 865,709 active listings — down 7,224 from last week (housingwire.com/intelligence)",
+        "💰 30-yr fixed rate: 6.91% — down 0.01% this week (housingwire.com/intelligence)",
+        "✂️ Price cuts: 36.88% of active listings have reduced price — use your local metro data from HW Intelligence",
+        "📈 Mortgage spread: 1.92% — keeping rates lower than they'd otherwise be at this 10-yr yield",
+        "🏠 Months of supply: ~2.6 nationally — seller-favorable but more balanced than 2022–24",
+        "📋 Purchase apps: up 5% YoY — pull the latest weekly number from Logan's tracker",
+        "🌎 Sun Belt strain: Florida price-cut rate at 43.6% — great local market stat from HW Intelligence",
+        "🏙️ Northeast strength: Boston absorption rate 21.4% — pull your metro's number from HW Intelligence dashboard",
+      ]
+    },
+    {
+      icon:"📰",
+      title:"Single Graphic News — This Week's Top HW Articles",
+      cls:"cn",
+      items:[
+        "Two Harbors calls UWM lawsuit 'frivolous,' slams management for $600M hedge loss → housingwire.com",
+        "Real estate leaders weigh buying vs building AI tools (AI Summit recap) → housingwire.com",
+        "CPI inflation cools in July as shelter rises 0.1% → housingwire.com",
+        "Mortgage delinquencies eased in Q2, still higher than 2025 → housingwire.com",
+        "Figure posts Q2 revenue jump, net take rate holds at 3.6% → housingwire.com",
+        "Newrez agrees to $15.5M settlement over forced-place insurance → housingwire.com",
+        "DOJ, Rocket Mortgage seek pause in fair housing case → housingwire.com",
+        "Fix-and-flip market shows signs of strain as mortgage rates climb → housingwire.com",
+        "Where are boomers and Gen X moving in 2026? → housingwire.com",
+        "Will a cooling labor market keep mortgage rates below 7%? → housingwire.com",
+      ]
+    },
+    {
+      icon:"🎠",
+      title:"Carousel / Deep Dive Ideas",
+      cls:"cca",
+      items:[
+        "Regional housing market breakdown: Northeast vs Sun Belt vs Midwest — use HW Intelligence data",
+        "Q2 2026 earnings recap: What the numbers mean for the housing market",
+        "AI in mortgage: what the top 25 lenders are actually doing right now",
+        "M&A deal breakdown: PennyMac + Cenlar — what it means for servicers",
+        "5 things the CPI report means for mortgage rates and housing demand",
+        "HW AI Summit: 5 key takeaways from the best minds in housing",
+      ]
+    },
+    {
+      icon:"🗳️",
+      title:"Poll / Question Ideas (LinkedIn)",
+      cls:"cpo",
+      items:[
+        "Sun Belt or Northeast — where are you seeing more buyer activity right now?",
+        "Will the Fed cut rates before year end? Yes / No / Too early to say",
+        "Which AI use case excites you most in mortgage? Underwriting / Servicing / Customer experience / Compliance",
+        "Are you seeing more buyers or sellers in your market right now?",
+        "What's your biggest challenge: rates, inventory, or affordability?",
+      ]
+    },
+    {
+      icon:"🎬",
+      title:"Reel / Video Ideas",
+      cls:"crl",
+      items:[
+        "Logan's weekly market breakdown — Monday anchor (housingwire.com/intelligence tracker)",
+        "AI Summit speaker highlight clips — 4 reels scheduled Aug 14/17/19/21",
+        "'What does 6.91% mortgage rate mean for buyers right now?' — 30s explainer",
+        "Sun Belt vs Northeast housing market — show the HW Intelligence dashboard",
+        "Behind the scenes at a HousingWire event",
+      ]
+    },
+    {
+      icon:"🔥",
+      title:"Breaking News Best Practices",
+      cls:"cn",
+      items:[
+        "Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn",
+        "Post within 15 minutes of story going live for maximum algorithmic reach",
+        "Put the article link in the first comment on LinkedIn (not the post itself)",
+        "M&A deals, rate moves, GSE news, lender strategy = your highest-engagement topics",
+        "Tag companies and executives mentioned when possible to expand reach",
+      ]
+    },
+  ];
+  document.getElementById("sgg").innerHTML=SUGG_DATA.map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
 
   document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~21","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
 }
