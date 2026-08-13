@@ -16,6 +16,7 @@ function switchTab(tab) {
   document.getElementById("tab-" + tab).classList.add("active");
   event.currentTarget.classList.add("active");
   if (tab === "calendar") renderCalendar();
+  if (tab === "launch") renderLaunch();
 }
 
 const SCHEDULE = {
@@ -241,6 +242,535 @@ function showTip(el, tip) {
   popup.innerHTML = "<strong>💡 Tip</strong><br>" + tip + "<br><span style='color:var(--text-muted);font-size:0.72rem;margin-top:6px;display:block'>Tap anywhere to dismiss</span>";
   document.body.appendChild(popup);
   setTimeout(() => document.addEventListener("click", () => popup.remove(), {once:true}), 100);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HW INTELLIGENCE LAUNCH TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+const LAUNCH_POSTS = [
+  // ── PHASE 0 ──────────────────────────────────────────────────────────────
+  {
+    num: 1, phase: 0,
+    date: "Aug. 12, 2026", dateShort: "Aug 12",
+    title: "Teaser #1 — Coming Aug. 19",
+    visual: "Branded 'Coming Aug. 19' graphic · Line: 'Stay tuned at housingwire.com'",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Something smarter is coming.
+
+On August 19, HousingWire is launching something we have been building for a long time. Something we believe will change how housing professionals understand and navigate the market.
+
+Stay tuned at housingwire.com.`,
+      x: `Something smarter is coming to HousingWire.
+
+August 19. Stay tuned at housingwire.com.`,
+      instagram: `Something smarter is coming to HousingWire.
+
+August 19, we are launching something we have been building for a long time. Something built for the people who move the housing market.
+
+Stay tuned. Link in bio.
+
+#HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData`,
+      facebook: `Something smarter is coming to HousingWire on August 19.
+
+We have been building something for a long time and we cannot wait to share it with you. Check out the link in the comments to stay up to date.`,
+    }
+  },
+  {
+    num: 2, phase: 0,
+    date: "Aug. 14, 2026", dateShort: "Aug 14",
+    title: "Teaser #2 — Market Data Pain Point",
+    visual: "Bold text on branded background",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `How confident are you in your market data right now?
+
+In a market moving this fast, working from a stale picture is not just frustrating. It is a real disadvantage.
+
+Something smarter is coming August 19. Stay tuned at housingwire.com.`,
+      x: `How confident are you in your market data right now?
+
+In a market moving this fast, a stale picture is a real disadvantage.
+
+Something smarter is coming August 19.`,
+      instagram: `How confident are you in your market data right now?
+
+In a market moving this fast, working from a stale picture is not just frustrating. It is a real disadvantage.
+
+Something smarter is coming August 19. Link in bio.
+
+#HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData`,
+      facebook: `How confident are you in your market data right now? In a market moving this fast, working from a stale picture is a real disadvantage.
+
+Something smarter is coming August 19. Check out the link in the comments to stay up to date.`,
+    }
+  },
+  {
+    num: 3, phase: 0,
+    date: "Aug. 17, 2026", dateShort: "Aug 17",
+    title: "Teaser #3 — 2-Day Countdown",
+    visual: "Simple branded countdown graphic: '2 days.'",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `The way you follow the housing market is about to change.
+
+Two days.`,
+      x: `The way you follow the housing market is about to change.
+
+Two days. August 19.`,
+      instagram: `The way you follow the housing market is about to change.
+
+Two days. August 19. Link in bio.
+
+#HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData`,
+      facebook: `The way you follow the housing market is about to change. Two days. Check out the link in the comments to stay up to date.`,
+    }
+  },
+  // ── PHASE 1 ──────────────────────────────────────────────────────────────
+  {
+    num: 4, phase: 1,
+    date: "Aug. 19, 2026 · 8 AM CT", dateShort: "Aug 19 AM",
+    title: "🚀 Hero Launch — HW Intelligence Is Here",
+    visual: "Hero launch graphic (logo + key value props) · Instagram: 6-slide carousel + Logan Reel\n\nCarousel slides:\n1. HousingWire Intelligence is here. Your daily operating system for the housing market.\n2. The housing market does not wait. But most professionals are working from a picture that is already out of date. There is a better way.\n3. Meet HousingWire Intelligence. Real-time market data. AI-powered analysis. Trusted HousingWire journalism. All in one place, built for housing professionals.\n4. Your market. Right now. Interactive dashboards at the national, state, metro and ZIP level. Covering 99% of U.S. ZIP codes. [Dashboard screenshot]\n5. 'No other housing publication comes close to this level of operational intelligence.' — Chief Revenue Officer, National Brokerage\n6. Ready to get started? Launch pricing starts at less than $50/mo. housingwire.com/intelligence",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Today is the day.
+
+HousingWire Intelligence is officially here, and it is the most important product we have ever built for housing professionals.
+
+For the past year we have been quietly building something we believe will change how mortgage professionals, real estate brokers, capital markets teams and homebuilders understand and navigate the housing market. Today we are sharing it with everyone.
+
+Here is what HousingWire Intelligence gives you:
+
+• Real-time market data at the national, state, metro and ZIP code level, covering 99% of U.S. ZIP codes
+• AI-powered market summaries and interactive analysis
+• Customizable, saved and shareable dashboards
+• HousingWire's trusted journalism and analysis, all in one place
+• A Housing Economic Summit pass included with your annual Intelligence subscription
+
+This is not just a subscription. It is your daily operating system for the housing market.
+
+Launch pricing starts at less than $50 a month, effectively. We built this for you. Now go see it.
+
+housingwire.com/intelligence`,
+      x: `HousingWire Intelligence is officially here.
+
+Real-time market data. AI-powered analysis. Dashboards covering 99% of U.S. ZIP codes. All in one place.
+
+Your daily operating system for the housing market. Launch pricing starts at less than $50/mo.
+
+housingwire.com/intelligence`,
+      instagram: `HousingWire Intelligence is officially here.
+
+We built this for the people who move the housing market. Swipe through to see what is inside.
+
+Launch pricing starts at less than $50 a month. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `Today is the day. HousingWire Intelligence is officially here.
+
+Real-time market data at the national, state, metro and ZIP level. AI-powered analysis. Customizable dashboards covering 99% of U.S. ZIP codes. And HousingWire's trusted journalism, all in one place.
+
+Launch pricing starts at less than $50 a month. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 5, phase: 1,
+    date: "Aug. 19, 2026 · 12 PM CT", dateShort: "Aug 19 PM",
+    title: "Launch Pricing Spotlight",
+    visual: "Pricing comparison graphic",
+    platforms: ["linkedin","x"],
+    copy: {
+      linkedin: `A quick note on pricing, because we want to be transparent with our community.
+
+HousingWire Intelligence launches today at less than $50 a month, effectively. That is our launch special, and it is the lowest this will ever be.
+
+If you have been on the fence, now is the time. Lock in launch pricing before it changes.
+
+housingwire.com/intelligence`,
+      x: `Launch pricing for HousingWire Intelligence starts at less than $50/mo effective.
+
+It is the lowest it will ever be. Lock it in today.
+
+housingwire.com/intelligence`,
+    }
+  },
+  // ── PHASE 2 ──────────────────────────────────────────────────────────────
+  {
+    num: 6, phase: 2,
+    date: "Aug. 21, 2026", dateShort: "Aug 21",
+    title: "AI-Powered Morning Summary",
+    visual: "Dashboard screenshot or branded graphic",
+    platforms: ["linkedin","x"],
+    copy: {
+      linkedin: `Every morning, HousingWire Intelligence gives you an AI-powered summary of what is happening in the housing market.
+
+Not just the headlines. The actual data, analyzed and explained so you can walk into any conversation knowing exactly where the market stands.
+
+That is what it means to have the full picture.
+
+housingwire.com/intelligence`,
+      x: `Every morning, HousingWire Intelligence gives you an AI-powered summary of what is actually happening in the housing market.
+
+Not just headlines. Real analysis. Real data.
+
+housingwire.com/intelligence`,
+    }
+  },
+  {
+    num: 7, phase: 2,
+    date: "Aug. 24, 2026", dateShort: "Aug 24",
+    title: "Day in the Life",
+    visual: "Day in the life graphic\n\nGraphic copy:\nMorning: Check your local market dashboard before your first meeting.\nMidday: Pull up AI-powered market summaries to prep for a client conversation.\nAfternoon: Share a dashboard with your team.\nEnd of Day: Catch up on HousingWire's latest analysis.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `This is what a day looks like when you have HousingWire Intelligence.
+
+Morning market check. AI-powered analysis before client calls. Shared dashboards with your team. And HousingWire's latest coverage to close out the day.
+
+All in one place. Built for the way housing professionals actually work.
+
+housingwire.com/intelligence`,
+      x: `Morning market check. AI-powered analysis. Shared dashboards. HousingWire coverage.
+
+This is what a day looks like with HousingWire Intelligence.
+
+housingwire.com/intelligence`,
+      instagram: `This is what a day looks like when you have the full picture.
+
+Swipe through to see how housing professionals are using HousingWire Intelligence from morning to end of day.
+
+Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `This is what a day looks like when you have HousingWire Intelligence. Morning market check. AI-powered analysis before client calls. Shared dashboards with your team. Check out the link in the comments to learn more.`,
+    }
+  },
+  {
+    num: 8, phase: 2,
+    date: "Aug. 26, 2026", dateShort: "Aug 26",
+    title: "Dashboard Feature Spotlight",
+    visual: "Dashboard screenshot\n\nGraphic copy: Your market. Right now.\nNational. State. Metro. ZIP code.\nCustomizable. Saveable. Shareable.",
+    platforms: ["linkedin","x"],
+    copy: {
+      linkedin: `Your market. Right now.
+
+HousingWire Intelligence gives you interactive dashboards at the national, state, metro and ZIP code level, covering 99% of U.S. ZIP codes.
+
+Customizable. Saveable. Shareable. And always up to date.
+
+housingwire.com/intelligence`,
+      x: `National. State. Metro. ZIP.
+
+HousingWire Intelligence gives you real-time dashboards at every level, covering 99% of U.S. ZIP codes.
+
+Your market. Right now.
+
+housingwire.com/intelligence`,
+    }
+  },
+  {
+    num: 9, phase: 2,
+    date: "Aug. 31, 2026", dateShort: "Aug 31",
+    title: "Preview Access Ends Tomorrow",
+    visual: "Countdown graphic: 'Tomorrow is the last day.'",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Tomorrow, complimentary preview access to HousingWire Intelligence ends.
+
+If you have been using it, you already know what you would be giving up. Real-time dashboards. AI-powered analysis. The full picture of the housing market, every day.
+
+Lock in launch pricing today before it changes.
+
+housingwire.com/intelligence`,
+      x: `Complimentary preview access to HousingWire Intelligence ends tomorrow.
+
+Lock in launch pricing today.
+
+housingwire.com/intelligence`,
+      instagram: `Tomorrow is the last day of complimentary preview access to HousingWire Intelligence.
+
+Do not lose access to the full picture. Lock in launch pricing today. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `Tomorrow, complimentary preview access to HousingWire Intelligence ends. If you have been using it, you already know what you would be giving up. Lock in launch pricing today. Check out the link in the comments to get started.`,
+    }
+  },
+  // ── PHASE 3 ──────────────────────────────────────────────────────────────
+  {
+    num: 10, phase: 3,
+    date: "Sept. 1, 2026", dateShort: "Sep 1",
+    title: "Preview Has Ended",
+    visual: "Branded graphic: 'Your preview has ended. Your access does not have to.'\n\nGraphic copy: HousingWire Intelligence is now a premium subscription. Real-time dashboards. AI-powered analysis. Trusted HousingWire journalism. All in one place.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Today, complimentary preview access to HousingWire Intelligence ends.
+
+But your access does not have to.
+
+If you have been part of the preview, you already know what HousingWire Intelligence does for your day. Do not lose that. Upgrade today and keep the full picture.
+
+housingwire.com/intelligence`,
+      x: `Complimentary preview access to HousingWire Intelligence ends today.
+
+Your access does not have to. Upgrade now.
+
+housingwire.com/intelligence`,
+      instagram: `Your preview has ended. Your access does not have to.
+
+HousingWire Intelligence is now a premium subscription. Do not lose access to the full picture. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `Today, complimentary preview access to HousingWire Intelligence ends. But your access does not have to. Upgrade today and keep the full picture. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 11, phase: 3,
+    date: "Sept. 8, 2026", dateShort: "Sep 8",
+    title: "Social Proof — CRO Quote",
+    visual: "Pull quote on branded background\n\n'The market tracker and customizable dashboards are the first thing I open. No other housing publication comes close to this level of operational intelligence.' — Chief Revenue Officer, National Brokerage\n\nSee what they are seeing. housingwire.com/intelligence",
+    platforms: ["linkedin","instagram","x"],
+    copy: {
+      linkedin: `This is how housing professionals are starting their day with HousingWire Intelligence.
+
+"The market tracker and customizable dashboards are the first thing I open. No other housing publication comes close to this level of operational intelligence."
+
+That is from a Chief Revenue Officer at a national brokerage with more than 1,200 agents.
+
+See what they are seeing.
+
+housingwire.com/intelligence`,
+      x: `"No other housing publication comes close to this level of operational intelligence."
+
+Chief Revenue Officer, National Brokerage
+
+See what they are seeing.
+
+housingwire.com/intelligence`,
+      instagram: `This is how housing professionals are starting their day.
+
+"The market tracker and customizable dashboards are the first thing I open. No other housing publication comes close to this level of operational intelligence."
+
+Chief Revenue Officer, National Brokerage with more than 1,200 agents.
+
+See what they are seeing. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+    }
+  },
+  {
+    num: 12, phase: 3,
+    date: "Sept. 15, 2026", dateShort: "Sep 15",
+    title: "Event Tie-In — Mortgage Banking Summit",
+    visual: "Event tie-in graphic (Mortgage Banking Summit)\n\nGraphic copy: HousingWire Intelligence members get more. Subscribe and receive 30% off your Mortgage Banking Summit ticket, plus exclusive member-only perks.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `HousingWire Intelligence members get more than market data.
+
+Subscribe to HousingWire and receive 30% off your ticket to the Mortgage Banking Summit, plus exclusive member-only perks and benefits.
+
+Trusted journalism. Real-time market intelligence. And a better way to experience HousingWire events.
+
+housingwire.com/intelligence`,
+      x: `HousingWire Intelligence members get 30% off the Mortgage Banking Summit, plus exclusive member perks.
+
+Subscribe today.
+
+housingwire.com/intelligence`,
+      instagram: `HousingWire Intelligence members get more.
+
+Subscribe to HousingWire and receive 30% off your Mortgage Banking Summit ticket, plus exclusive member-only perks and benefits. Link in bio.
+
+#HousingWire #HousingIntelligence #MortgageBankingSummit #MortgageIndustry #HousingMarket`,
+      facebook: `HousingWire Intelligence members get more than market data. Subscribe and receive 30% off your ticket to the Mortgage Banking Summit, plus exclusive member-only perks. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 13, phase: 3,
+    date: "Sept. 22, 2026", dateShort: "Sep 22",
+    title: "Event Tie-In — Homebuilder Summit",
+    visual: "Event tie-in graphic (Homebuilder Summit)\n\nGraphic copy: HousingWire Intelligence members get more. Subscribe and receive 30% off your Homebuilder Summit ticket, plus exclusive member-only perks.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `HousingWire Intelligence members get more than market data.
+
+Subscribe to HousingWire and receive 30% off your ticket to the Homebuilder Summit, plus exclusive member-only perks and benefits.
+
+Trusted journalism. Real-time market intelligence. And a better way to experience HousingWire events.
+
+housingwire.com/intelligence`,
+      x: `HousingWire Intelligence members get 30% off the Homebuilder Summit, plus exclusive member perks.
+
+Subscribe today.
+
+housingwire.com/intelligence`,
+      instagram: `HousingWire Intelligence members get more.
+
+Subscribe to HousingWire and receive 30% off your Homebuilder Summit ticket, plus exclusive member-only perks and benefits. Link in bio.
+
+#HousingWire #HousingIntelligence #HomebuilderSummit #Homebuilding #HousingMarket`,
+      facebook: `HousingWire Intelligence members get more than market data. Subscribe and receive 30% off your ticket to the Homebuilder Summit, plus exclusive member-only perks. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 14, phase: 3,
+    date: "Sept. 29, 2026", dateShort: "Sep 29",
+    title: "Market Insight Data Post",
+    visual: "Market insight data chart from HousingWire Intelligence\n\n⚠️ NOTE: Insert real data point or market insight when available before posting.\n\nGraphic copy: [Insert data point or market insight here]\nThis is the kind of insight HousingWire Intelligence gives you every day.\nThe full picture of the housing market. housingwire.com/intelligence",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `[Insert data point or market insight here]
+
+This is the kind of insight HousingWire Intelligence gives housing professionals every day. Real-time data, analyzed by the people who know the housing market best.
+
+The full picture, every day.
+
+housingwire.com/intelligence`,
+      x: `[Insert data point or market insight here]
+
+This is what HousingWire Intelligence gives you every day. The full picture.
+
+housingwire.com/intelligence`,
+      instagram: `[Insert data point or market insight here]
+
+This is the kind of insight HousingWire Intelligence gives housing professionals every day. Real-time data, analyzed by the people who know the housing market best. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #HousingData #MortgageIndustry`,
+      facebook: `[Insert data point or market insight here] This is what HousingWire Intelligence gives housing professionals every day. The full picture of the housing market. Check out the link in the comments to learn more.`,
+    }
+  },
+];
+
+const PHASE_META = {
+  0: { label:"Phase 0: Build Anticipation", sub:"Aug 12–18 · 3 posts · Tease, intrigue, create curiosity", cls:"phase-0", color:"#9c27b0" },
+  1: { label:"Phase 1: Launch Day",          sub:"Aug 19 · 2 posts · Announce HW Intelligence & drive subscriptions", cls:"phase-1", color:"#00d4aa" },
+  2: { label:"Phase 2: Member Upgrade",      sub:"Aug 19–Sept 1 · 4 posts · Convert preview users to paid", cls:"phase-2", color:"#ff6b6b" },
+  3: { label:"Phase 3: Sustain Momentum",    sub:"Sept 1–30 · 5 posts · Minimize churn, drive conversions", cls:"phase-3", color:"#ffd93d" },
+};
+
+const PLAT_META = {
+  linkedin:  { label:"LinkedIn",    color:"#0077b5" },
+  instagram: { label:"Instagram",   color:"#e1306c" },
+  x:         { label:"X",           color:"#aaa" },
+  facebook:  { label:"Facebook",    color:"#1877f2" },
+};
+
+// Track selected platform per post card
+const launchPlatState = {};
+
+function renderLaunch() {
+  let out = "";
+
+  // Header
+  out += `<div class="launch-header">
+    <h2>🚀 HW Intelligence Launch Campaign</h2>
+    <p>Aug 12 – Sept 29, 2026 &nbsp;·&nbsp; 14 posts &nbsp;·&nbsp; 3 phases &nbsp;·&nbsp; Click any platform button to view copy &nbsp;·&nbsp; Click 📋 to copy to clipboard</p>
+  </div>`;
+
+  // Timeline
+  out += `<div class="launch-timeline">`;
+  LAUNCH_POSTS.forEach(p => {
+    const meta = PHASE_META[p.phase];
+    out += `<div class="timeline-item">
+      <div class="timeline-dot" style="border-color:${meta.color};color:${meta.color}" onclick="scrollToPost(${p.num})">P${p.num}</div>
+      <div class="timeline-date">${p.dateShort}</div>
+    </div>`;
+  });
+  out += `</div>`;
+
+  // Posts by phase
+  [0,1,2,3].forEach(phase => {
+    const meta = PHASE_META[phase];
+    const posts = LAUNCH_POSTS.filter(p => p.phase === phase);
+    out += `<div class="phase-block">
+      <div class="phase-label ${meta.cls}">${meta.label}</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px">${meta.sub}</div>
+      <div class="launch-posts-grid">`;
+
+    posts.forEach(post => {
+      const defaultPlat = post.platforms[0];
+      if (!launchPlatState[post.num]) launchPlatState[post.num] = defaultPlat;
+      const activePlat = launchPlatState[post.num];
+      const copyText = post.copy[activePlat] || "";
+      const charCount = copyText.length;
+
+      out += `<div class="launch-post-card" id="launch-post-${post.num}">
+        <div class="launch-post-header">
+          <div class="launch-post-meta">
+            <div class="launch-post-date">${post.date}</div>
+            <div class="launch-post-title">${post.title}</div>
+          </div>
+          <div class="launch-post-num">#${post.num}</div>
+        </div>
+        <div class="launch-post-visual">📐 <span>Visual:</span> ${post.visual.split('\n')[0]}</div>
+        <div class="launch-platforms">`;
+
+      post.platforms.forEach(plat => {
+        const pm = PLAT_META[plat];
+        out += `<button class="launch-plat-btn ${plat === activePlat ? 'active' : ''}"
+          style="color:${pm.color};border-color:${pm.color}"
+          onclick="selectPlatform(${post.num},'${plat}')">${pm.label}</button>`;
+      });
+
+      out += `</div>
+        <div class="launch-copy-area">
+          <div class="launch-copy-text" id="copy-text-${post.num}">${escLaunch(copyText)}</div>
+        </div>
+        <div class="launch-copy-footer">
+          <span class="char-count" id="char-count-${post.num}">${charCount} chars</span>
+          <button class="copy-btn" id="copy-btn-${post.num}" onclick="copyPost(${post.num})">📋 Copy</button>
+        </div>
+      </div>`;
+    });
+
+    out += `</div></div>`;
+  });
+
+  document.getElementById("launch-root").innerHTML = out;
+}
+
+function escLaunch(text) {
+  return text
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/(#\w+)/g,'<span style="color:var(--accent)">$1</span>')
+    .replace(/(housingwire\.com\/\S+)/g,'<span style="color:var(--accent2);font-weight:600">$1</span>');
+}
+
+function selectPlatform(postNum, plat) {
+  launchPlatState[postNum] = plat;
+  const post = LAUNCH_POSTS.find(p => p.num === postNum);
+  const copyText = post.copy[plat] || "";
+
+  // Update copy text
+  document.getElementById("copy-text-" + postNum).innerHTML = escLaunch(copyText);
+  document.getElementById("char-count-" + postNum).textContent = copyText.length + " chars";
+
+  // Update active button states
+  const card = document.getElementById("launch-post-" + postNum);
+  card.querySelectorAll(".launch-plat-btn").forEach(btn => {
+    const pm = PLAT_META[btn.textContent.trim().toLowerCase()] ||
+               Object.values(PLAT_META).find(m => m.label === btn.textContent.trim());
+    btn.classList.toggle("active", btn.textContent.trim() === PLAT_META[plat].label);
+  });
+}
+
+function copyPost(postNum) {
+  const post = LAUNCH_POSTS.find(p => p.num === postNum);
+  const plat = launchPlatState[postNum];
+  const text = post.copy[plat] || "";
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copy-btn-" + postNum);
+    btn.textContent = "✅ Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "📋 Copy"; btn.classList.remove("copied"); }, 2000);
+  });
+}
+
+function scrollToPost(num) {
+  const el = document.getElementById("launch-post-" + num);
+  if (el) el.scrollIntoView({ behavior:"smooth", block:"center" });
 }
 
 </script>
@@ -806,6 +1336,181 @@ function showTip(el, tip) {
       .cal-grid { grid-template-columns: 1fr; }
     }
 
+  
+    /* ── Launch Campaign ── */
+    .launch-header {
+      margin-bottom: 28px;
+    }
+    .launch-header h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+    .launch-header p { color: var(--text-muted); font-size: 0.85rem; }
+
+    .phase-block { margin-bottom: 36px; }
+    .phase-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .phase-0 { background: #1a1a2e; color: #9c27b0; border: 1px solid #9c27b0; }
+    .phase-1 { background: #1a2a1a; color: #00d4aa; border: 1px solid #00d4aa; }
+    .phase-2 { background: #2a1a1a; color: #ff6b6b; border: 1px solid #ff6b6b; }
+    .phase-3 { background: #2a2a1a; color: #ffd93d; border: 1px solid #ffd93d; }
+
+    .launch-posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .launch-post-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .launch-post-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+    .launch-post-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .launch-post-meta { flex: 1; }
+    .launch-post-date {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 3px;
+    }
+    .launch-post-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .launch-post-num {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--border);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .launch-post-visual {
+      padding: 8px 16px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .launch-post-visual span { color: var(--accent); font-weight: 600; }
+
+    .launch-platforms {
+      display: flex;
+      gap: 6px;
+      padding: 10px 16px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .launch-plat-btn {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+    }
+    .launch-plat-btn:hover { opacity: 0.8; transform: scale(1.05); }
+    .launch-plat-btn.active { opacity: 1; }
+    .launch-plat-btn:not(.active) { opacity: 0.4; }
+
+    .launch-copy-area {
+      padding: 14px 16px;
+      min-height: 120px;
+    }
+    .launch-copy-text {
+      font-size: 0.78rem;
+      line-height: 1.65;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+    .launch-copy-text .hashtags { color: var(--accent); }
+    .launch-copy-text .url { color: var(--accent2); font-weight: 600; }
+
+    .launch-copy-footer {
+      padding: 8px 16px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .copy-btn {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .copy-btn.copied { border-color: var(--accent2); color: var(--accent2); }
+    .char-count { font-size: 0.68rem; color: var(--text-muted); }
+
+    .launch-timeline {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .timeline-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 90px;
+      position: relative;
+    }
+    .timeline-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .timeline-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 800;
+      z-index: 1;
+      background: var(--bg);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .timeline-dot:hover { transform: scale(1.2); }
+    .timeline-date { font-size: 0.62rem; color: var(--text-muted); margin-top: 5px; text-align: center; }
+    .timeline-label { font-size: 0.6rem; color: var(--text-muted); text-align: center; max-width: 80px; line-height: 1.3; }
+
   </style>
 </head>
 <body>
@@ -827,6 +1532,7 @@ function showTip(el, tip) {
 <nav class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
   <button class="tab-btn" onclick="switchTab('calendar')">📅 Posting Calendar</button>
+  <button class="tab-btn" onclick="switchTab('launch')">🚀 HW Intelligence Launch</button>
 </nav>
 
 <div id="tab-dashboard" class="tab-pane active">
@@ -877,6 +1583,13 @@ function showTip(el, tip) {
   Data source: <a href="https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk" target="_blank">HousingWire Social Dashboard Google Sheet</a>
   · Industry benchmarks: Hootsuite 2026
   · Built for HW Media
+</main>
+</div>
+
+
+<div id="tab-launch" class="tab-pane">
+<main>
+  <div id="launch-root"></div>
 </main>
 </div>
 
@@ -1305,6 +2018,7 @@ function switchTab(tab) {
   document.getElementById("tab-" + tab).classList.add("active");
   event.currentTarget.classList.add("active");
   if (tab === "calendar") renderCalendar();
+  if (tab === "launch") renderLaunch();
 }
 
 const SCHEDULE = {
@@ -1530,6 +2244,535 @@ function showTip(el, tip) {
   popup.innerHTML = "<strong>💡 Tip</strong><br>" + tip + "<br><span style='color:var(--text-muted);font-size:0.72rem;margin-top:6px;display:block'>Tap anywhere to dismiss</span>";
   document.body.appendChild(popup);
   setTimeout(() => document.addEventListener("click", () => popup.remove(), {once:true}), 100);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HW INTELLIGENCE LAUNCH TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+const LAUNCH_POSTS = [
+  // ── PHASE 0 ──────────────────────────────────────────────────────────────
+  {
+    num: 1, phase: 0,
+    date: "Aug. 12, 2026", dateShort: "Aug 12",
+    title: "Teaser #1 — Coming Aug. 19",
+    visual: "Branded 'Coming Aug. 19' graphic · Line: 'Stay tuned at housingwire.com'",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Something smarter is coming.
+
+On August 19, HousingWire is launching something we have been building for a long time. Something we believe will change how housing professionals understand and navigate the market.
+
+Stay tuned at housingwire.com.`,
+      x: `Something smarter is coming to HousingWire.
+
+August 19. Stay tuned at housingwire.com.`,
+      instagram: `Something smarter is coming to HousingWire.
+
+August 19, we are launching something we have been building for a long time. Something built for the people who move the housing market.
+
+Stay tuned. Link in bio.
+
+#HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData`,
+      facebook: `Something smarter is coming to HousingWire on August 19.
+
+We have been building something for a long time and we cannot wait to share it with you. Check out the link in the comments to stay up to date.`,
+    }
+  },
+  {
+    num: 2, phase: 0,
+    date: "Aug. 14, 2026", dateShort: "Aug 14",
+    title: "Teaser #2 — Market Data Pain Point",
+    visual: "Bold text on branded background",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `How confident are you in your market data right now?
+
+In a market moving this fast, working from a stale picture is not just frustrating. It is a real disadvantage.
+
+Something smarter is coming August 19. Stay tuned at housingwire.com.`,
+      x: `How confident are you in your market data right now?
+
+In a market moving this fast, a stale picture is a real disadvantage.
+
+Something smarter is coming August 19.`,
+      instagram: `How confident are you in your market data right now?
+
+In a market moving this fast, working from a stale picture is not just frustrating. It is a real disadvantage.
+
+Something smarter is coming August 19. Link in bio.
+
+#HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData`,
+      facebook: `How confident are you in your market data right now? In a market moving this fast, working from a stale picture is a real disadvantage.
+
+Something smarter is coming August 19. Check out the link in the comments to stay up to date.`,
+    }
+  },
+  {
+    num: 3, phase: 0,
+    date: "Aug. 17, 2026", dateShort: "Aug 17",
+    title: "Teaser #3 — 2-Day Countdown",
+    visual: "Simple branded countdown graphic: '2 days.'",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `The way you follow the housing market is about to change.
+
+Two days.`,
+      x: `The way you follow the housing market is about to change.
+
+Two days. August 19.`,
+      instagram: `The way you follow the housing market is about to change.
+
+Two days. August 19. Link in bio.
+
+#HousingWire #HousingMarket #MortgageIndustry #RealEstate #HousingData`,
+      facebook: `The way you follow the housing market is about to change. Two days. Check out the link in the comments to stay up to date.`,
+    }
+  },
+  // ── PHASE 1 ──────────────────────────────────────────────────────────────
+  {
+    num: 4, phase: 1,
+    date: "Aug. 19, 2026 · 8 AM CT", dateShort: "Aug 19 AM",
+    title: "🚀 Hero Launch — HW Intelligence Is Here",
+    visual: "Hero launch graphic (logo + key value props) · Instagram: 6-slide carousel + Logan Reel\n\nCarousel slides:\n1. HousingWire Intelligence is here. Your daily operating system for the housing market.\n2. The housing market does not wait. But most professionals are working from a picture that is already out of date. There is a better way.\n3. Meet HousingWire Intelligence. Real-time market data. AI-powered analysis. Trusted HousingWire journalism. All in one place, built for housing professionals.\n4. Your market. Right now. Interactive dashboards at the national, state, metro and ZIP level. Covering 99% of U.S. ZIP codes. [Dashboard screenshot]\n5. 'No other housing publication comes close to this level of operational intelligence.' — Chief Revenue Officer, National Brokerage\n6. Ready to get started? Launch pricing starts at less than $50/mo. housingwire.com/intelligence",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Today is the day.
+
+HousingWire Intelligence is officially here, and it is the most important product we have ever built for housing professionals.
+
+For the past year we have been quietly building something we believe will change how mortgage professionals, real estate brokers, capital markets teams and homebuilders understand and navigate the housing market. Today we are sharing it with everyone.
+
+Here is what HousingWire Intelligence gives you:
+
+• Real-time market data at the national, state, metro and ZIP code level, covering 99% of U.S. ZIP codes
+• AI-powered market summaries and interactive analysis
+• Customizable, saved and shareable dashboards
+• HousingWire's trusted journalism and analysis, all in one place
+• A Housing Economic Summit pass included with your annual Intelligence subscription
+
+This is not just a subscription. It is your daily operating system for the housing market.
+
+Launch pricing starts at less than $50 a month, effectively. We built this for you. Now go see it.
+
+housingwire.com/intelligence`,
+      x: `HousingWire Intelligence is officially here.
+
+Real-time market data. AI-powered analysis. Dashboards covering 99% of U.S. ZIP codes. All in one place.
+
+Your daily operating system for the housing market. Launch pricing starts at less than $50/mo.
+
+housingwire.com/intelligence`,
+      instagram: `HousingWire Intelligence is officially here.
+
+We built this for the people who move the housing market. Swipe through to see what is inside.
+
+Launch pricing starts at less than $50 a month. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `Today is the day. HousingWire Intelligence is officially here.
+
+Real-time market data at the national, state, metro and ZIP level. AI-powered analysis. Customizable dashboards covering 99% of U.S. ZIP codes. And HousingWire's trusted journalism, all in one place.
+
+Launch pricing starts at less than $50 a month. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 5, phase: 1,
+    date: "Aug. 19, 2026 · 12 PM CT", dateShort: "Aug 19 PM",
+    title: "Launch Pricing Spotlight",
+    visual: "Pricing comparison graphic",
+    platforms: ["linkedin","x"],
+    copy: {
+      linkedin: `A quick note on pricing, because we want to be transparent with our community.
+
+HousingWire Intelligence launches today at less than $50 a month, effectively. That is our launch special, and it is the lowest this will ever be.
+
+If you have been on the fence, now is the time. Lock in launch pricing before it changes.
+
+housingwire.com/intelligence`,
+      x: `Launch pricing for HousingWire Intelligence starts at less than $50/mo effective.
+
+It is the lowest it will ever be. Lock it in today.
+
+housingwire.com/intelligence`,
+    }
+  },
+  // ── PHASE 2 ──────────────────────────────────────────────────────────────
+  {
+    num: 6, phase: 2,
+    date: "Aug. 21, 2026", dateShort: "Aug 21",
+    title: "AI-Powered Morning Summary",
+    visual: "Dashboard screenshot or branded graphic",
+    platforms: ["linkedin","x"],
+    copy: {
+      linkedin: `Every morning, HousingWire Intelligence gives you an AI-powered summary of what is happening in the housing market.
+
+Not just the headlines. The actual data, analyzed and explained so you can walk into any conversation knowing exactly where the market stands.
+
+That is what it means to have the full picture.
+
+housingwire.com/intelligence`,
+      x: `Every morning, HousingWire Intelligence gives you an AI-powered summary of what is actually happening in the housing market.
+
+Not just headlines. Real analysis. Real data.
+
+housingwire.com/intelligence`,
+    }
+  },
+  {
+    num: 7, phase: 2,
+    date: "Aug. 24, 2026", dateShort: "Aug 24",
+    title: "Day in the Life",
+    visual: "Day in the life graphic\n\nGraphic copy:\nMorning: Check your local market dashboard before your first meeting.\nMidday: Pull up AI-powered market summaries to prep for a client conversation.\nAfternoon: Share a dashboard with your team.\nEnd of Day: Catch up on HousingWire's latest analysis.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `This is what a day looks like when you have HousingWire Intelligence.
+
+Morning market check. AI-powered analysis before client calls. Shared dashboards with your team. And HousingWire's latest coverage to close out the day.
+
+All in one place. Built for the way housing professionals actually work.
+
+housingwire.com/intelligence`,
+      x: `Morning market check. AI-powered analysis. Shared dashboards. HousingWire coverage.
+
+This is what a day looks like with HousingWire Intelligence.
+
+housingwire.com/intelligence`,
+      instagram: `This is what a day looks like when you have the full picture.
+
+Swipe through to see how housing professionals are using HousingWire Intelligence from morning to end of day.
+
+Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `This is what a day looks like when you have HousingWire Intelligence. Morning market check. AI-powered analysis before client calls. Shared dashboards with your team. Check out the link in the comments to learn more.`,
+    }
+  },
+  {
+    num: 8, phase: 2,
+    date: "Aug. 26, 2026", dateShort: "Aug 26",
+    title: "Dashboard Feature Spotlight",
+    visual: "Dashboard screenshot\n\nGraphic copy: Your market. Right now.\nNational. State. Metro. ZIP code.\nCustomizable. Saveable. Shareable.",
+    platforms: ["linkedin","x"],
+    copy: {
+      linkedin: `Your market. Right now.
+
+HousingWire Intelligence gives you interactive dashboards at the national, state, metro and ZIP code level, covering 99% of U.S. ZIP codes.
+
+Customizable. Saveable. Shareable. And always up to date.
+
+housingwire.com/intelligence`,
+      x: `National. State. Metro. ZIP.
+
+HousingWire Intelligence gives you real-time dashboards at every level, covering 99% of U.S. ZIP codes.
+
+Your market. Right now.
+
+housingwire.com/intelligence`,
+    }
+  },
+  {
+    num: 9, phase: 2,
+    date: "Aug. 31, 2026", dateShort: "Aug 31",
+    title: "Preview Access Ends Tomorrow",
+    visual: "Countdown graphic: 'Tomorrow is the last day.'",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Tomorrow, complimentary preview access to HousingWire Intelligence ends.
+
+If you have been using it, you already know what you would be giving up. Real-time dashboards. AI-powered analysis. The full picture of the housing market, every day.
+
+Lock in launch pricing today before it changes.
+
+housingwire.com/intelligence`,
+      x: `Complimentary preview access to HousingWire Intelligence ends tomorrow.
+
+Lock in launch pricing today.
+
+housingwire.com/intelligence`,
+      instagram: `Tomorrow is the last day of complimentary preview access to HousingWire Intelligence.
+
+Do not lose access to the full picture. Lock in launch pricing today. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `Tomorrow, complimentary preview access to HousingWire Intelligence ends. If you have been using it, you already know what you would be giving up. Lock in launch pricing today. Check out the link in the comments to get started.`,
+    }
+  },
+  // ── PHASE 3 ──────────────────────────────────────────────────────────────
+  {
+    num: 10, phase: 3,
+    date: "Sept. 1, 2026", dateShort: "Sep 1",
+    title: "Preview Has Ended",
+    visual: "Branded graphic: 'Your preview has ended. Your access does not have to.'\n\nGraphic copy: HousingWire Intelligence is now a premium subscription. Real-time dashboards. AI-powered analysis. Trusted HousingWire journalism. All in one place.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `Today, complimentary preview access to HousingWire Intelligence ends.
+
+But your access does not have to.
+
+If you have been part of the preview, you already know what HousingWire Intelligence does for your day. Do not lose that. Upgrade today and keep the full picture.
+
+housingwire.com/intelligence`,
+      x: `Complimentary preview access to HousingWire Intelligence ends today.
+
+Your access does not have to. Upgrade now.
+
+housingwire.com/intelligence`,
+      instagram: `Your preview has ended. Your access does not have to.
+
+HousingWire Intelligence is now a premium subscription. Do not lose access to the full picture. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+      facebook: `Today, complimentary preview access to HousingWire Intelligence ends. But your access does not have to. Upgrade today and keep the full picture. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 11, phase: 3,
+    date: "Sept. 8, 2026", dateShort: "Sep 8",
+    title: "Social Proof — CRO Quote",
+    visual: "Pull quote on branded background\n\n'The market tracker and customizable dashboards are the first thing I open. No other housing publication comes close to this level of operational intelligence.' — Chief Revenue Officer, National Brokerage\n\nSee what they are seeing. housingwire.com/intelligence",
+    platforms: ["linkedin","instagram","x"],
+    copy: {
+      linkedin: `This is how housing professionals are starting their day with HousingWire Intelligence.
+
+"The market tracker and customizable dashboards are the first thing I open. No other housing publication comes close to this level of operational intelligence."
+
+That is from a Chief Revenue Officer at a national brokerage with more than 1,200 agents.
+
+See what they are seeing.
+
+housingwire.com/intelligence`,
+      x: `"No other housing publication comes close to this level of operational intelligence."
+
+Chief Revenue Officer, National Brokerage
+
+See what they are seeing.
+
+housingwire.com/intelligence`,
+      instagram: `This is how housing professionals are starting their day.
+
+"The market tracker and customizable dashboards are the first thing I open. No other housing publication comes close to this level of operational intelligence."
+
+Chief Revenue Officer, National Brokerage with more than 1,200 agents.
+
+See what they are seeing. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #MortgageIndustry #RealEstate`,
+    }
+  },
+  {
+    num: 12, phase: 3,
+    date: "Sept. 15, 2026", dateShort: "Sep 15",
+    title: "Event Tie-In — Mortgage Banking Summit",
+    visual: "Event tie-in graphic (Mortgage Banking Summit)\n\nGraphic copy: HousingWire Intelligence members get more. Subscribe and receive 30% off your Mortgage Banking Summit ticket, plus exclusive member-only perks.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `HousingWire Intelligence members get more than market data.
+
+Subscribe to HousingWire and receive 30% off your ticket to the Mortgage Banking Summit, plus exclusive member-only perks and benefits.
+
+Trusted journalism. Real-time market intelligence. And a better way to experience HousingWire events.
+
+housingwire.com/intelligence`,
+      x: `HousingWire Intelligence members get 30% off the Mortgage Banking Summit, plus exclusive member perks.
+
+Subscribe today.
+
+housingwire.com/intelligence`,
+      instagram: `HousingWire Intelligence members get more.
+
+Subscribe to HousingWire and receive 30% off your Mortgage Banking Summit ticket, plus exclusive member-only perks and benefits. Link in bio.
+
+#HousingWire #HousingIntelligence #MortgageBankingSummit #MortgageIndustry #HousingMarket`,
+      facebook: `HousingWire Intelligence members get more than market data. Subscribe and receive 30% off your ticket to the Mortgage Banking Summit, plus exclusive member-only perks. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 13, phase: 3,
+    date: "Sept. 22, 2026", dateShort: "Sep 22",
+    title: "Event Tie-In — Homebuilder Summit",
+    visual: "Event tie-in graphic (Homebuilder Summit)\n\nGraphic copy: HousingWire Intelligence members get more. Subscribe and receive 30% off your Homebuilder Summit ticket, plus exclusive member-only perks.",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `HousingWire Intelligence members get more than market data.
+
+Subscribe to HousingWire and receive 30% off your ticket to the Homebuilder Summit, plus exclusive member-only perks and benefits.
+
+Trusted journalism. Real-time market intelligence. And a better way to experience HousingWire events.
+
+housingwire.com/intelligence`,
+      x: `HousingWire Intelligence members get 30% off the Homebuilder Summit, plus exclusive member perks.
+
+Subscribe today.
+
+housingwire.com/intelligence`,
+      instagram: `HousingWire Intelligence members get more.
+
+Subscribe to HousingWire and receive 30% off your Homebuilder Summit ticket, plus exclusive member-only perks and benefits. Link in bio.
+
+#HousingWire #HousingIntelligence #HomebuilderSummit #Homebuilding #HousingMarket`,
+      facebook: `HousingWire Intelligence members get more than market data. Subscribe and receive 30% off your ticket to the Homebuilder Summit, plus exclusive member-only perks. Check out the link in the comments to get started.`,
+    }
+  },
+  {
+    num: 14, phase: 3,
+    date: "Sept. 29, 2026", dateShort: "Sep 29",
+    title: "Market Insight Data Post",
+    visual: "Market insight data chart from HousingWire Intelligence\n\n⚠️ NOTE: Insert real data point or market insight when available before posting.\n\nGraphic copy: [Insert data point or market insight here]\nThis is the kind of insight HousingWire Intelligence gives you every day.\nThe full picture of the housing market. housingwire.com/intelligence",
+    platforms: ["linkedin","instagram","x","facebook"],
+    copy: {
+      linkedin: `[Insert data point or market insight here]
+
+This is the kind of insight HousingWire Intelligence gives housing professionals every day. Real-time data, analyzed by the people who know the housing market best.
+
+The full picture, every day.
+
+housingwire.com/intelligence`,
+      x: `[Insert data point or market insight here]
+
+This is what HousingWire Intelligence gives you every day. The full picture.
+
+housingwire.com/intelligence`,
+      instagram: `[Insert data point or market insight here]
+
+This is the kind of insight HousingWire Intelligence gives housing professionals every day. Real-time data, analyzed by the people who know the housing market best. Link in bio.
+
+#HousingWire #HousingIntelligence #HousingMarket #HousingData #MortgageIndustry`,
+      facebook: `[Insert data point or market insight here] This is what HousingWire Intelligence gives housing professionals every day. The full picture of the housing market. Check out the link in the comments to learn more.`,
+    }
+  },
+];
+
+const PHASE_META = {
+  0: { label:"Phase 0: Build Anticipation", sub:"Aug 12–18 · 3 posts · Tease, intrigue, create curiosity", cls:"phase-0", color:"#9c27b0" },
+  1: { label:"Phase 1: Launch Day",          sub:"Aug 19 · 2 posts · Announce HW Intelligence & drive subscriptions", cls:"phase-1", color:"#00d4aa" },
+  2: { label:"Phase 2: Member Upgrade",      sub:"Aug 19–Sept 1 · 4 posts · Convert preview users to paid", cls:"phase-2", color:"#ff6b6b" },
+  3: { label:"Phase 3: Sustain Momentum",    sub:"Sept 1–30 · 5 posts · Minimize churn, drive conversions", cls:"phase-3", color:"#ffd93d" },
+};
+
+const PLAT_META = {
+  linkedin:  { label:"LinkedIn",    color:"#0077b5" },
+  instagram: { label:"Instagram",   color:"#e1306c" },
+  x:         { label:"X",           color:"#aaa" },
+  facebook:  { label:"Facebook",    color:"#1877f2" },
+};
+
+// Track selected platform per post card
+const launchPlatState = {};
+
+function renderLaunch() {
+  let out = "";
+
+  // Header
+  out += `<div class="launch-header">
+    <h2>🚀 HW Intelligence Launch Campaign</h2>
+    <p>Aug 12 – Sept 29, 2026 &nbsp;·&nbsp; 14 posts &nbsp;·&nbsp; 3 phases &nbsp;·&nbsp; Click any platform button to view copy &nbsp;·&nbsp; Click 📋 to copy to clipboard</p>
+  </div>`;
+
+  // Timeline
+  out += `<div class="launch-timeline">`;
+  LAUNCH_POSTS.forEach(p => {
+    const meta = PHASE_META[p.phase];
+    out += `<div class="timeline-item">
+      <div class="timeline-dot" style="border-color:${meta.color};color:${meta.color}" onclick="scrollToPost(${p.num})">P${p.num}</div>
+      <div class="timeline-date">${p.dateShort}</div>
+    </div>`;
+  });
+  out += `</div>`;
+
+  // Posts by phase
+  [0,1,2,3].forEach(phase => {
+    const meta = PHASE_META[phase];
+    const posts = LAUNCH_POSTS.filter(p => p.phase === phase);
+    out += `<div class="phase-block">
+      <div class="phase-label ${meta.cls}">${meta.label}</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px">${meta.sub}</div>
+      <div class="launch-posts-grid">`;
+
+    posts.forEach(post => {
+      const defaultPlat = post.platforms[0];
+      if (!launchPlatState[post.num]) launchPlatState[post.num] = defaultPlat;
+      const activePlat = launchPlatState[post.num];
+      const copyText = post.copy[activePlat] || "";
+      const charCount = copyText.length;
+
+      out += `<div class="launch-post-card" id="launch-post-${post.num}">
+        <div class="launch-post-header">
+          <div class="launch-post-meta">
+            <div class="launch-post-date">${post.date}</div>
+            <div class="launch-post-title">${post.title}</div>
+          </div>
+          <div class="launch-post-num">#${post.num}</div>
+        </div>
+        <div class="launch-post-visual">📐 <span>Visual:</span> ${post.visual.split('\n')[0]}</div>
+        <div class="launch-platforms">`;
+
+      post.platforms.forEach(plat => {
+        const pm = PLAT_META[plat];
+        out += `<button class="launch-plat-btn ${plat === activePlat ? 'active' : ''}"
+          style="color:${pm.color};border-color:${pm.color}"
+          onclick="selectPlatform(${post.num},'${plat}')">${pm.label}</button>`;
+      });
+
+      out += `</div>
+        <div class="launch-copy-area">
+          <div class="launch-copy-text" id="copy-text-${post.num}">${escLaunch(copyText)}</div>
+        </div>
+        <div class="launch-copy-footer">
+          <span class="char-count" id="char-count-${post.num}">${charCount} chars</span>
+          <button class="copy-btn" id="copy-btn-${post.num}" onclick="copyPost(${post.num})">📋 Copy</button>
+        </div>
+      </div>`;
+    });
+
+    out += `</div></div>`;
+  });
+
+  document.getElementById("launch-root").innerHTML = out;
+}
+
+function escLaunch(text) {
+  return text
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/(#\w+)/g,'<span style="color:var(--accent)">$1</span>')
+    .replace(/(housingwire\.com\/\S+)/g,'<span style="color:var(--accent2);font-weight:600">$1</span>');
+}
+
+function selectPlatform(postNum, plat) {
+  launchPlatState[postNum] = plat;
+  const post = LAUNCH_POSTS.find(p => p.num === postNum);
+  const copyText = post.copy[plat] || "";
+
+  // Update copy text
+  document.getElementById("copy-text-" + postNum).innerHTML = escLaunch(copyText);
+  document.getElementById("char-count-" + postNum).textContent = copyText.length + " chars";
+
+  // Update active button states
+  const card = document.getElementById("launch-post-" + postNum);
+  card.querySelectorAll(".launch-plat-btn").forEach(btn => {
+    const pm = PLAT_META[btn.textContent.trim().toLowerCase()] ||
+               Object.values(PLAT_META).find(m => m.label === btn.textContent.trim());
+    btn.classList.toggle("active", btn.textContent.trim() === PLAT_META[plat].label);
+  });
+}
+
+function copyPost(postNum) {
+  const post = LAUNCH_POSTS.find(p => p.num === postNum);
+  const plat = launchPlatState[postNum];
+  const text = post.copy[plat] || "";
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copy-btn-" + postNum);
+    btn.textContent = "✅ Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "📋 Copy"; btn.classList.remove("copied"); }, 2000);
+  });
+}
+
+function scrollToPost(num) {
+  const el = document.getElementById("launch-post-" + num);
+  if (el) el.scrollIntoView({ behavior:"smooth", block:"center" });
 }
 
 </script>
