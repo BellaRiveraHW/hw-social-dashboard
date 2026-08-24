@@ -646,6 +646,22 @@ function showTip(tip){
 }
 
 buildSel();renderWeek();
+
+// ── URL parameter: ?tab=calendar or ?tab=dash opens that tab directly ────────
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const tabParam = params.get("tab");
+  if(tabParam === "calendar"){
+    document.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));
+    document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
+    document.getElementById("tab-cal").classList.add("on");
+    // Activate the calendar nav button
+    document.querySelectorAll(".tb").forEach(b=>{
+      if(b.textContent.trim().includes("Posting Calendar")) b.classList.add("on");
+    });
+    renderCal();renderSb();
+  }
+})();
 </script>
 </body>
 </html>
