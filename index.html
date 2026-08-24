@@ -355,36 +355,72 @@ function renderPosts(){
 // Rules: Launch events > Summit Reels > Normal schedule (one-offs replace normal)
 // No hot takes. X = 1 recycled news/day. Friday LinkedIn = Stat.
 const SCHED={
+  // ── RULES ────────────────────────────────────────────────────────────────
+  // • Launch events > Summit Reels > Normal schedule (one-offs replace normal)
+  // • News slot = flexible: you choose Headline Graphic, Quote Graphic, or
+  //   Who/What/Where Carousel based on the story. Tip explains all three.
+  // • Podcast slot = TBD — will be added once cadence is confirmed with podcast team
+  // • Breaking news, event recaps, product launches are REACTIVE — they bump
+  //   whatever was planned that day, no fixed slot needed
+  // • Facebook mirrors the same content type as IG/LinkedIn (no "repurpose" label)
+  // • Polls: 1-2x per MONTH max (not weekly) — swap in on any Tue/Wed slot
+  // ─────────────────────────────────────────────────────────────────────────
+
   linkedin:[
-    {day:0,type:"video",label:"🎬 Logan's Market Video",cls:"cv",tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the article in the first comment."},
-    {day:1,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Pull from HW Intelligence this week: Inventory 865,709 (↓7,224 WoW) · Rate 6.91% · Price cuts 36.88% · Spread 1.92% · Purchase apps +5% YoY. Go to housingwire.com/intelligence for your metro-level data."},
-    {day:2,type:"carousel",label:"🎠 Carousel / Deep Dive",cls:"cca",tip:"Break down a complex topic in 5–8 slides. Best topics: M&A deals, Fed decisions, AI in mortgage, GSE reform."},
-    {day:3,type:"poll",label:"🗳️ Poll / Question",cls:"cpo",tip:"Ask something timely. Polls get 3–5x more reach on LinkedIn. Keep it to 2–4 options."},
-    {day:4,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Friday stat from HW Intelligence: Try a local/metro angle — e.g. Sun Belt price cuts (FL: 43.6%), Northeast absorption (Boston: 21.4%), or months of supply (national: ~2.6). Pull your metro from housingwire.com/intelligence."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",
+     tip:"Share Logan's weekly Housing Market Tracker as a native video. Put the article link in the FIRST COMMENT (not the post) — LinkedIn suppresses posts with external links. Tag @LoganMohtashami."},
+    {day:1,type:"news",label:"📰 News",cls:"cn",
+     tip:"Pick the format that fits the story:\n\n📌 HEADLINE GRAPHIC — Breaking news or big announcement. Bold headline + subheadline + image. Best for M&A, rate moves, GSE news.\n\n💬 QUOTE GRAPHIC — A great line from an interview or article. Speaker name + outlet on branded background. Drives saves and shares. Pull from HW articles/interviews.\n\n🔍 WHO/WHAT/WHERE CAROUSEL — Complex story that needs unpacking. 5-7 slides: what happened, who's involved, why it matters, what's next. Best for deals, policy changes, earnings."},
+    {day:2,type:"carousel",label:"🎠 Document Carousel",cls:"cca",
+     tip:"Upload as a PDF (not images) — LinkedIn's Document format gets 7% engagement vs 5.3% for images. Export your Canva carousel as PDF. Deep dive on one topic: a deal breakdown, market trend, AI in mortgage, GSE reform. 5-8 slides max."},
+    {day:3,type:"news",label:"📰 News",cls:"cn",
+     tip:"Pick the format that fits the story:\n\n📌 HEADLINE GRAPHIC — Breaking news or big announcement. Bold headline + subheadline + image.\n\n💬 QUOTE GRAPHIC — A great line from an interview or article. Speaker name + outlet on branded background.\n\n🔍 WHO/WHAT/WHERE CAROUSEL — Complex story that needs unpacking. 5-7 slides."},
+    {day:4,type:"news",label:"📰 News",cls:"cn",
+     tip:"Pick the format that fits the story:\n\n📌 HEADLINE GRAPHIC — Breaking news or big announcement.\n\n💬 QUOTE GRAPHIC — A great line from an interview or article.\n\n🔍 WHO/WHAT/WHERE CAROUSEL — Complex story that needs unpacking.\n\n💡 TIP: Put any article links in the FIRST COMMENT, not the post itself."},
   ],
+
   instagram:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",tip:"Post Logan's weekly market breakdown as a Reel. Add captions, use trending audio, include housing hashtags: #HousingMarket #MortgageRates #HousingWire"},
-    {day:1,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 This week's top HW articles: UWM lawsuit 'frivolous' (Two Harbors) · CPI cools in July · Mortgage delinquencies eased Q2 · Figure Q2 revenue jump · Newrez $15.5M settlement · Fix-and-flip strain · Where boomers are moving. Check housingwire.com for today's breaking story."},
-    {day:2,type:"carousel",label:"🎠 Carousel",cls:"cca",tip:"Repurpose or adapt the LinkedIn carousel. Instagram carousels average 3.2% engagement."},
-    {day:3,type:"stat",label:"📊 Stat Graphic",cls:"cst",tip:"📊 This week's bold stats from HW Intelligence: 865,709 active listings · 6.91% rate · 36.88% price cuts · 1.92% spread. Pick ONE number, make it big, add short context. housingwire.com/intelligence for metro data."},
-    {day:4,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 Friday wrap: Use the week's biggest story or Logan's Housing Market Tracker update. This week's top picks: UWM/Two Harbors lawsuit · CPI inflation report · Mortgage delinquencies Q2 · Fix-and-flip strain. housingwire.com for the latest."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",
+     tip:"Post Logan's Housing Market Tracker as a Reel. Add captions (required), use trending audio if possible. Hashtags: #HousingWire #HousingMarket #MortgageRates #HousingData #RealEstate. Link in bio."},
+    {day:1,type:"news",label:"📰 News Graphic",cls:"cn",
+     tip:"Pick the format that fits the story:\n\n📌 HEADLINE GRAPHIC — Bold headline + subheadline + image. Clean, on-brand.\n\n💬 QUOTE GRAPHIC — Great line from a HW interview or article. Speaker name on branded background. Drives saves.\n\n🔍 WHO/WHAT/WHERE CAROUSEL — Swipeable breakdown of a complex story. 5-7 slides."},
+    {day:2,type:"carousel",label:"🎠 Carousel OR 🎤 Reel",cls:"cca",
+     tip:"CAROUSEL: Swipeable breakdown — adapt from the LinkedIn document carousel or create IG-native. Instagram carousels avg 3.2% engagement.\n\nOR if you have a reporter reel or podcast clip ready — post that instead. Reels always take priority over static content on Instagram."},
+    {day:3,type:"news",label:"📰 News Graphic",cls:"cn",
+     tip:"Pick the format that fits the story:\n\n📌 HEADLINE GRAPHIC — Bold headline + subheadline + image.\n\n💬 QUOTE GRAPHIC — Great line from a HW interview or article.\n\n🔍 WHO/WHAT/WHERE CAROUSEL — Swipeable breakdown of a complex story."},
+    {day:4,type:"news",label:"📰 News Graphic",cls:"cn",
+     tip:"End-of-week news graphic. Pick the format that fits the story:\n\n📌 HEADLINE GRAPHIC\n\n💬 QUOTE GRAPHIC\n\n🔍 WHO/WHAT/WHERE CAROUSEL\n\nFriday performs well for saves — a quote graphic or data visual tends to do best."},
   ],
+
   x:[
-    {day:0,type:"news",label:"📰 News + 🎬 Video Link",cls:"cn",tip:"📰 Recycle today's top HW story as a tweet + Logan's video link. This week: UWM lawsuit · CPI report · Delinquencies · Figure earnings. Keep it under 280 chars. Add the article URL."},
-    {day:1,type:"news",label:"📰 News",cls:"cn",tip:"Tweet today's top HW story. Keep it punchy, under 280 chars. Add the article URL. Breaking news, M&A, rate moves, and GSE news perform best on X."},
-    {day:2,type:"news",label:"📰 News / Carousel Clip",cls:"cn",tip:"Wednesday: tweet today's top HW story. If you're posting an Instagram carousel today, pull a key stat or slide from it as a tweet — same asset, adapted for X."},
-    {day:3,type:"news",label:"📰 News",cls:"cn",tip:"Tweet today's top HW story. Fannie/Freddie, GSE, rate data, and M&A news performs best on X. Add a relevant stat or quote to boost retweets."},
-    {day:4,type:"news",label:"📰 News",cls:"cn",tip:"Friday: tweet the week's biggest story or pull a stat from your Friday LinkedIn stat callout. Great end-of-week touchpoint."},
+    {day:0,type:"news",label:"📰 News + 🎬 Video",cls:"cn",
+     tip:"Tweet the day's top HW story (text + link, under 280 chars) + a separate tweet with Logan's video link and a key stat as the hook. Native video on X gets boosted reach — upload the clip directly rather than linking to Instagram."},
+    {day:1,type:"news",label:"📰 News",cls:"cn",
+     tip:"Tweet today's top HW story. Keep it punchy, under 280 chars. Add the article URL. Breaking news, M&A, rate moves, and GSE news perform best on X. Tag companies and executives when relevant."},
+    {day:2,type:"news",label:"📰 News",cls:"cn",
+     tip:"Tweet today's top HW story. Wednesday is peak B2B engagement on X. If you posted a carousel on LinkedIn/IG today, pull a key stat or quote from it as a standalone tweet."},
+    {day:3,type:"news",label:"📰 News",cls:"cn",
+     tip:"Tweet today's top HW story. Fannie/Freddie, GSE, rate data, and M&A news performs best on X. Add a relevant stat or quote to boost reposts."},
+    {day:4,type:"news",label:"📰 News",cls:"cn",
+     tip:"Tweet the week's biggest story or a key stat from today's content. Friday is a good day to post a native video clip on X if you have one — X boosts native video."},
   ],
+
   facebook:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel (share)",cls:"crl",tip:"Share Logan's Reel to Facebook. Facebook Reels get boosted reach — great low-effort post to keep the page active."},
-    {day:1,type:"repurpose",label:"♻️ Repurpose LinkedIn",cls:"crp",tip:"Share the LinkedIn stat graphic to Facebook. Adjust caption tone slightly."},
-    {day:3,type:"repurpose",label:"♻️ Repurpose Graphic",cls:"crp",tip:"Repurpose Thursday's Instagram stat graphic to Facebook."},
-    {day:4,type:"repurpose",label:"♻️ Repurpose Graphic",cls:"crp",tip:"Share Friday's Instagram news graphic to Facebook."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",
+     tip:"Share Logan's Reel to Facebook. Facebook Reels get boosted algorithmic reach. Same content as Instagram — no extra work needed."},
+    {day:1,type:"news",label:"📰 News Graphic",cls:"cn",
+     tip:"Share the same news graphic from Instagram/LinkedIn. Adapt the caption slightly — Facebook tone can be a touch less formal. Put the article link in the COMMENTS (not the post) for better reach."},
+    {day:3,type:"news",label:"📰 News Graphic",cls:"cn",
+     tip:"Share Thursday's news graphic from Instagram. Same content, same caption adapted for Facebook. Link in comments."},
+    {day:4,type:"news",label:"📰 News Graphic",cls:"cn",
+     tip:"Share Friday's news graphic from Instagram. Good end-of-week touchpoint. Link in comments."},
   ],
+
   tiktok:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel Clip",cls:"crl",tip:"Post a 30–60s clip from Logan's Reel. Add text overlay with the key stat from his tracker. TikTok's algorithm rewards consistent weekly posting."},
-    {day:2,type:"reel",label:"🎬 Housing Trend Reel",cls:"crl",tip:"Short reel reacting to a housing trend. Authenticity wins on TikTok — no heavy production needed."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel Clip",cls:"crl",
+     tip:"Post a 30–60s clip from Logan's Reel. Add text overlay with the key stat from his tracker. TikTok's algorithm rewards consistent weekly posting — Monday is your anchor day."},
+    {day:2,type:"reel",label:"🎤 Reporter Reel / Podcast Clip",cls:"crl",
+     tip:"Post a reporter reel or podcast clip when available. If nothing is ready this week, skip — don't force it. Authenticity wins on TikTok over frequency. When you do post: keep it under 60s, add captions, use trending audio if it fits."},
   ],
 };
 
@@ -444,40 +480,20 @@ function renderCal(){
   // ── Suggestions with live HW data + real article links ──────────────────
   const SUGG_DATA = [
     {
-      icon:"📊",
-      title:"Stat / Data Callout — This Week (from HW Intelligence)",
-      cls:"cst",
-      items:[
-        "📦 Inventory: 865,709 active listings — down 7,224 from last week (housingwire.com/intelligence)",
-        "💰 30-yr fixed rate: 6.91% — down 0.01% this week (housingwire.com/intelligence)",
-        "✂️ Price cuts: 36.88% of active listings have reduced price — use your local metro data from HW Intelligence",
-        "📈 Mortgage spread: 1.92% — keeping rates lower than they'd otherwise be at this 10-yr yield",
-        "🏠 Months of supply: ~2.6 nationally — seller-favorable but more balanced than 2022–24",
-        "📋 Purchase apps: up 5% YoY — pull the latest weekly number from Logan's tracker",
-        "🌎 Sun Belt strain: Florida price-cut rate at 43.6% — great local market stat from HW Intelligence",
-        "🏙️ Northeast strength: Boston absorption rate 21.4% — pull your metro's number from HW Intelligence dashboard",
-      ]
-    },
-    {
       icon:"📰",
-      title:"Single Graphic News — This Week's Top HW Articles",
+      title:"News Format Guide — Pick Based on the Story",
       cls:"cn",
       items:[
-        "Two Harbors calls UWM lawsuit 'frivolous,' slams management for $600M hedge loss → housingwire.com",
-        "Real estate leaders weigh buying vs building AI tools (AI Summit recap) → housingwire.com",
-        "CPI inflation cools in July as shelter rises 0.1% → housingwire.com",
-        "Mortgage delinquencies eased in Q2, still higher than 2025 → housingwire.com",
-        "Figure posts Q2 revenue jump, net take rate holds at 3.6% → housingwire.com",
-        "Newrez agrees to $15.5M settlement over forced-place insurance → housingwire.com",
-        "DOJ, Rocket Mortgage seek pause in fair housing case → housingwire.com",
-        "Fix-and-flip market shows signs of strain as mortgage rates climb → housingwire.com",
-        "Where are boomers and Gen X moving in 2026? → housingwire.com",
-        "Will a cooling labor market keep mortgage rates below 7%? → housingwire.com",
+        "📌 HEADLINE GRAPHIC: Breaking news, M&A, rate moves, GSE announcements — bold headline + subheadline + image",
+        "💬 QUOTE GRAPHIC: Pull a great line from a HW interview or article — speaker name + branded background. Drives saves.",
+        "🔍 WHO/WHAT/WHERE CAROUSEL: Complex deals, policy changes, earnings — 5-7 slides breaking it down",
+        "💡 Rule of thumb: If it happened → Headline. If someone said something smart → Quote. If it needs explaining → Carousel.",
+        "🔗 Always put article links in the FIRST COMMENT on LinkedIn, not the post itself",
       ]
     },
     {
       icon:"🎠",
-      title:"Carousel / Deep Dive Ideas",
+      title:"Document Carousel Ideas (LinkedIn PDF format)",
       cls:"cca",
       items:[
         "Regional housing market breakdown: Northeast vs Sun Belt vs Midwest — use HW Intelligence data",
@@ -486,30 +502,44 @@ function renderCal(){
         "M&A deal breakdown: PennyMac + Cenlar — what it means for servicers",
         "5 things the CPI report means for mortgage rates and housing demand",
         "HW AI Summit: 5 key takeaways from the best minds in housing",
+        "💡 Export from Canva as PDF and upload as a Document post — gets 7% engagement vs 5.3% for images",
       ]
     },
     {
-      icon:"🗳️",
-      title:"Poll / Question Ideas (LinkedIn)",
-      cls:"cpo",
+      icon:"💬",
+      title:"Quote Graphic Ideas — Pull From HW Articles",
+      cls:"cn",
       items:[
-        "Sun Belt or Northeast — where are you seeing more buyer activity right now?",
-        "Will the Fed cut rates before year end? Yes / No / Too early to say",
-        "Which AI use case excites you most in mortgage? Underwriting / Servicing / Customer experience / Compliance",
-        "Are you seeing more buyers or sellers in your market right now?",
-        "What's your biggest challenge: rates, inventory, or affordability?",
+        "Logan Mohtashami on mortgage spreads: 'At 1.99%, spreads are keeping rates under 7%'",
+        "Any AI Summit speaker quote from the green room clips",
+        "CRO quote: 'No other housing publication comes close to this level of operational intelligence'",
+        "Pull quotes from HW Intelligence launch coverage",
+        "Any executive interview in a HW article this week — scan for the most quotable line",
       ]
     },
     {
-      icon:"🎬",
-      title:"Reel / Video Ideas",
+      icon:"🎤",
+      title:"Reel Ideas — Reporter & Podcast Clips",
       cls:"crl",
       items:[
-        "Logan's weekly market breakdown — Monday anchor (housingwire.com/intelligence tracker)",
-        "AI Summit speaker highlight clips — 4 reels scheduled Aug 14/17/19/21",
-        "'What does 6.91% mortgage rate mean for buyers right now?' — 30s explainer",
-        "Sun Belt vs Northeast housing market — show the HW Intelligence dashboard",
-        "Behind the scenes at a HousingWire event",
+        "Reporter answers: 'What's the one thing people are getting wrong about the housing market right now?'",
+        "Logan's weekly tracker — Monday anchor (already scheduled)",
+        "AI Summit green room clips — 4 reels scheduled Aug 14/17/19/21",
+        "Podcast clip: pull the best 30-60s moment from HousingWire Daily or Power House",
+        "💡 Reporters should film vertically, look at camera, keep it under 60s — no script needed",
+      ]
+    },
+    {
+      icon:"📊",
+      title:"Data & Stats — From HW Intelligence This Week",
+      cls:"cst",
+      items:[
+        "Inventory: 871,063 active listings (+1.28% YoY) — housingwire.com/intelligence",
+        "Mortgage rate: 6.91% · Spread: 1.99% (keeping rates under 7%)",
+        "Price cuts: 36.88% of active listings nationally",
+        "Sun Belt strain: Florida price-cut rate at 43.6%",
+        "Northeast strength: Boston absorption rate 21.4%",
+        "Pull your metro-level data from housingwire.com/intelligence for local angles",
       ]
     },
     {
@@ -519,15 +549,16 @@ function renderCal(){
       items:[
         "Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn",
         "Post within 15 minutes of story going live for maximum algorithmic reach",
-        "Put the article link in the first comment on LinkedIn (not the post itself)",
+        "Put the article link in the FIRST COMMENT on LinkedIn (not the post itself)",
         "M&A deals, rate moves, GSE news, lender strategy = your highest-engagement topics",
         "Tag companies and executives mentioned when possible to expand reach",
+        "Breaking news REPLACES whatever was scheduled that day — always prioritize",
       ]
     },
   ];
   document.getElementById("sgg").innerHTML=SUGG_DATA.map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
 
-  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~21","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
+  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~19","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
 }
 
 function chk(e,id){
