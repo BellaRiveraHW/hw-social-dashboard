@@ -618,6 +618,70 @@ function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMo
 function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSb()}
 
 function renderCal(){
+  const dates=getWeekDates(calOff);
+  document.getElementById("cwl").textContent=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
+  const checked=loadChecked();
+  // Read localStorage ONCE before building grid
+  const overrides=getOverrides();
+  const allCustoms=getCustomPosts();
+  let o='<div></div>';
+  dates.forEach((d,i)=>{
+    o+='<div class="cdh"><div class="cdn">'+DAYS[i]+'</div><div class="cdd'+(isToday(d)?" td":"")+'">'+(fd(d))+'</div></div>';
+  });
+  PLATS.forEach(p=>{
+    o+='<div class="cpl"><div class="cpd" style="background:'+p.color+'"></div>'+p.label+'</div>';
+    dates.forEach((d,di)=>{
+      const ds=isoDate(d);
+      const posts=getCellPosts(ds,p.key,di);
+      const customs=allCustoms[ds+"_"+p.key]||[];
+      if(!posts.length&&!customs.length){o+='<div class="cell mt"></div>';return;}
+      o+='<div class="cell">';
+      posts.forEach(post=>{
+        const id=pid(ds,p.key,post.label);
+        const done=!!checked[id];
+        const ov=overrides[id];
+        const lbl=ov?ov.label:post.label;
+        const cls=ov?ov.cls:post.cls;
+        const t=(ov?ov.tip:(post.tip||"")).replace(/\/g,"").replace(/'/g,"").replace(/"/g,"");
+        o+='<div class="cp '+cls+(done?" done":"")+'" id="'+id+'">'
+          +'<div class="cp-check'+(done?" chk":"")+'" onclick="chk(event,''+id+'')"></div>'
+          +'<div class="cp-body" onclick="showTip(''+t+'')">'
+          +'<div class="cpt">'+(post.type||"post")+'</div>'+lbl+'</div>'
+          +'<div class="cp-edit" onclick="event.stopPropagation();openEditModal(''+id+'',''+ds+'',''+p.key+'',false)">✏️</div>'
+          +'</div>';
+      });
+      customs.forEach(post=>{
+        const done=!!checked[post.id];
+        const t=(post.tip||"").replace(/\/g,"").replace(/'/g,"").replace(/"/g,"");
+        o+='<div class="cp '+post.cls+(done?" done":"")+'" id="'+post.id+'">'
+          +'<div class="cp-check'+(done?" chk":"")+'" onclick="chk(event,''+post.id+'')"></div>'
+          +'<div class="cp-body" onclick="showTip(''+t+'')">'
+          +'<div class="cpt">custom</div>'+post.label+'</div>'
+          +'<div class="cp-edit" onclick="event.stopPropagation();openEditModal(''+post.id+'',''+ds+'',''+p.key+'',true)">✏️</div>'
+          +'</div>';
+      });
+      o+='<button class="cell-add" onclick="openAddModal(''+ds+'',''+p.key+'')">+ add</button>';
+      o+='</div>';
+    });
+  });
+  document.getElementById("cgrid").innerHTML=o;
+
+  // Suggestions
+  document.getElementById("sgg").innerHTML=SUGG_DATA.map(s=>'<div class="sgc"><h4>'+s.icon+' '+s.title+'</h4><ul>'+s.items.map(i=>'<li>'+i+'</li>').join('')+'</ul></div>').join('');
+  // Targets
+  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~21","across all platforms"]].map(([c,l,v,s])=>'<div class="kc" style="--cc:'+c+'"><div class="kl">'+l+'</div><div class="kv">'+v+'</div><div class="ks ne">'+s+'</div></div>').join('');
+}
+
+function getWeekDates(off){
+  const now=new Date(),day=now.getDay(),mon=new Date(now);
+  mon.setDate(now.getDate()-(day===0?6:day-1)+off*7);
+  return Array.from({length:5},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});
+}
+function fd(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}
+function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()}
+function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSb()}
+
+function renderCal(){
   const dates=getWeekDates(calOff),checked=getChecked();
   document.getElementById("cwl").textContent=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
   let o=`<div></div>`;
