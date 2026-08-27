@@ -266,7 +266,7 @@ const SUMMIT_REELS=[{"date": "2026-08-14", "platform": "instagram", "type": "ree
 const PM={linkedin:{label:"LinkedIn",color:"#0077b5"},instagram:{label:"Instagram",color:"#e1306c"},facebook:{label:"Facebook",color:"#1877f2"},x:{label:"X (Twitter)",color:"#e7e9ea"},tiktok:{label:"TikTok",color:"#69c9d0"}};
 const BENCH={linkedin:2.8,instagram:3.2,facebook:1.75,x:1.7,tiktok:1.8};
 const allWeeks=[...new Set(WEEKLY.map(r=>r.week_ending))].sort();
-let selWeek=allWeeks[allWeeks.length-1],charts={},calOff=0,sbOn=true;
+let selWeek=allWeeks[allWeeks.length-1],charts={},calOff=0,sbOn=true,sheetPosts=[];
 
 function lsGet(k,def){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(def))}catch{return def}}
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
@@ -280,7 +280,7 @@ function tab(id,btn){
   document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
   document.getElementById("tab-"+id).classList.add("on");
   btn.classList.add("on");
-  if(id==="cal"){renderCal();renderSb()}
+  if(id==="cal"){fetchCalendarPosts();renderCal();renderSb()}
 }
 
 function toggleSb(){
@@ -408,6 +408,28 @@ function getWeekDates(off){
 }
 function fd(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}
 function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()}
+
+// ── Fetch custom posts from Google Sheet CalendarPosts tab ────────────────────
+const CAL_URL='https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk/gviz/tq?tqx=out:csv&sheet=CalendarPosts';
+function fetchCalendarPosts(){
+  fetch(CAL_URL+'&t='+Date.now())
+    .then(r=>r.text())
+    .then(txt=>{
+      const lines=txt.trim().split('\n');
+      if(lines.length<2){sheetPosts=[];return;}
+      const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+      sheetPosts=lines.slice(1).map(line=>{
+        const vals=[];let cur='',inQ=false;
+        for(const c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){vals.push(cur);cur='';}else cur+=c;}
+        vals.push(cur);
+        const obj={};headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/"/g,'').trim());
+        return obj;
+      }).filter(r=>r.date&&r.platform&&r.label);
+      if(document.getElementById('tab-cal').classList.contains('on')) renderCal();
+    })
+    .catch(()=>{sheetPosts=[];});
+}
+
 function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSb()}
 
 function renderCal(){
@@ -546,7 +568,13 @@ function renderSb(){
       tasks.push({id:pid(today,p.key,post.label),label:post.label,platform:p.label,color:p.color});
     });
   });
-  customs.filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
+  getCustom().filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
+  // Sheet calendar posts for today
+  sheetPosts.filter(r=>r.date===today).forEach(r=>{
+    const pm=PM[r.platform]||{label:r.platform,color:"#6c63ff"};
+    const id='sp_'+today+'_'+r.platform+'_'+(r.label||'').replace(/\W/g,'_').slice(0,20);
+    tasks.push({id,label:r.label,platform:pm.label,color:pm.color});
+  });
 
   document.getElementById("todo-list").innerHTML=tasks.length?tasks.map(t=>{
     const done=!!checked[t.id];
@@ -608,7 +636,7 @@ function showTip(tip){
   setTimeout(()=>document.addEventListener("click",()=>p.remove(),{once:true}),100);
 }
 
-buildSel();renderWeek();
+buildSel();renderWeek();fetchCalendarPosts();
 </script>
 </body>
 </html>
