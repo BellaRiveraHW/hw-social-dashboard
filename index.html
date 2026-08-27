@@ -5,148 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>HW Media — Social Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
-// ═══════════════════════════════════════════════════════════════════════════
-// EDITABLE CALENDAR
-// ═══════════════════════════════════════════════════════════════════════════
-
-// Content type definitions for the modal
-const CTYPES = [
-  {cls:"crl", label:"🎬 Reel",      bg:"#1a2030", border:"#ff9800", color:"#f0d0a0"},
-  {cls:"cn",  label:"📰 News",      bg:"#1a2a1a", border:"#00d4aa", color:"#a0f0dc"},
-  {cls:"cca", label:"🎠 Carousel",  bg:"#2a1a2a", border:"#e1306c", color:"#f0a0c0"},
-  {cls:"cst", label:"📊 Stat",      bg:"#2a2a1a", border:"#ffd93d", color:"#f0e0a0"},
-  {cls:"cpo", label:"🗳️ Poll",      bg:"#1a2a2a", border:"#00bcd4", color:"#a0e0f0"},
-  {cls:"clp", label:"🚀 Launch",    bg:"#1f1a2e", border:"#9c27b0", color:"#d4a0f0"},
-  {cls:"cv",  label:"📹 Video",     bg:"#1a2744", border:"#6c63ff", color:"#c5c0ff"},
-  {cls:"crp", label:"♻️ Repurpose", bg:"#1e1e1e", border:"#555",    color:"#aaa"},
-  {cls:"cht", label:"💬 Other",     bg:"#2a1a1a", border:"#ff6b6b", color:"#f0c0c0"},
-];
-
-// Custom posts storage: { "dateStr_platKey": [{id, label, cls, tip}, ...] }
-function getCustomPosts(){try{return JSON.parse(localStorage.getItem("hw_custom_posts")||"{}")}catch{return{}}}
-function setCustomPosts(d){localStorage.setItem("hw_custom_posts",JSON.stringify(d))}
-
-// Overrides storage: { "pid": {label, cls, tip} } — for editing scheduled posts
-function getOverrides(){try{return JSON.parse(localStorage.getItem("hw_overrides")||"{}")}catch{return{}}}
-function setOverrides(d){localStorage.setItem("hw_overrides",JSON.stringify(d))}
-
-// Modal state
-let _modal = {dateStr:null, platKey:null, postId:null, isCustom:false, selectedCls:"cn"};
-
-function openAddModal(dateStr, platKey){
-  _modal = {dateStr, platKey, postId:null, isCustom:true, selectedCls:"cn"};
-  document.getElementById("modal-title").textContent = "Add Post";
-  document.getElementById("modal-label").value = "";
-  document.getElementById("modal-tip").value = "";
-  document.getElementById("modal-delete").style.display = "none";
-  buildTypeGrid("cn");
-  document.getElementById("post-modal").style.display = "flex";
-  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
-}
-
-function openEditModal(postId, dateStr, platKey, isCustom){
-  const overrides = getOverrides();
-  const customs = getCustomPosts();
-  let label="", cls="cn", tip="";
-
-  if(isCustom){
-    const key = dateStr+"_"+platKey;
-    const arr = customs[key]||[];
-    const post = arr.find(p=>p.id===postId);
-    if(post){label=post.label;cls=post.cls;tip=post.tip||"";}
-  } else {
-    // Scheduled post — check for override first
-    if(overrides[postId]){
-      label=overrides[postId].label;cls=overrides[postId].cls;tip=overrides[postId].tip||"";
-    } else {
-      // Find original from SCHED or LAUNCH_EVENTS or SUMMIT_REELS
-      const el=document.getElementById(postId);
-      if(el){
-        label=el.querySelector(".cp-body")?.childNodes[1]?.textContent?.trim()||"";
-        cls=Array.from(el.classList).find(c=>c.startsWith("c")&&c.length<=4&&c!=="cp"&&c!=="cv"||c==="cv")||"cn";
-      }
-    }
-  }
-
-  _modal = {dateStr, platKey, postId, isCustom, selectedCls:cls};
-  document.getElementById("modal-title").textContent = isCustom ? "Edit Post" : "Edit Scheduled Post";
-  document.getElementById("modal-label").value = label;
-  document.getElementById("modal-tip").value = tip;
-  document.getElementById("modal-delete").style.display = isCustom ? "inline-flex" : "none";
-  buildTypeGrid(cls);
-  document.getElementById("post-modal").style.display = "flex";
-  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
-}
-
-function buildTypeGrid(selectedCls){
-  const grid = document.getElementById("type-grid");
-  grid.innerHTML = CTYPES.map(t=>`
-    <div class="type-opt${t.cls===selectedCls?" sel":""}"
-      style="background:${t.bg};border-color:${t.cls===selectedCls?"white":t.border};color:${t.color}"
-      onclick="selectType('${t.cls}')">${t.label}</div>
-  `).join("");
-}
-
-function selectType(cls){
-  _modal.selectedCls = cls;
-  buildTypeGrid(cls);
-}
-
-function savePost(){
-  const label = document.getElementById("modal-label").value.trim();
-  if(!label){document.getElementById("modal-label").focus();return;}
-  const tip = document.getElementById("modal-tip").value.trim();
-  const cls = _modal.selectedCls;
-
-  if(_modal.isCustom){
-    // Save custom post
-    const customs = getCustomPosts();
-    const key = _modal.dateStr+"_"+_modal.platKey;
-    if(!customs[key]) customs[key]=[];
-    if(_modal.postId){
-      // Edit existing custom
-      const idx = customs[key].findIndex(p=>p.id===_modal.postId);
-      if(idx>=0) customs[key][idx]={id:_modal.postId,label,cls,tip};
-    } else {
-      // New custom post
-      customs[key].push({id:"c_"+Date.now(),label,cls,tip});
-    }
-    setCustomPosts(customs);
-  } else {
-    // Save override for scheduled post
-    const overrides = getOverrides();
-    overrides[_modal.postId]={label,cls,tip};
-    setOverrides(overrides);
-  }
-
-  closeModal();
-  renderCal();
-  renderSb();
-}
-
-function deletePost(){
-  if(!_modal.isCustom||!_modal.postId) return;
-  const customs = getCustomPosts();
-  const key = _modal.dateStr+"_"+_modal.platKey;
-  if(customs[key]){
-    customs[key]=customs[key].filter(p=>p.id!==_modal.postId);
-    if(!customs[key].length) delete customs[key];
-  }
-  setCustomPosts(customs);
-  closeModal();
-  renderCal();
-  renderSb();
-}
-
-function closeModal(){
-  document.getElementById("post-modal").style.display="none";
-}
-
-// Keyboard shortcut: Escape closes modal
-document.addEventListener("keydown", e=>{if(e.key==="Escape") closeModal();});
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#0f1117;--s:#1a1d27;--s2:#22263a;--b:#2e3250;--a:#6c63ff;--a2:#00d4aa;--a3:#ff6b6b;--a4:#ffd93d;--t:#e8eaf6;--tm:#8b92b8}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -306,36 +165,7 @@ footer a{color:var(--a);text-decoration:none}
 .sgc li::before{content:"→ ";color:var(--a);font-weight:700}
 
 .tip-pop{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--a);border-radius:11px;padding:13px 16px;font-size:0.79rem;color:var(--t);max-width:360px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.5);line-height:1.5;width:90%}
-
-    /* ── Edit / Add Post Modal ── */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px}
-    .modal{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:22px;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.5)}
-    .modal h3{font-size:0.95rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-    .modal-close{background:none;border:none;color:var(--tm);font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1}
-    .modal-close:hover{color:var(--t)}
-    .modal label{display:block;font-size:0.72rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;margin-top:12px}
-    .modal input[type=text],.modal textarea{width:100%;background:var(--s2);border:1px solid var(--b);color:var(--t);border-radius:8px;padding:8px 10px;font-size:0.82rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
-    .modal input[type=text]:focus,.modal textarea:focus{border-color:var(--a)}
-    .modal textarea{resize:vertical;min-height:60px}
-    .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
-    .type-opt{padding:6px 4px;border-radius:7px;border:2px solid transparent;cursor:pointer;font-size:0.68rem;font-weight:700;text-align:center;transition:all .15s;line-height:1.3}
-    .type-opt:hover{opacity:.85}
-    .type-opt.sel{border-color:white!important;opacity:1}
-    .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
-    .modal-actions button{padding:8px 16px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:opacity .15s}
-    .modal-actions button:hover{opacity:.85}
-    .btn-cancel{background:var(--s2);color:var(--tm)}
-    .btn-save{background:var(--a);color:#fff}
-    .btn-delete{background:#2a1a1a;color:var(--a3);border:1px solid var(--a3)!important;margin-right:auto}
-    /* Add button on cells */
-    .cell-add{display:flex;align-items:center;justify-content:center;width:100%;margin-top:2px;padding:3px;border-radius:5px;border:1px dashed var(--b);color:var(--tm);font-size:0.65rem;cursor:pointer;transition:all .15s;background:none;font-family:'Inter',sans-serif}
-    .cell-add:hover{border-color:var(--a);color:var(--a);background:var(--s2)}
-    /* Edit indicator on chips */
-    .cp-edit{position:absolute;top:2px;right:2px;font-size:8px;opacity:0;transition:opacity .15s;cursor:pointer;background:rgba(0,0,0,.4);border-radius:3px;padding:1px 3px;color:#fff}
-    .cp:hover .cp-edit{opacity:1}
-    .cp{position:relative}
-
-  </style>
+</style>
 </head>
 <body>
 <header>
@@ -366,9 +196,7 @@ footer a{color:var(--a);text-decoration:none}
     <div class="cc"><div class="ct">📊 YTD Follower Growth</div><div class="cw"><canvas id="c3"></canvas></div></div>
   </div>
   <div class="sec">Engagement Rate vs. Industry Benchmark</div><div class="bg" id="bg"></div>
-  <div class="sec">🏆 Top Posts Published — <span id="posts-week-label" style="color:var(--a2);text-transform:none;letter-spacing:0;font-weight:600;font-size:0.8rem"></span></div>
-<p style="font-size:0.73rem;color:var(--tm);margin-bottom:14px;margin-top:-6px">Top posts <em>published</em> this week by platform, ranked by total engagement.</p>
-<div class="og" id="og"></div>
+  <div class="sec">🏆 Top Posts This Week</div><div class="og" id="og"></div>
 </main>
 </div>
 
@@ -429,8 +257,11 @@ footer a{color:var(--a);text-decoration:none}
 
 <footer>Data: <a href="https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk" target="_blank">HousingWire Social Dashboard</a> · Benchmarks: Hootsuite 2026 · HW Media</footer>
 
-<script src="data.js"></script>
 <script>
+const WEEKLY=[{"week_ending": "2026-03-06", "platform": "linkedin", "followers": 62861, "total_engagement": 188}, {"week_ending": "2026-03-13", "platform": "linkedin", "followers": 62996, "total_engagement": 429}, {"week_ending": "2026-03-20", "platform": "linkedin", "followers": 63132, "total_engagement": 334}, {"week_ending": "2026-03-27", "platform": "linkedin", "followers": 63252, "total_engagement": 244}, {"week_ending": "2026-04-03", "platform": "linkedin", "followers": 63376, "total_engagement": 341}, {"week_ending": "2026-04-10", "platform": "linkedin", "followers": 63477, "total_engagement": 180}, {"week_ending": "2026-04-17", "platform": "linkedin", "followers": 63584, "total_engagement": 76}, {"week_ending": "2026-04-24", "platform": "linkedin", "followers": 63698, "total_engagement": 144}, {"week_ending": "2026-05-01", "platform": "linkedin", "followers": 63845, "total_engagement": 235}, {"week_ending": "2026-05-08", "platform": "linkedin", "followers": 63974, "total_engagement": 257}, {"week_ending": "2026-05-15", "platform": "linkedin", "followers": 64129, "total_engagement": 467}, {"week_ending": "2026-05-22", "platform": "linkedin", "followers": 64246, "total_engagement": 147}, {"week_ending": "2026-05-29", "platform": "linkedin", "followers": 64359, "total_engagement": 213}, {"week_ending": "2026-06-05", "platform": "linkedin", "followers": 64485, "total_engagement": 169}, {"week_ending": "2026-06-12", "platform": "linkedin", "followers": 64579, "total_engagement": 120}, {"week_ending": "2026-06-19", "platform": "linkedin", "followers": 64671, "total_engagement": 49}, {"week_ending": "2026-06-26", "platform": "linkedin", "followers": 64775, "total_engagement": 80}, {"week_ending": "2026-07-03", "platform": "linkedin", "followers": 64848, "total_engagement": 103}, {"week_ending": "2026-07-10", "platform": "linkedin", "followers": 64945, "total_engagement": 86}, {"week_ending": "2026-07-17", "platform": "linkedin", "followers": 65006, "total_engagement": 122}, {"week_ending": "2026-07-24", "platform": "linkedin", "followers": 65090, "total_engagement": 121}, {"week_ending": "2026-07-31", "platform": "linkedin", "followers": 65156, "total_engagement": 151}, {"week_ending": "2026-08-07", "platform": "linkedin", "followers": 65289, "total_engagement": 339}, {"week_ending": "2026-08-14", "platform": "linkedin", "followers": 65354, "total_engagement": 43}, {"week_ending": "2026-03-06", "platform": "instagram", "followers": 54462, "total_engagement": 1434}, {"week_ending": "2026-03-13", "platform": "instagram", "followers": 54918, "total_engagement": 2044}, {"week_ending": "2026-03-20", "platform": "instagram", "followers": 55486, "total_engagement": 6707}, {"week_ending": "2026-03-27", "platform": "instagram", "followers": 55787, "total_engagement": 1693}, {"week_ending": "2026-04-03", "platform": "instagram", "followers": 56013, "total_engagement": 690}, {"week_ending": "2026-04-10", "platform": "instagram", "followers": 56169, "total_engagement": 305}, {"week_ending": "2026-04-17", "platform": "instagram", "followers": 56342, "total_engagement": 197}, {"week_ending": "2026-04-24", "platform": "instagram", "followers": 56508, "total_engagement": 2269}, {"week_ending": "2026-05-01", "platform": "instagram", "followers": 56805, "total_engagement": 3363}, {"week_ending": "2026-05-08", "platform": "instagram", "followers": 57112, "total_engagement": 1080}, {"week_ending": "2026-05-15", "platform": "instagram", "followers": 57398, "total_engagement": 645}, {"week_ending": "2026-05-22", "platform": "instagram", "followers": 57667, "total_engagement": 346}, {"week_ending": "2026-05-29", "platform": "instagram", "followers": 57895, "total_engagement": 590}, {"week_ending": "2026-06-05", "platform": "instagram", "followers": 58132, "total_engagement": 524}, {"week_ending": "2026-06-12", "platform": "instagram", "followers": 58376, "total_engagement": 1183}, {"week_ending": "2026-06-19", "platform": "instagram", "followers": 58584, "total_engagement": 740}, {"week_ending": "2026-06-26", "platform": "instagram", "followers": 58780, "total_engagement": 305}, {"week_ending": "2026-07-03", "platform": "instagram", "followers": 58971, "total_engagement": 341}, {"week_ending": "2026-07-10", "platform": "instagram", "followers": 59147, "total_engagement": 310}, {"week_ending": "2026-07-17", "platform": "instagram", "followers": 59314, "total_engagement": 194}, {"week_ending": "2026-07-24", "platform": "instagram", "followers": 59502, "total_engagement": 141}, {"week_ending": "2026-07-31", "platform": "instagram", "followers": 59714, "total_engagement": 123}, {"week_ending": "2026-08-07", "platform": "instagram", "followers": 59910, "total_engagement": 409}, {"week_ending": "2026-08-14", "platform": "instagram", "followers": 60006, "total_engagement": 178}, {"week_ending": "2026-03-06", "platform": "facebook", "followers": 56444, "total_engagement": 361}, {"week_ending": "2026-03-13", "platform": "facebook", "followers": 56569, "total_engagement": 284}, {"week_ending": "2026-03-20", "platform": "facebook", "followers": 56714, "total_engagement": 289}, {"week_ending": "2026-03-27", "platform": "facebook", "followers": 56749, "total_engagement": 93}, {"week_ending": "2026-04-03", "platform": "facebook", "followers": 56786, "total_engagement": 255}, {"week_ending": "2026-04-10", "platform": "facebook", "followers": 56809, "total_engagement": 246}, {"week_ending": "2026-04-17", "platform": "facebook", "followers": 56822, "total_engagement": 557}, {"week_ending": "2026-04-24", "platform": "facebook", "followers": 56851, "total_engagement": 3248}, {"week_ending": "2026-05-01", "platform": "facebook", "followers": 56885, "total_engagement": 274}, {"week_ending": "2026-05-08", "platform": "facebook", "followers": 56914, "total_engagement": 313}, {"week_ending": "2026-05-15", "platform": "facebook", "followers": 56965, "total_engagement": 145}, {"week_ending": "2026-05-22", "platform": "facebook", "followers": 57011, "total_engagement": 104}, {"week_ending": "2026-05-29", "platform": "facebook", "followers": 57043, "total_engagement": 65}, {"week_ending": "2026-06-05", "platform": "facebook", "followers": 57073, "total_engagement": 67}, {"week_ending": "2026-06-12", "platform": "facebook", "followers": 57115, "total_engagement": 87}, {"week_ending": "2026-06-19", "platform": "facebook", "followers": 57135, "total_engagement": 50}, {"week_ending": "2026-06-26", "platform": "facebook", "followers": 57158, "total_engagement": 64}, {"week_ending": "2026-07-03", "platform": "facebook", "followers": 57178, "total_engagement": 95}, {"week_ending": "2026-07-10", "platform": "facebook", "followers": 57211, "total_engagement": 80}, {"week_ending": "2026-07-17", "platform": "facebook", "followers": 57255, "total_engagement": 84}, {"week_ending": "2026-07-24", "platform": "facebook", "followers": 57300, "total_engagement": 77}, {"week_ending": "2026-07-31", "platform": "facebook", "followers": 57328, "total_engagement": 55}, {"week_ending": "2026-08-07", "platform": "facebook", "followers": 57377, "total_engagement": 209}, {"week_ending": "2026-08-14", "platform": "facebook", "followers": 57406, "total_engagement": 79}, {"week_ending": "2026-03-06", "platform": "x", "followers": 126110, "total_engagement": 143}, {"week_ending": "2026-03-13", "platform": "x", "followers": 126195, "total_engagement": 223}, {"week_ending": "2026-03-20", "platform": "x", "followers": 126257, "total_engagement": 262}, {"week_ending": "2026-03-27", "platform": "x", "followers": 126341, "total_engagement": 500}, {"week_ending": "2026-04-03", "platform": "x", "followers": 126409, "total_engagement": 155}, {"week_ending": "2026-04-10", "platform": "x", "followers": 126457, "total_engagement": 153}, {"week_ending": "2026-04-17", "platform": "x", "followers": 126519, "total_engagement": 148}, {"week_ending": "2026-04-24", "platform": "x", "followers": 126572, "total_engagement": 196}, {"week_ending": "2026-05-01", "platform": "x", "followers": 126634, "total_engagement": 214}, {"week_ending": "2026-05-08", "platform": "x", "followers": 126682, "total_engagement": 194}, {"week_ending": "2026-05-15", "platform": "x", "followers": 126736, "total_engagement": 223}, {"week_ending": "2026-05-22", "platform": "x", "followers": 126818, "total_engagement": 186}, {"week_ending": "2026-05-29", "platform": "x", "followers": 126861, "total_engagement": 183}, {"week_ending": "2026-06-05", "platform": "x", "followers": 126916, "total_engagement": 222}, {"week_ending": "2026-06-12", "platform": "x", "followers": 126973, "total_engagement": 225}, {"week_ending": "2026-06-19", "platform": "x", "followers": 127034, "total_engagement": 223}, {"week_ending": "2026-06-26", "platform": "x", "followers": 127081, "total_engagement": 248}, {"week_ending": "2026-07-03", "platform": "x", "followers": 127126, "total_engagement": 254}, {"week_ending": "2026-07-10", "platform": "x", "followers": 127172, "total_engagement": 152}, {"week_ending": "2026-07-17", "platform": "x", "followers": 127215, "total_engagement": 217}, {"week_ending": "2026-07-24", "platform": "x", "followers": 127270, "total_engagement": 249}, {"week_ending": "2026-07-31", "platform": "x", "followers": 127329, "total_engagement": 385}, {"week_ending": "2026-08-07", "platform": "x", "followers": 127372, "total_engagement": 254}, {"week_ending": "2026-08-14", "platform": "x", "followers": 127400, "total_engagement": 145}, {"week_ending": "2026-07-31", "platform": "tiktok", "followers": 546, "total_engagement": 0}, {"week_ending": "2026-08-07", "platform": "tiktok", "followers": 551, "total_engagement": 0}, {"week_ending": "2026-08-14", "platform": "tiktok", "followers": 554, "total_engagement": 0}, {"week_ending": "2026-08-21", "platform": "linkedin", "followers": 65380, "total_engagement": 27}, {"week_ending": "2026-08-21", "platform": "instagram", "followers": 60058, "total_engagement": 92}, {"week_ending": "2026-08-21", "platform": "facebook", "followers": 57435, "total_engagement": 6}, {"week_ending": "2026-08-21", "platform": "x", "followers": 127430, "total_engagement": 116}, {"week_ending": "2026-08-21", "platform": "tiktok", "followers": 557, "total_engagement": 0}, {"week_ending": "2026-08-28", "platform": "linkedin", "followers": 65532, "total_engagement": 27}, {"week_ending": "2026-08-28", "platform": "instagram", "followers": 60061, "total_engagement": 65}, {"week_ending": "2026-08-28", "platform": "facebook", "followers": 57464, "total_engagement": 27}, {"week_ending": "2026-08-28", "platform": "x", "followers": 127490, "total_engagement": 247}, {"week_ending": "2026-08-28", "platform": "tiktok", "followers": 560, "total_engagement": 4}];
+const POSTS=[{"week_ending": "2026-08-14", "platform": "x", "rank": 1, "caption": "Fannie Mae trims costs, boosts MBS purchases to post $14.4B profit in 2025", "likes": 123, "comments": 13, "shares": 26, "link": "https://x.com/HousingWire/status/2021624673520517155"}, {"week_ending": "2026-08-14", "platform": "x", "rank": 2, "caption": "Bed Bath & Beyond parent eyes mortgages through deals with Figure", "likes": 102, "comments": 8, "shares": 13, "link": "https://x.com/HousingWire/status/2018812631151489272"}, {"week_ending": "2026-08-14", "platform": "x", "rank": 3, "caption": "MBA's Broeksmit says credit bureau trade group 'gaslit' mortgage industry", "likes": 9, "comments": 3, "shares": 1, "link": "https://x.com/HousingWire/status/2018467272390803650"}, {"week_ending": "2026-08-14", "platform": "instagram", "rank": 1, "caption": "The 2026 HousingWire AI Summit is a wrap! Some of the sharpest minds in mortgage, real estate and homebuilding in one room. Swipe through for key takeaways. #HousingWire #AISummit #MortgageIndustry #RealEstate #AIinMortgage", "likes": 35, "comments": 2, "shares": 3, "link": "https://www.instagram.com/p/Db6uGfZHe86/"}, {"week_ending": "2026-08-14", "platform": "instagram", "rank": 2, "caption": "Looking through the HousingWire AI Summit agenda, grateful to be spending the day alongside people building the future of housing from every angle. (via @therealryangrant)", "likes": 28, "comments": 1, "shares": 0, "link": "https://www.instagram.com/p/DbyZ1Ecj7lv/"}, {"week_ending": "2026-08-14", "platform": "instagram", "rank": 3, "caption": "August 19, we are launching something we have been building for the people who move the housing market. Stay tuned. #HousingWire #HousingMarket #MortgageIndustry", "likes": 15, "comments": 1, "shares": 0, "link": "https://www.instagram.com/p/Db9PVvtoBOK/"}, {"week_ending": "2026-08-14", "platform": "facebook", "rank": 1, "caption": "The 2026 HousingWire AI Summit is a wrap, and the conversations in that room are going to stick with us. Mortgage, real estate and homebuilding leaders came together to talk about what AI is actually doing for this industry right now. Not the hype. The results.", "likes": 3, "comments": 1, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid0rhex7HCwgiAHR7UJNqHhFG9Pwr5phT19nk4HixwBVdPAMUB8oAFQiGoe6uYMyLRil"}, {"week_ending": "2026-08-14", "platform": "facebook", "rank": 2, "caption": "August 19, we are launching something we have been building for the people who move the housing market. Stay tuned.", "likes": 1, "comments": 1, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid02bs5W92zihfC96WdYMX6eD75Vj8eFT4R9QJoMwpPF2cyxC9eNxC7RkP7R5Bb9vQfjl"}, {"week_ending": "2026-08-14", "platform": "facebook", "rank": 3, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 2, "comments": 0, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid02nbgg5D6mVnP68i9k5maG8s9GiZAKsAbYBzz9Xh6HMfjLFG4QKS6Nva89NSokwphvl"}, {"week_ending": "2026-08-21", "platform": "linkedin", "rank": 1, "caption": "Inventory is edging higher, but do not read too much into it yet. Logan Mohtashami breaks down what mid-August data is telling us. Inventory rose from 865,709 to 871,063 \u2014 a 1.28% YoY gain. Mortgage spreads at 1.99% are keeping rates under 7%.", "likes": 15, "comments": 0, "shares": 3, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7495231247363780608"}, {"week_ending": "2026-08-21", "platform": "linkedin", "rank": 2, "caption": "The first model home visit is now online. Marcin Tomaszczyk explores what happens when builders connect early digital research with accurate inventory, buyer intent data and sales follow-up designed to move prospects closer to a purchase.", "likes": 10, "comments": 0, "shares": 3, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7495222946064474112"}, {"week_ending": "2026-08-21", "platform": "linkedin", "rank": 3, "caption": "2 days until you can have the ultimate housing economy platform in the palm of your hand... See you on Aug. 19th.", "likes": 4, "comments": 1, "shares": 0, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7495207852123377665"}, {"week_ending": "2026-08-21", "platform": "x", "rank": 1, "caption": "Inventory edges slightly higher year over year as rates rise", "likes": 4, "comments": 1, "shares": 5, "link": "https://x.com/HousingWire/status/2088775658516386057"}, {"week_ending": "2026-08-21", "platform": "x", "rank": 2, "caption": "The mortgage industry's AI problem is not what you think it is", "likes": 2, "comments": 1, "shares": 0, "link": "https://x.com/HousingWire/status/2089247393284010026"}, {"week_ending": "2026-08-21", "platform": "x", "rank": 3, "caption": "Multifamily distress grows, but data suggest a contained problem", "likes": 5, "comments": 0, "shares": 1, "link": "https://x.com/HousingWire/status/2089808304382038290"}, {"week_ending": "2026-08-21", "platform": "instagram", "rank": 1, "caption": "Logan's Housing Market Tracker: Inventory rose to 871,063 (+1.28% YoY). Mortgage spreads at 1.99% keeping rates under 7% \u2014 without them rates could hit 7.83%. Demand softening as rates climb above 6.64%. #HousingWire #HousingMarket #MortgageRates", "likes": 44, "comments": 2, "shares": 7, "link": "https://www.instagram.com/reel/DcKAeGEkxjN/"}, {"week_ending": "2026-08-21", "platform": "instagram", "rank": 2, "caption": "At HousingWire's AI Summit: Kevin Hawkins shared Josh Miller's AI adoption framework \u2014 agents need to want it, pay for it, or have an incentive. #HousingWire #AISummit #RealEstate #AIinRealEstate", "likes": 14, "comments": 0, "shares": 0, "link": "https://www.instagram.com/reel/DcJM-m0BCzZ/"}, {"week_ending": "2026-08-21", "platform": "instagram", "rank": 3, "caption": "At HousingWire's AI Summit: Abdel Khawatmi on his biggest 'AI is not just hype anymore' moment \u2014 people are executing on AI and bringing their teams along. #HousingWire #AISummit #Mortgage #AIinRealEstate", "likes": 12, "comments": 0, "shares": 0, "link": "https://www.instagram.com/reel/DcL_j4_kn6x/"}, {"week_ending": "2026-08-21", "platform": "facebook", "rank": 1, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 1, "comments": 0, "shares": 1, "link": "https://www.facebook.com/HousingWire/posts/pfbid02b1HHdGKCF6jwDsDHinHVMaBB58XFXPWG2H4kdxbhohiaTCdDLm7dsewgoPUKsXH3l"}, {"week_ending": "2026-08-21", "platform": "facebook", "rank": 2, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 0, "comments": 1, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid02JakWobWu15pCJMAkYukPYG9sVHQtDX147RvqNogXwcFrJyZLEhHGSqCChNKkaLWCl"}, {"week_ending": "2026-08-21", "platform": "facebook", "rank": 3, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 1, "comments": 0, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid02BGFXqprvRsfCZbr8tT9q5dVchmJcDvJt9VW6xegryth4wbuPDVjZ2jw7tmE1ijjRl"}, {"week_ending": "2026-08-28", "platform": "linkedin", "rank": 1, "caption": "Safe takes aren't really their thing. No Surrender is coming to the Mortgage Banking Summit. Greg Sher, Erin Dee, Coby Hakalir. One stage. Unfiltered opinions. October 1 | Dallas, TX", "likes": 21, "comments": 4, "shares": 2, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7513351464152282"}, {"week_ending": "2026-08-28", "platform": "linkedin", "rank": 2, "caption": "Ash Omar, VP of Sales at Blue Sage Solutions, discusses why mortgage lenders are rethinking increasingly complex and costly technology stacks \u2014 and how consolidation, automation, document intelligence and underwriting AI can help lenders do more with less.", "likes": 25, "comments": 0, "shares": 1, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7513339874153441"}, {"week_ending": "2026-08-28", "platform": "linkedin", "rank": 3, "caption": "Can we create more homeowners without creating more risk? Devin Norales, AMP head of mortgage and capital markets at FICO, on FICO Score 10T, trended credit data, and whether the industry is leaving creditworthy borrowers on the table.", "likes": 12, "comments": 0, "shares": 1, "link": "https://www.linkedin.com/feed/update/urn:li:activity:7513332110820884"}, {"week_ending": "2026-08-28", "platform": "instagram", "rank": 1, "caption": "Logan's Housing Market Tracker: Single-family inventory rose to 874,784 (+1.57% YoY). Mortgage spreads at 1.96% keeping rates under 7% \u2014 without them rates would be 7.92% today. Pending sales slightly negative YoY. #HousingWire #HousingMarket #MortgageRates #HousingData #RealEstate", "likes": 33, "comments": 2, "shares": 3, "link": "https://www.instagram.com/reel/DcbtfJQDpUF/"}, {"week_ending": "2026-08-28", "platform": "instagram", "rank": 2, "caption": "DITL: HousingWire Intelligence edition! A current view of the housing economy, all in one place. From your morning market check to your end of day briefing \u2014 current housing data, rates and economic signals alongside trusted HousingWire news and analysis. #HousingWire #HousingIntelligence #HousingMarket", "likes": 13, "comments": 1, "shares": 10, "link": "https://www.instagram.com/p/DccILh7D6Sw/"}, {"week_ending": "2026-08-28", "platform": "facebook", "rank": 1, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 3, "comments": 0, "shares": 1, "link": "https://www.facebook.com/HousingWire/posts/pfbid02LhQ6v1m1dsNgZKaXkb91h58HoCgUUajvdoNXDeCnhGQRUXYfNV1LJmSEexbEa3Rcl"}, {"week_ending": "2026-08-28", "platform": "facebook", "rank": 2, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 2, "comments": 0, "shares": 1, "link": "https://www.facebook.com/HousingWire/posts/pfbid02YeZA97RUACWGu9GP6DMEnfMbR8L2Kj4J1VE1Fc9CDBSBmZ5YpEm4LBaJLSBFLm4ul"}, {"week_ending": "2026-08-28", "platform": "facebook", "rank": 3, "caption": "(Link post \u2014 view on Facebook for full content)", "likes": 2, "comments": 1, "shares": 0, "link": "https://www.facebook.com/HousingWire/posts/pfbid0sevVe4ciZ7jZyirzACy71TtYdxw46YoPkP3BnU6e5PxnfMsSk3EqMamUCMG6LhJPl"}, {"week_ending": "2026-08-28", "platform": "x", "rank": 1, "caption": "The loan officer engineer: The $11,898 problem", "likes": 3, "comments": 1, "shares": 20, "link": "https://x.com/HousingWire/status/2092146020851581220"}, {"week_ending": "2026-08-28", "platform": "x", "rank": 2, "caption": "Better, Coinbase announce broad rollout of token-backed conforming mortgage product", "likes": 6, "comments": 3, "shares": 4, "link": "https://x.com/HousingWire/status/2092576232877772952"}, {"week_ending": "2026-08-28", "platform": "x", "rank": 3, "caption": "The mortgage industry is deploying AI backward", "likes": 5, "comments": 1, "shares": 5, "link": "https://x.com/HousingWire/status/2092508480934756538"}, {"week_ending": "2026-08-28", "platform": "tiktok", "rank": 1, "caption": "Aug. 24 Housing Market Tracker: Spreads keeping rates under 7% even with Iran conflict and collapsed Canada trade deal pushing yields higher. If this were 2023, rates would be 7.92%. Instead they're 6.77%. Spreads are the reason. #HousingWire #HousingMarket #MortgageRates", "likes": 2, "comments": 0, "shares": 2, "link": "https://www.tiktok.com/@housingwire/video/7677668516752887054"}];
+const LAUNCH_EVENTS=[{"date": "2026-08-12", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Teaser #1 \u2014 Coming Aug 19", "cls": "clp", "tip": "Post #1: 'Something smarter is coming.' Branded 'Coming Aug. 19' graphic. Click to view full copy on the launch page.", "link": "launch.html#post-1"}, {"date": "2026-08-14", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Teaser #2 \u2014 Market Data", "cls": "clp", "tip": "Post #2: 'How confident are you in your market data right now?' Bold text on branded background. Click to view full copy.", "link": "launch.html#post-2"}, {"date": "2026-08-17", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Countdown \u2014 2 Days", "cls": "clp", "tip": "Post #3: 'The way you follow the housing market is about to change. Two days.' Countdown graphic.", "link": "launch.html#post-3"}, {"date": "2026-08-19", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 LAUNCH \u2014 HW Intelligence", "cls": "clp", "tip": "Post #4 (8am CT): Hero launch graphic. Instagram: 6-slide carousel + Logan Reel. This is the big one!", "link": "launch.html#post-4"}, {"date": "2026-08-19", "platforms": ["linkedin", "x"], "label": "\ud83d\ude80 Pricing Spotlight (12pm)", "cls": "clp", "tip": "Post #5 (12pm CT): Launch pricing spotlight. 'Less than $50/mo \u2014 the lowest it will ever be.'", "link": "launch.html#post-5"}, {"date": "2026-08-21", "platforms": ["linkedin", "x"], "label": "\ud83d\ude80 AI Morning Summary", "cls": "clp", "tip": "Post #6: 'Every morning, HousingWire Intelligence gives you an AI-powered summary...'", "link": "launch.html#post-6"}, {"date": "2026-08-24", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Day in the Life", "cls": "clp", "tip": "Post #7: 'This is what a day looks like when you have HousingWire Intelligence.' Day in the life graphic.", "link": "launch.html#post-7"}, {"date": "2026-08-26", "platforms": ["linkedin", "x"], "label": "\ud83d\ude80 Dashboard Feature", "cls": "clp", "tip": "Post #8: 'Your market. Right now. National. State. Metro. ZIP.' Dashboard screenshot.", "link": "launch.html#post-8"}, {"date": "2026-08-31", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Preview Ends Tomorrow", "cls": "clp", "tip": "Post #9: 'Tomorrow, complimentary preview access to HousingWire Intelligence ends.' Countdown graphic.", "link": "launch.html#post-9"}, {"date": "2026-09-01", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Preview Has Ended", "cls": "clp", "tip": "Post #10: 'Your preview has ended. Your access does not have to.' Upgrade push.", "link": "launch.html#post-10"}, {"date": "2026-09-08", "platforms": ["linkedin", "instagram", "x"], "label": "\ud83d\ude80 CRO Quote", "cls": "clp", "tip": "Post #11: Social proof. 'No other housing publication comes close to this level of operational intelligence.' \u2014 CRO, National Brokerage", "link": "launch.html#post-11"}, {"date": "2026-09-15", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Mortgage Banking Summit", "cls": "clp", "tip": "Post #12: Members get 30% off Mortgage Banking Summit ticket. Event tie-in graphic.", "link": "launch.html#post-12"}, {"date": "2026-09-22", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Homebuilder Summit", "cls": "clp", "tip": "Post #13: Members get 30% off Homebuilder Summit ticket. Event tie-in graphic.", "link": "launch.html#post-13"}, {"date": "2026-09-29", "platforms": ["linkedin", "instagram", "x", "facebook"], "label": "\ud83d\ude80 Market Insight Post", "cls": "clp", "tip": "Post #14: [Insert data point]. Remember to add real HW Intelligence data before posting!", "link": "launch.html#post-14"}];
+const SUMMIT_REELS=[{"date": "2026-08-14", "platform": "instagram", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #1", "cls": "crl", "tip": "AI Summit Reel #1 on Instagram \u2014 post today while the summit is fresh! Key moment or speaker quote. Add captions + #HousingWire #AISummit #MortgageIndustry"}, {"date": "2026-08-14", "platform": "facebook", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #1", "cls": "crl", "tip": "AI Summit Reel #1 on Facebook \u2014 post today while the summit is fresh! Facebook Reels get boosted reach. Tag speakers if possible."}, {"date": "2026-08-14", "platform": "tiktok", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #1", "cls": "crl", "tip": "AI Summit Reel #1 on TikTok \u2014 30\u201360s clip. Add text overlay with a key stat or quote. Great opportunity to grow TikTok audience."}, {"date": "2026-08-17", "platform": "instagram", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #2", "cls": "crl", "tip": "AI Summit Reel #2 on Instagram \u2014 different clip/angle from Reel #1. Behind-the-scenes or speaker highlight works great. #HousingWire #AISummit"}, {"date": "2026-08-17", "platform": "facebook", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #2", "cls": "crl", "tip": "AI Summit Reel #2 on Facebook \u2014 second summit clip. Keep it varied from Reel #1. Tag any speakers featured."}, {"date": "2026-08-17", "platform": "tiktok", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #2", "cls": "crl", "tip": "AI Summit Reel #2 on TikTok \u2014 Monday is your video anchor day, great timing. Use a different angle or speaker than Reel #1."}, {"date": "2026-08-19", "platform": "instagram", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #3", "cls": "crl", "tip": "AI Summit Reel #3 on Instagram \u2014 launch day! Pair with HW Intelligence launch content. Great day for reach. #HousingWire #AISummit #HousingIntelligence"}, {"date": "2026-08-19", "platform": "facebook", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #3", "cls": "crl", "tip": "AI Summit Reel #3 on Facebook \u2014 launch day! The summit reel + HW Intelligence launch = strong content day for Facebook."}, {"date": "2026-08-19", "platform": "tiktok", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #3", "cls": "crl", "tip": "AI Summit Reel #3 on TikTok \u2014 launch day energy! Pair with HW Intelligence messaging if possible."}, {"date": "2026-08-21", "platform": "instagram", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #4", "cls": "crl", "tip": "AI Summit Reel #4 on Instagram \u2014 final summit reel. Use your strongest remaining clip. Great for saves/shares. #HousingWire #AISummit"}, {"date": "2026-08-21", "platform": "facebook", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #4", "cls": "crl", "tip": "AI Summit Reel #4 on Facebook \u2014 wrap up the summit content series with your best remaining clip."}, {"date": "2026-08-21", "platform": "tiktok", "type": "reel", "label": "\ud83c\udfac AI Summit Reel #4", "cls": "crl", "tip": "AI Summit Reel #4 on TikTok \u2014 final summit reel. Consider adding a CTA to follow HousingWire for more housing market content."}];
 
 const PM={linkedin:{label:"LinkedIn",color:"#0077b5"},instagram:{label:"Instagram",color:"#e1306c"},facebook:{label:"Facebook",color:"#1877f2"},x:{label:"X (Twitter)",color:"#e7e9ea"},tiktok:{label:"TikTok",color:"#69c9d0"}};
 const BENCH={linkedin:2.8,instagram:3.2,facebook:1.75,x:1.7,tiktok:1.8};
@@ -509,9 +340,7 @@ function renderBench(rows){
 }
 function renderPosts(){
   const wp=POSTS.filter(p=>p.week_ending===selWeek);
-  const lbl=document.getElementById("posts-week-label");
-  if(lbl)lbl.textContent="Week of "+selWeek;
-  if(!wp.length){document.getElementById("og").innerHTML='<div style="background:var(--s);border:1px solid var(--b);border-radius:12px;padding:20px;text-align:center"><div style="font-size:1.5rem;margin-bottom:8px">📭</div><div style="font-size:0.82rem;font-weight:600;margin-bottom:4px">No top posts for this week yet</div><div style="font-size:0.75rem;color:var(--tm)">Top posts data is currently available for the week of Aug 14, 2026.<br>Update the Posts data each Friday when you run your weekly dashboard refresh.</div></div>';return}
+  if(!wp.length){document.getElementById("og").innerHTML='<p style="color:var(--tm);font-size:0.82rem">No top posts data for this week.</p>';return}
   document.getElementById("og").innerHTML=wp.map(p=>{
     const m=PM[p.platform]||{label:p.platform,color:"#6c63ff"},tot=(p.likes||0)+(p.comments||0)+(p.shares||0);
     return`<div class="oc"><div class="oh"><div class="op" style="color:${m.color}"><div class="pd" style="background:${m.color}"></div>${m.label}</div><span class="or">#${p.rank}</span></div><div class="oca">${p.caption}</div><div class="os">${p.likes?`<div class="ost">❤️ <span>${fmt(p.likes)}</span></div>`:""}${p.comments?`<div class="ost">💬 <span>${fmt(p.comments)}</span></div>`:""}${p.shares?`<div class="ost">🔁 <span>${fmt(p.shares)}</span></div>`:""}${tot?`<div class="ost">⚡ <span>${fmt(tot)}</span></div>`:""}</div>${p.link?`<a class="ol" href="${p.link}" target="_blank">View post →</a>`:""}</div>`;
@@ -522,72 +351,36 @@ function renderPosts(){
 // Rules: Launch events > Summit Reels > Normal schedule (one-offs replace normal)
 // No hot takes. X = 1 recycled news/day. Friday LinkedIn = Stat.
 const SCHED={
-  // ── RULES ────────────────────────────────────────────────────────────────
-  // • Launch events > Summit Reels > Normal schedule (one-offs replace normal)
-  // • News slot = flexible: you choose Headline Graphic, Quote Graphic, or
-  //   Who/What/Where Carousel based on the story. Tip explains all three.
-  // • Podcast slot = TBD — will be added once cadence is confirmed with podcast team
-  // • Breaking news, event recaps, product launches are REACTIVE — they bump
-  //   whatever was planned that day, no fixed slot needed
-  // • Facebook mirrors the same content type as IG/LinkedIn (no "repurpose" label)
-  // • Polls: 1-2x per MONTH max (not weekly) — swap in on any Tue/Wed slot
-  // ─────────────────────────────────────────────────────────────────────────
-
   linkedin:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",
-     tip:"Share Logan's weekly Housing Market Tracker as a native video. Put the article link in the FIRST COMMENT (not the post) — LinkedIn suppresses posts with external links. Tag @LoganMohtashami."},
-    {day:1,type:"news",label:"📰 News",cls:"cn",
-     tip:"Pick the format that fits the story: ·  · 📌 HEADLINE GRAPHIC — Breaking news or big announcement. Bold headline + subheadline + image. Best for M&A, rate moves, GSE news. ·  · 💬 QUOTE GRAPHIC — A great line from an interview or article. Speaker name + outlet on branded background. Drives saves and shares. Pull from HW articles/interviews. ·  · 🔍 WHO/WHAT/WHERE CAROUSEL — Complex story that needs unpacking. 5-7 slides: what happened, who's involved, why it matters, what's next. Best for deals, policy changes, earnings."},
-    {day:2,type:"carousel",label:"🎠 Document Carousel",cls:"cca",
-     tip:"Upload as a PDF (not images) — LinkedIn's Document format gets 7% engagement vs 5.3% for images. Export your Canva carousel as PDF. Deep dive on one topic: a deal breakdown, market trend, AI in mortgage, GSE reform. 5-8 slides max."},
-    {day:3,type:"news",label:"📰 News",cls:"cn",
-     tip:"Pick the format that fits the story: ·  · 📌 HEADLINE GRAPHIC — Breaking news or big announcement. Bold headline + subheadline + image. ·  · 💬 QUOTE GRAPHIC — A great line from an interview or article. Speaker name + outlet on branded background. ·  · 🔍 WHO/WHAT/WHERE CAROUSEL — Complex story that needs unpacking. 5-7 slides."},
-    {day:4,type:"news",label:"📰 News",cls:"cn",
-     tip:"Pick the format that fits the story: ·  · 📌 HEADLINE GRAPHIC — Breaking news or big announcement. ·  · 💬 QUOTE GRAPHIC — A great line from an interview or article. ·  · 🔍 WHO/WHAT/WHERE CAROUSEL — Complex story that needs unpacking. ·  · 💡 TIP: Put any article links in the FIRST COMMENT, not the post itself."},
+    {day:0,type:"video",label:"🎬 Logan's Market Video",cls:"cv",tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the article in the first comment."},
+    {day:1,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Pull from HW Intelligence this week: Inventory 865,709 (↓7,224 WoW) · Rate 6.91% · Price cuts 36.88% · Spread 1.92% · Purchase apps +5% YoY. Go to housingwire.com/intelligence for your metro-level data."},
+    {day:2,type:"carousel",label:"🎠 Carousel / Deep Dive",cls:"cca",tip:"Break down a complex topic in 5–8 slides. Best topics: M&A deals, Fed decisions, AI in mortgage, GSE reform."},
+    {day:3,type:"poll",label:"🗳️ Poll / Question",cls:"cpo",tip:"Ask something timely. Polls get 3–5x more reach on LinkedIn. Keep it to 2–4 options."},
+    {day:4,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Friday stat from HW Intelligence: Try a local/metro angle — e.g. Sun Belt price cuts (FL: 43.6%), Northeast absorption (Boston: 21.4%), or months of supply (national: ~2.6). Pull your metro from housingwire.com/intelligence."},
   ],
-
   instagram:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",
-     tip:"Post Logan's Housing Market Tracker as a Reel. Add captions (required), use trending audio if possible. Hashtags: #HousingWire #HousingMarket #MortgageRates #HousingData #RealEstate. Link in bio."},
-    {day:1,type:"news",label:"📰 News",cls:"cn",
-     tip:"Pick the format that fits the story: ·  · 📌 HEADLINE GRAPHIC — Bold headline + subheadline + image. Clean, on-brand. ·  · 💬 QUOTE GRAPHIC — Great line from a HW interview or article. Speaker name on branded background. Drives saves. ·  · 🔍 WHO/WHAT/WHERE CAROUSEL — Swipeable breakdown of a complex story. 5-7 slides."},
-    {day:2,type:"carousel",label:"🎠 Carousel OR 🎤 Reel",cls:"cca",
-     tip:"CAROUSEL: Swipeable breakdown — adapt from the LinkedIn document carousel or create IG-native. Instagram carousels avg 3.2% engagement. ·  · OR if you have a reporter reel or podcast clip ready — post that instead. Reels always take priority over static content on Instagram."},
-    {day:3,type:"news",label:"📰 News",cls:"cn",
-     tip:"Pick the format that fits the story: ·  · 📌 HEADLINE GRAPHIC — Bold headline + subheadline + image. ·  · 💬 QUOTE GRAPHIC — Great line from a HW interview or article. ·  · 🔍 WHO/WHAT/WHERE CAROUSEL — Swipeable breakdown of a complex story."},
-    {day:4,type:"news",label:"📰 News",cls:"cn",
-     tip:"End-of-week news graphic. Pick the format that fits the story: ·  · 📌 HEADLINE GRAPHIC ·  · 💬 QUOTE GRAPHIC ·  · 🔍 WHO/WHAT/WHERE CAROUSEL ·  · Friday performs well for saves — a quote graphic or data visual tends to do best."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",tip:"Post Logan's weekly market breakdown as a Reel. Add captions, use trending audio, include housing hashtags: #HousingMarket #MortgageRates #HousingWire"},
+    {day:1,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 This week's top HW articles: UWM lawsuit 'frivolous' (Two Harbors) · CPI cools in July · Mortgage delinquencies eased Q2 · Figure Q2 revenue jump · Newrez $15.5M settlement · Fix-and-flip strain · Where boomers are moving. Check housingwire.com for today's breaking story."},
+    {day:2,type:"carousel",label:"🎠 Carousel",cls:"cca",tip:"Repurpose or adapt the LinkedIn carousel. Instagram carousels average 3.2% engagement."},
+    {day:3,type:"stat",label:"📊 Stat Graphic",cls:"cst",tip:"📊 This week's bold stats from HW Intelligence: 865,709 active listings · 6.91% rate · 36.88% price cuts · 1.92% spread. Pick ONE number, make it big, add short context. housingwire.com/intelligence for metro data."},
+    {day:4,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 Friday wrap: Use the week's biggest story or Logan's Housing Market Tracker update. This week's top picks: UWM/Two Harbors lawsuit · CPI inflation report · Mortgage delinquencies Q2 · Fix-and-flip strain. housingwire.com for the latest."},
   ],
-
   x:[
-    {day:0,type:"news",label:"📰 News + 🎬 Video",cls:"cn",
-     tip:"Tweet the day's top HW story (text + link, under 280 chars) + a separate tweet with Logan's video link and a key stat as the hook. Native video on X gets boosted reach — upload the clip directly rather than linking to Instagram."},
-    {day:1,type:"news",label:"📰 News",cls:"cn",
-     tip:"Tweet today's top HW story. Keep it punchy, under 280 chars. Add the article URL. Breaking news, M&A, rate moves, and GSE news perform best on X. Tag companies and executives when relevant."},
-    {day:2,type:"news",label:"📰 News",cls:"cn",
-     tip:"Tweet today's top HW story. Wednesday is peak B2B engagement on X. If you posted a carousel on LinkedIn/IG today, pull a key stat or quote from it as a standalone tweet."},
-    {day:3,type:"news",label:"📰 News",cls:"cn",
-     tip:"Tweet today's top HW story. Fannie/Freddie, GSE, rate data, and M&A news performs best on X. Add a relevant stat or quote to boost reposts."},
-    {day:4,type:"news",label:"📰 News",cls:"cn",
-     tip:"Tweet the week's biggest story or a key stat from today's content. Friday is a good day to post a native video clip on X if you have one — X boosts native video."},
+    {day:0,type:"news",label:"📰 News + 🎬 Video Link",cls:"cn",tip:"📰 Recycle today's top HW story as a tweet + Logan's video link. This week: UWM lawsuit · CPI report · Delinquencies · Figure earnings. Keep it under 280 chars. Add the article URL."},
+    {day:1,type:"news",label:"📰 News",cls:"cn",tip:"Tweet today's top HW story. Keep it punchy, under 280 chars. Add the article URL. Breaking news, M&A, rate moves, and GSE news perform best on X."},
+    {day:2,type:"news",label:"📰 News / Carousel Clip",cls:"cn",tip:"Wednesday: tweet today's top HW story. If you're posting an Instagram carousel today, pull a key stat or slide from it as a tweet — same asset, adapted for X."},
+    {day:3,type:"news",label:"📰 News",cls:"cn",tip:"Tweet today's top HW story. Fannie/Freddie, GSE, rate data, and M&A news performs best on X. Add a relevant stat or quote to boost retweets."},
+    {day:4,type:"news",label:"📰 News",cls:"cn",tip:"Friday: tweet the week's biggest story or pull a stat from your Friday LinkedIn stat callout. Great end-of-week touchpoint."},
   ],
-
   facebook:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",
-     tip:"Share Logan's Reel to Facebook. Facebook Reels get boosted algorithmic reach. Same content as Instagram — no extra work needed."},
-    {day:1,type:"news",label:"📰 News",cls:"cn",
-     tip:"Share the same news graphic from Instagram/LinkedIn. Adapt the caption slightly — Facebook tone can be a touch less formal. Put the article link in the COMMENTS (not the post) for better reach."},
-    {day:3,type:"news",label:"📰 News",cls:"cn",
-     tip:"Share Thursday's news graphic from Instagram. Same content, same caption adapted for Facebook. Link in comments."},
-    {day:4,type:"news",label:"📰 News",cls:"cn",
-     tip:"Share Friday's news graphic from Instagram. Good end-of-week touchpoint. Link in comments."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel (share)",cls:"crl",tip:"Share Logan's Reel to Facebook. Facebook Reels get boosted reach — great low-effort post to keep the page active."},
+    {day:1,type:"repurpose",label:"♻️ Repurpose LinkedIn",cls:"crp",tip:"Share the LinkedIn stat graphic to Facebook. Adjust caption tone slightly."},
+    {day:3,type:"repurpose",label:"♻️ Repurpose Graphic",cls:"crp",tip:"Repurpose Thursday's Instagram stat graphic to Facebook."},
+    {day:4,type:"repurpose",label:"♻️ Repurpose Graphic",cls:"crp",tip:"Share Friday's Instagram news graphic to Facebook."},
   ],
-
   tiktok:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel Clip",cls:"crl",
-     tip:"Post a 30–60s clip from Logan's Reel. Add text overlay with the key stat from his tracker. TikTok's algorithm rewards consistent weekly posting — Monday is your anchor day."},
-    {day:2,type:"reel",label:"🎤 Reporter Reel / Podcast Clip",cls:"crl",
-     tip:"Post a reporter reel or podcast clip when available. If nothing is ready this week, skip — don't force it. Authenticity wins on TikTok over frequency. When you do post: keep it under 60s, add captions, use trending audio if it fits."},
+    {day:0,type:"reel",label:"🎬 Logan's Reel Clip",cls:"crl",tip:"Post a 30–60s clip from Logan's Reel. Add text overlay with the key stat from his tracker. TikTok's algorithm rewards consistent weekly posting."},
+    {day:2,type:"reel",label:"🎬 Housing Trend Reel",cls:"crl",tip:"Short reel reacting to a housing trend. Authenticity wins on TikTok — no heavy production needed."},
   ],
 };
 
@@ -618,70 +411,6 @@ function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMo
 function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSb()}
 
 function renderCal(){
-  const dates=getWeekDates(calOff);
-  document.getElementById("cwl").textContent=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
-  const checked=loadChecked();
-  // Read localStorage ONCE before building grid
-  const overrides=getOverrides();
-  const allCustoms=getCustomPosts();
-  let o='<div></div>';
-  dates.forEach((d,i)=>{
-    o+='<div class="cdh"><div class="cdn">'+DAYS[i]+'</div><div class="cdd'+(isToday(d)?" td":"")+'">'+(fd(d))+'</div></div>';
-  });
-  PLATS.forEach(p=>{
-    o+='<div class="cpl"><div class="cpd" style="background:'+p.color+'"></div>'+p.label+'</div>';
-    dates.forEach((d,di)=>{
-      const ds=isoDate(d);
-      const posts=getCellPosts(ds,p.key,di);
-      const customs=allCustoms[ds+"_"+p.key]||[];
-      if(!posts.length&&!customs.length){o+='<div class="cell mt"></div>';return;}
-      o+='<div class="cell">';
-      posts.forEach(post=>{
-        const id=pid(ds,p.key,post.label);
-        const done=!!checked[id];
-        const ov=overrides[id];
-        const lbl=ov?ov.label:post.label;
-        const cls=ov?ov.cls:post.cls;
-        const t=(ov?ov.tip:(post.tip||"")).replace(/\/g,"").replace(/'/g,"").replace(/"/g,"");
-        o+='<div class="cp '+cls+(done?" done":"")+'" id="'+id+'">'
-          +'<div class="cp-check'+(done?" chk":"")+'" onclick="chk(event,''+id+'')"></div>'
-          +'<div class="cp-body" onclick="showTip(''+t+'')">'
-          +'<div class="cpt">'+(post.type||"post")+'</div>'+lbl+'</div>'
-          +'<div class="cp-edit" onclick="event.stopPropagation();openEditModal(''+id+'',''+ds+'',''+p.key+'',false)">✏️</div>'
-          +'</div>';
-      });
-      customs.forEach(post=>{
-        const done=!!checked[post.id];
-        const t=(post.tip||"").replace(/\/g,"").replace(/'/g,"").replace(/"/g,"");
-        o+='<div class="cp '+post.cls+(done?" done":"")+'" id="'+post.id+'">'
-          +'<div class="cp-check'+(done?" chk":"")+'" onclick="chk(event,''+post.id+'')"></div>'
-          +'<div class="cp-body" onclick="showTip(''+t+'')">'
-          +'<div class="cpt">custom</div>'+post.label+'</div>'
-          +'<div class="cp-edit" onclick="event.stopPropagation();openEditModal(''+post.id+'',''+ds+'',''+p.key+'',true)">✏️</div>'
-          +'</div>';
-      });
-      o+='<button class="cell-add" onclick="openAddModal(''+ds+'',''+p.key+'')">+ add</button>';
-      o+='</div>';
-    });
-  });
-  document.getElementById("cgrid").innerHTML=o;
-
-  // Suggestions
-  document.getElementById("sgg").innerHTML=SUGG_DATA.map(s=>'<div class="sgc"><h4>'+s.icon+' '+s.title+'</h4><ul>'+s.items.map(i=>'<li>'+i+'</li>').join('')+'</ul></div>').join('');
-  // Targets
-  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~21","across all platforms"]].map(([c,l,v,s])=>'<div class="kc" style="--cc:'+c+'"><div class="kl">'+l+'</div><div class="kv">'+v+'</div><div class="ks ne">'+s+'</div></div>').join('');
-}
-
-function getWeekDates(off){
-  const now=new Date(),day=now.getDay(),mon=new Date(now);
-  mon.setDate(now.getDate()-(day===0?6:day-1)+off*7);
-  return Array.from({length:5},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});
-}
-function fd(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}
-function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()}
-function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSb()}
-
-function renderCal(){
   const dates=getWeekDates(calOff),checked=getChecked();
   document.getElementById("cwl").textContent=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
   let o=`<div></div>`;
@@ -690,49 +419,20 @@ function renderCal(){
     o+=`<div class="cpl"><div class="cpd" style="background:${p.color}"></div>${p.label}</div>`;
     dates.forEach((d,di)=>{
       const ds=isoDate(d),posts=getCellPosts(ds,p.key,di);
-      // Build cell content — scheduled + custom posts
-      (function(){
-        const overrides=getOverrides();
-        const cellCustoms=(getCustomPosts()[ds+"_"+p.key]||[]);
-        const hasCustom=(getCustomPosts()[ds+"_"+p.key]||[]).length>0;
-        if(!posts.length && !hasCustom){o+='<div class="cell mt"></div>';return;}
-        let cellHtml='<div class="cell">';
-
-        // Scheduled posts
-        posts.forEach(function(post){
-          const id=pid(ds,p.key,post.label);
-          const done=!!checked[id];
-          const ov=overrides[id];
-          const lbl=ov?ov.label:post.label;
-          const cls=ov?ov.cls:post.cls;
-          const tipRaw=ov?ov.tip:(post.tip||"");
-          const tip=tipRaw.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-          const click=post.link?"window.open('"+post.link+"','_blank')":'showTip("'+tip+'")';
-          cellHtml+='<div class="cp '+cls+(done?" done":"")+(ov?" edited":"")+'" id="'+id+'">'
-            +'<div class="cp-check'+(done?" chk":"")+'" onclick="chk(event,''+id+'')"></div>'
-            +'<div class="cp-body" onclick="'+click+'" title="'+tip+'">'
-            +'<div class="cpt">'+(post.type||"post")+'</div>'+lbl+'</div>'
-            +'<div class="cp-edit" onclick="event.stopPropagation();openEditModal(''+id+'',''+ds+'',''+p.key+'',false)" title="Edit">✏️</div>'
-            +'</div>';
-        });
-
-        // Custom posts
-        cellCustoms.forEach(function(post){
-          const done=!!checked[post.id];
-          const tip=(post.tip||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-          cellHtml+='<div class="cp '+post.cls+(done?" done":"")+'" id="'+post.id+'">'
-            +'<div class="cp-check'+(done?" chk":"")+'" onclick="chk(event,''+post.id+'')"></div>'
-            +'<div class="cp-body" onclick="showTip(''+tip+'')" title="'+tip+'">'
-            +'<div class="cpt">custom</div>'+post.label+'</div>'
-            +'<div class="cp-edit" onclick="event.stopPropagation();openEditModal(''+post.id+'',''+ds+'',''+p.key+'',true)" title="Edit">✏️</div>'
-            +'</div>';
-        });
-
-        // Add button
-        cellHtml+='<button class="cell-add" onclick="openAddModal(''+ds+'',''+p.key+'')">+ add</button>';
-        cellHtml+='</div>';
-        o+=cellHtml;
-      })();
+      if(!posts.length){o+=`<div class="cell mt"></div>`;return}
+      o+=`<div class="cell">`;
+      posts.forEach(post=>{
+        const id=pid(ds,p.key,post.label),done=!!checked[id];
+        const tip=(post.tip||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+        const click=post.link?`window.open('${post.link}','_blank')`:`showTip('${tip}')`;
+        o+=`<div class="cp ${post.cls}${done?" done":""}" id="${id}">
+          <div class="cp-check${done?" chk":""}" onclick="chk(event,'${id}')"></div>
+          <div class="cp-body" onclick="${click}" title="${tip}">
+            <div class="cpt">${post.type||"post"}</div>${post.label}
+          </div>
+        </div>`;
+      });
+      o+=`</div>`;
     });
   });
   document.getElementById("cgrid").innerHTML=o;
@@ -740,20 +440,40 @@ function renderCal(){
   // ── Suggestions with live HW data + real article links ──────────────────
   const SUGG_DATA = [
     {
+      icon:"📊",
+      title:"Stat / Data Callout — This Week (from HW Intelligence)",
+      cls:"cst",
+      items:[
+        "📦 Inventory: 865,709 active listings — down 7,224 from last week (housingwire.com/intelligence)",
+        "💰 30-yr fixed rate: 6.91% — down 0.01% this week (housingwire.com/intelligence)",
+        "✂️ Price cuts: 36.88% of active listings have reduced price — use your local metro data from HW Intelligence",
+        "📈 Mortgage spread: 1.92% — keeping rates lower than they'd otherwise be at this 10-yr yield",
+        "🏠 Months of supply: ~2.6 nationally — seller-favorable but more balanced than 2022–24",
+        "📋 Purchase apps: up 5% YoY — pull the latest weekly number from Logan's tracker",
+        "🌎 Sun Belt strain: Florida price-cut rate at 43.6% — great local market stat from HW Intelligence",
+        "🏙️ Northeast strength: Boston absorption rate 21.4% — pull your metro's number from HW Intelligence dashboard",
+      ]
+    },
+    {
       icon:"📰",
-      title:"News Format Guide — Pick Based on the Story",
+      title:"Single Graphic News — This Week's Top HW Articles",
       cls:"cn",
       items:[
-        "📌 HEADLINE GRAPHIC: Breaking news, M&A, rate moves, GSE announcements — bold headline + subheadline + image",
-        "💬 QUOTE GRAPHIC: Pull a great line from a HW interview or article — speaker name + branded background. Drives saves.",
-        "🔍 WHO/WHAT/WHERE CAROUSEL: Complex deals, policy changes, earnings — 5-7 slides breaking it down",
-        "💡 Rule of thumb: If it happened → Headline. If someone said something smart → Quote. If it needs explaining → Carousel.",
-        "🔗 Always put article links in the FIRST COMMENT on LinkedIn, not the post itself",
+        "Two Harbors calls UWM lawsuit 'frivolous,' slams management for $600M hedge loss → housingwire.com",
+        "Real estate leaders weigh buying vs building AI tools (AI Summit recap) → housingwire.com",
+        "CPI inflation cools in July as shelter rises 0.1% → housingwire.com",
+        "Mortgage delinquencies eased in Q2, still higher than 2025 → housingwire.com",
+        "Figure posts Q2 revenue jump, net take rate holds at 3.6% → housingwire.com",
+        "Newrez agrees to $15.5M settlement over forced-place insurance → housingwire.com",
+        "DOJ, Rocket Mortgage seek pause in fair housing case → housingwire.com",
+        "Fix-and-flip market shows signs of strain as mortgage rates climb → housingwire.com",
+        "Where are boomers and Gen X moving in 2026? → housingwire.com",
+        "Will a cooling labor market keep mortgage rates below 7%? → housingwire.com",
       ]
     },
     {
       icon:"🎠",
-      title:"Document Carousel Ideas (LinkedIn PDF format)",
+      title:"Carousel / Deep Dive Ideas",
       cls:"cca",
       items:[
         "Regional housing market breakdown: Northeast vs Sun Belt vs Midwest — use HW Intelligence data",
@@ -762,44 +482,30 @@ function renderCal(){
         "M&A deal breakdown: PennyMac + Cenlar — what it means for servicers",
         "5 things the CPI report means for mortgage rates and housing demand",
         "HW AI Summit: 5 key takeaways from the best minds in housing",
-        "💡 Export from Canva as PDF and upload as a Document post — gets 7% engagement vs 5.3% for images",
       ]
     },
     {
-      icon:"💬",
-      title:"Quote Graphic Ideas — Pull From HW Articles",
-      cls:"cn",
+      icon:"🗳️",
+      title:"Poll / Question Ideas (LinkedIn)",
+      cls:"cpo",
       items:[
-        "Logan Mohtashami on mortgage spreads: 'At 1.99%, spreads are keeping rates under 7%'",
-        "Any AI Summit speaker quote from the green room clips",
-        "CRO quote: 'No other housing publication comes close to this level of operational intelligence'",
-        "Pull quotes from HW Intelligence launch coverage",
-        "Any executive interview in a HW article this week — scan for the most quotable line",
+        "Sun Belt or Northeast — where are you seeing more buyer activity right now?",
+        "Will the Fed cut rates before year end? Yes / No / Too early to say",
+        "Which AI use case excites you most in mortgage? Underwriting / Servicing / Customer experience / Compliance",
+        "Are you seeing more buyers or sellers in your market right now?",
+        "What's your biggest challenge: rates, inventory, or affordability?",
       ]
     },
     {
-      icon:"🎤",
-      title:"Reel Ideas — Reporter & Podcast Clips",
+      icon:"🎬",
+      title:"Reel / Video Ideas",
       cls:"crl",
       items:[
-        "Reporter answers: 'What's the one thing people are getting wrong about the housing market right now?'",
-        "Logan's weekly tracker — Monday anchor (already scheduled)",
-        "AI Summit green room clips — 4 reels scheduled Aug 14/17/19/21",
-        "Podcast clip: pull the best 30-60s moment from HousingWire Daily or Power House",
-        "💡 Reporters should film vertically, look at camera, keep it under 60s — no script needed",
-      ]
-    },
-    {
-      icon:"📊",
-      title:"Data & Stats — From HW Intelligence This Week",
-      cls:"cst",
-      items:[
-        "Inventory: 871,063 active listings (+1.28% YoY) — housingwire.com/intelligence",
-        "Mortgage rate: 6.91% · Spread: 1.99% (keeping rates under 7%)",
-        "Price cuts: 36.88% of active listings nationally",
-        "Sun Belt strain: Florida price-cut rate at 43.6%",
-        "Northeast strength: Boston absorption rate 21.4%",
-        "Pull your metro-level data from housingwire.com/intelligence for local angles",
+        "Logan's weekly market breakdown — Monday anchor (housingwire.com/intelligence tracker)",
+        "AI Summit speaker highlight clips — 4 reels scheduled Aug 14/17/19/21",
+        "'What does 6.91% mortgage rate mean for buyers right now?' — 30s explainer",
+        "Sun Belt vs Northeast housing market — show the HW Intelligence dashboard",
+        "Behind the scenes at a HousingWire event",
       ]
     },
     {
@@ -809,16 +515,15 @@ function renderCal(){
       items:[
         "Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn",
         "Post within 15 minutes of story going live for maximum algorithmic reach",
-        "Put the article link in the FIRST COMMENT on LinkedIn (not the post itself)",
+        "Put the article link in the first comment on LinkedIn (not the post itself)",
         "M&A deals, rate moves, GSE news, lender strategy = your highest-engagement topics",
         "Tag companies and executives mentioned when possible to expand reach",
-        "Breaking news REPLACES whatever was scheduled that day — always prioritize",
       ]
     },
   ];
   document.getElementById("sgg").innerHTML=SUGG_DATA.map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
 
-  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~19","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
+  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~21","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
 }
 
 function chk(e,id){
@@ -841,16 +546,7 @@ function renderSb(){
       tasks.push({id:pid(today,p.key,post.label),label:post.label,platform:p.label,color:p.color});
     });
   });
-  // Custom calendar posts for today
-  const calCustomKey=today+"_"+null; // placeholder
-  PLATS.forEach(p=>{
-    const key=today+"_"+p.key;
-    (getCustomPosts()[key]||[]).forEach(post=>{
-      tasks.push({id:post.id,label:post.label,platform:p.label,color:p.color,isCustom:true,isCalCustom:true});
-    });
-  });
-  // Legacy custom tasks (from the text input)
-  getCustom().filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
+  customs.filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
 
   document.getElementById("todo-list").innerHTML=tasks.length?tasks.map(t=>{
     const done=!!checked[t.id];
@@ -906,194 +602,13 @@ function delTask(id){
 function showTip(tip){
   document.querySelectorAll(".tip-pop").forEach(e=>e.remove());
   if(!tip)return;
-  // Convert · separators back to line breaks for display
-  const formatted = tip.replace(/ · /g,"<br>").replace(/📌/g,"<br>📌").replace(/💬/g,"<br>💬").replace(/🔍/g,"<br>🔍").replace(/💡/g,"<br>💡").replace(/OR/g,"<br><strong>OR</strong>");
   const p=document.createElement("div");p.className="tip-pop";
-  p.innerHTML="<strong>💡 Tip</strong><br>"+formatted+"<br><span style='color:var(--tm);font-size:.7rem;margin-top:5px;display:block'>Tap anywhere to dismiss</span>";
+  p.innerHTML=`<strong>💡 Tip</strong><br>${tip}<br><span style="color:var(--tm);font-size:.7rem;margin-top:5px;display:block">Tap anywhere to dismiss</span>`;
   document.body.appendChild(p);
   setTimeout(()=>document.addEventListener("click",()=>p.remove(),{once:true}),100);
 }
 
 buildSel();renderWeek();
-
-// ── URL parameter: ?tab=calendar or ?tab=dash opens that tab directly ────────
-(function(){
-  const params = new URLSearchParams(window.location.search);
-  const tabParam = params.get("tab");
-  if(tabParam === "calendar"){
-    document.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));
-    document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
-    document.getElementById("tab-cal").classList.add("on");
-    // Activate the calendar nav button
-    document.querySelectorAll(".tb").forEach(b=>{
-      if(b.textContent.trim().includes("Posting Calendar")) b.classList.add("on");
-    });
-    renderCal();renderSb();
-  }
-})();
-
-// ═══════════════════════════════════════════════════════════════════════════
-// EDITABLE CALENDAR
-// ═══════════════════════════════════════════════════════════════════════════
-
-// Content type definitions for the modal
-const CTYPES = [
-  {cls:"crl", label:"🎬 Reel",      bg:"#1a2030", border:"#ff9800", color:"#f0d0a0"},
-  {cls:"cn",  label:"📰 News",      bg:"#1a2a1a", border:"#00d4aa", color:"#a0f0dc"},
-  {cls:"cca", label:"🎠 Carousel",  bg:"#2a1a2a", border:"#e1306c", color:"#f0a0c0"},
-  {cls:"cst", label:"📊 Stat",      bg:"#2a2a1a", border:"#ffd93d", color:"#f0e0a0"},
-  {cls:"cpo", label:"🗳️ Poll",      bg:"#1a2a2a", border:"#00bcd4", color:"#a0e0f0"},
-  {cls:"clp", label:"🚀 Launch",    bg:"#1f1a2e", border:"#9c27b0", color:"#d4a0f0"},
-  {cls:"cv",  label:"📹 Video",     bg:"#1a2744", border:"#6c63ff", color:"#c5c0ff"},
-  {cls:"crp", label:"♻️ Repurpose", bg:"#1e1e1e", border:"#555",    color:"#aaa"},
-  {cls:"cht", label:"💬 Other",     bg:"#2a1a1a", border:"#ff6b6b", color:"#f0c0c0"},
-];
-
-// Custom posts storage: { "dateStr_platKey": [{id, label, cls, tip}, ...] }
-function getCustomPosts(){try{return JSON.parse(localStorage.getItem("hw_custom_posts")||"{}")}catch{return{}}}
-function setCustomPosts(d){localStorage.setItem("hw_custom_posts",JSON.stringify(d))}
-
-// Overrides storage: { "pid": {label, cls, tip} } — for editing scheduled posts
-function getOverrides(){try{return JSON.parse(localStorage.getItem("hw_overrides")||"{}")}catch{return{}}}
-function setOverrides(d){localStorage.setItem("hw_overrides",JSON.stringify(d))}
-
-// Modal state
-let _modal = {dateStr:null, platKey:null, postId:null, isCustom:false, selectedCls:"cn"};
-
-function openAddModal(dateStr, platKey){
-  _modal = {dateStr, platKey, postId:null, isCustom:true, selectedCls:"cn"};
-  document.getElementById("modal-title").textContent = "Add Post";
-  document.getElementById("modal-label").value = "";
-  document.getElementById("modal-tip").value = "";
-  document.getElementById("modal-delete").style.display = "none";
-  buildTypeGrid("cn");
-  document.getElementById("post-modal").style.display = "flex";
-  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
-}
-
-function openEditModal(postId, dateStr, platKey, isCustom){
-  const overrides = getOverrides();
-  const customs = getCustomPosts();
-  let label="", cls="cn", tip="";
-
-  if(isCustom){
-    const key = dateStr+"_"+platKey;
-    const arr = customs[key]||[];
-    const post = arr.find(p=>p.id===postId);
-    if(post){label=post.label;cls=post.cls;tip=post.tip||"";}
-  } else {
-    // Scheduled post — check for override first
-    if(overrides[postId]){
-      label=overrides[postId].label;cls=overrides[postId].cls;tip=overrides[postId].tip||"";
-    } else {
-      // Find original from SCHED or LAUNCH_EVENTS or SUMMIT_REELS
-      const el=document.getElementById(postId);
-      if(el){
-        label=el.querySelector(".cp-body")?.childNodes[1]?.textContent?.trim()||"";
-        cls=Array.from(el.classList).find(c=>c.startsWith("c")&&c.length<=4&&c!=="cp"&&c!=="cv"||c==="cv")||"cn";
-      }
-    }
-  }
-
-  _modal = {dateStr, platKey, postId, isCustom, selectedCls:cls};
-  document.getElementById("modal-title").textContent = isCustom ? "Edit Post" : "Edit Scheduled Post";
-  document.getElementById("modal-label").value = label;
-  document.getElementById("modal-tip").value = tip;
-  document.getElementById("modal-delete").style.display = isCustom ? "inline-flex" : "none";
-  buildTypeGrid(cls);
-  document.getElementById("post-modal").style.display = "flex";
-  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
-}
-
-function buildTypeGrid(selectedCls){
-  const grid = document.getElementById("type-grid");
-  grid.innerHTML = CTYPES.map(t=>`
-    <div class="type-opt${t.cls===selectedCls?" sel":""}"
-      style="background:${t.bg};border-color:${t.cls===selectedCls?"white":t.border};color:${t.color}"
-      onclick="selectType('${t.cls}')">${t.label}</div>
-  `).join("");
-}
-
-function selectType(cls){
-  _modal.selectedCls = cls;
-  buildTypeGrid(cls);
-}
-
-function savePost(){
-  const label = document.getElementById("modal-label").value.trim();
-  if(!label){document.getElementById("modal-label").focus();return;}
-  const tip = document.getElementById("modal-tip").value.trim();
-  const cls = _modal.selectedCls;
-
-  if(_modal.isCustom){
-    // Save custom post
-    const customs = getCustomPosts();
-    const key = _modal.dateStr+"_"+_modal.platKey;
-    if(!customs[key]) customs[key]=[];
-    if(_modal.postId){
-      // Edit existing custom
-      const idx = customs[key].findIndex(p=>p.id===_modal.postId);
-      if(idx>=0) customs[key][idx]={id:_modal.postId,label,cls,tip};
-    } else {
-      // New custom post
-      customs[key].push({id:"c_"+Date.now(),label,cls,tip});
-    }
-    setCustomPosts(customs);
-  } else {
-    // Save override for scheduled post
-    const overrides = getOverrides();
-    overrides[_modal.postId]={label,cls,tip};
-    setOverrides(overrides);
-  }
-
-  closeModal();
-  renderCal();
-  renderSb();
-}
-
-function deletePost(){
-  if(!_modal.isCustom||!_modal.postId) return;
-  const customs = getCustomPosts();
-  const key = _modal.dateStr+"_"+_modal.platKey;
-  if(customs[key]){
-    customs[key]=customs[key].filter(p=>p.id!==_modal.postId);
-    if(!customs[key].length) delete customs[key];
-  }
-  setCustomPosts(customs);
-  closeModal();
-  renderCal();
-  renderSb();
-}
-
-function closeModal(){
-  document.getElementById("post-modal").style.display="none";
-}
-
-// Keyboard shortcut: Escape closes modal
-document.addEventListener("keydown", e=>{if(e.key==="Escape") closeModal();});
-
 </script>
-
-<!-- ── Post Edit/Add Modal ── -->
-<div class="modal-overlay" id="post-modal" style="display:none" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h3>
-      <span id="modal-title">Add Post</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </h3>
-    <label>Label</label>
-    <input type="text" id="modal-label" placeholder="e.g. 🎬 Logan's Reel" maxlength="60"/>
-    <label>Content Type</label>
-    <div class="type-grid" id="type-grid"></div>
-    <label>Tip / Notes (optional)</label>
-    <textarea id="modal-tip" placeholder="Add any notes or reminders for this post…" rows="2"></textarea>
-    <div class="modal-actions">
-      <button class="btn-delete" id="modal-delete" onclick="deletePost()" style="display:none">🗑 Delete</button>
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="savePost()">Save</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
