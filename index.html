@@ -5,7 +5,148 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>HW Media — Social Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+// ═══════════════════════════════════════════════════════════════════════════
+// EDITABLE CALENDAR
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Content type definitions for the modal
+const CTYPES = [
+  {cls:"crl", label:"🎬 Reel",      bg:"#1a2030", border:"#ff9800", color:"#f0d0a0"},
+  {cls:"cn",  label:"📰 News",      bg:"#1a2a1a", border:"#00d4aa", color:"#a0f0dc"},
+  {cls:"cca", label:"🎠 Carousel",  bg:"#2a1a2a", border:"#e1306c", color:"#f0a0c0"},
+  {cls:"cst", label:"📊 Stat",      bg:"#2a2a1a", border:"#ffd93d", color:"#f0e0a0"},
+  {cls:"cpo", label:"🗳️ Poll",      bg:"#1a2a2a", border:"#00bcd4", color:"#a0e0f0"},
+  {cls:"clp", label:"🚀 Launch",    bg:"#1f1a2e", border:"#9c27b0", color:"#d4a0f0"},
+  {cls:"cv",  label:"📹 Video",     bg:"#1a2744", border:"#6c63ff", color:"#c5c0ff"},
+  {cls:"crp", label:"♻️ Repurpose", bg:"#1e1e1e", border:"#555",    color:"#aaa"},
+  {cls:"cht", label:"💬 Other",     bg:"#2a1a1a", border:"#ff6b6b", color:"#f0c0c0"},
+];
+
+// Custom posts storage: { "dateStr_platKey": [{id, label, cls, tip}, ...] }
+function getCustomPosts(){try{return JSON.parse(localStorage.getItem("hw_custom_posts")||"{}")}catch{return{}}}
+function setCustomPosts(d){localStorage.setItem("hw_custom_posts",JSON.stringify(d))}
+
+// Overrides storage: { "pid": {label, cls, tip} } — for editing scheduled posts
+function getOverrides(){try{return JSON.parse(localStorage.getItem("hw_overrides")||"{}")}catch{return{}}}
+function setOverrides(d){localStorage.setItem("hw_overrides",JSON.stringify(d))}
+
+// Modal state
+let _modal = {dateStr:null, platKey:null, postId:null, isCustom:false, selectedCls:"cn"};
+
+function openAddModal(dateStr, platKey){
+  _modal = {dateStr, platKey, postId:null, isCustom:true, selectedCls:"cn"};
+  document.getElementById("modal-title").textContent = "Add Post";
+  document.getElementById("modal-label").value = "";
+  document.getElementById("modal-tip").value = "";
+  document.getElementById("modal-delete").style.display = "none";
+  buildTypeGrid("cn");
+  document.getElementById("post-modal").style.display = "flex";
+  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
+}
+
+function openEditModal(postId, dateStr, platKey, isCustom){
+  const overrides = getOverrides();
+  const customs = getCustomPosts();
+  let label="", cls="cn", tip="";
+
+  if(isCustom){
+    const key = dateStr+"_"+platKey;
+    const arr = customs[key]||[];
+    const post = arr.find(p=>p.id===postId);
+    if(post){label=post.label;cls=post.cls;tip=post.tip||"";}
+  } else {
+    // Scheduled post — check for override first
+    if(overrides[postId]){
+      label=overrides[postId].label;cls=overrides[postId].cls;tip=overrides[postId].tip||"";
+    } else {
+      // Find original from SCHED or LAUNCH_EVENTS or SUMMIT_REELS
+      const el=document.getElementById(postId);
+      if(el){
+        label=el.querySelector(".cp-body")?.childNodes[1]?.textContent?.trim()||"";
+        cls=Array.from(el.classList).find(c=>c.startsWith("c")&&c.length<=4&&c!=="cp"&&c!=="cv"||c==="cv")||"cn";
+      }
+    }
+  }
+
+  _modal = {dateStr, platKey, postId, isCustom, selectedCls:cls};
+  document.getElementById("modal-title").textContent = isCustom ? "Edit Post" : "Edit Scheduled Post";
+  document.getElementById("modal-label").value = label;
+  document.getElementById("modal-tip").value = tip;
+  document.getElementById("modal-delete").style.display = isCustom ? "inline-flex" : "none";
+  buildTypeGrid(cls);
+  document.getElementById("post-modal").style.display = "flex";
+  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
+}
+
+function buildTypeGrid(selectedCls){
+  const grid = document.getElementById("type-grid");
+  grid.innerHTML = CTYPES.map(t=>`
+    <div class="type-opt${t.cls===selectedCls?" sel":""}"
+      style="background:${t.bg};border-color:${t.cls===selectedCls?"white":t.border};color:${t.color}"
+      onclick="selectType('${t.cls}')">${t.label}</div>
+  `).join("");
+}
+
+function selectType(cls){
+  _modal.selectedCls = cls;
+  buildTypeGrid(cls);
+}
+
+function savePost(){
+  const label = document.getElementById("modal-label").value.trim();
+  if(!label){document.getElementById("modal-label").focus();return;}
+  const tip = document.getElementById("modal-tip").value.trim();
+  const cls = _modal.selectedCls;
+
+  if(_modal.isCustom){
+    // Save custom post
+    const customs = getCustomPosts();
+    const key = _modal.dateStr+"_"+_modal.platKey;
+    if(!customs[key]) customs[key]=[];
+    if(_modal.postId){
+      // Edit existing custom
+      const idx = customs[key].findIndex(p=>p.id===_modal.postId);
+      if(idx>=0) customs[key][idx]={id:_modal.postId,label,cls,tip};
+    } else {
+      // New custom post
+      customs[key].push({id:"c_"+Date.now(),label,cls,tip});
+    }
+    setCustomPosts(customs);
+  } else {
+    // Save override for scheduled post
+    const overrides = getOverrides();
+    overrides[_modal.postId]={label,cls,tip};
+    setOverrides(overrides);
+  }
+
+  closeModal();
+  renderCal();
+  renderSb();
+}
+
+function deletePost(){
+  if(!_modal.isCustom||!_modal.postId) return;
+  const customs = getCustomPosts();
+  const key = _modal.dateStr+"_"+_modal.platKey;
+  if(customs[key]){
+    customs[key]=customs[key].filter(p=>p.id!==_modal.postId);
+    if(!customs[key].length) delete customs[key];
+  }
+  setCustomPosts(customs);
+  closeModal();
+  renderCal();
+  renderSb();
+}
+
+function closeModal(){
+  document.getElementById("post-modal").style.display="none";
+}
+
+// Keyboard shortcut: Escape closes modal
+document.addEventListener("keydown", e=>{if(e.key==="Escape") closeModal();});
+
+</script>
 <style>
 :root{--bg:#0f1117;--s:#1a1d27;--s2:#22263a;--b:#2e3250;--a:#6c63ff;--a2:#00d4aa;--a3:#ff6b6b;--a4:#ffd93d;--t:#e8eaf6;--tm:#8b92b8}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -165,7 +306,36 @@ footer a{color:var(--a);text-decoration:none}
 .sgc li::before{content:"→ ";color:var(--a);font-weight:700}
 
 .tip-pop{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--a);border-radius:11px;padding:13px 16px;font-size:0.79rem;color:var(--t);max-width:360px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.5);line-height:1.5;width:90%}
-</style>
+
+    /* ── Edit / Add Post Modal ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px}
+    .modal{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:22px;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.5)}
+    .modal h3{font-size:0.95rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+    .modal-close{background:none;border:none;color:var(--tm);font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1}
+    .modal-close:hover{color:var(--t)}
+    .modal label{display:block;font-size:0.72rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;margin-top:12px}
+    .modal input[type=text],.modal textarea{width:100%;background:var(--s2);border:1px solid var(--b);color:var(--t);border-radius:8px;padding:8px 10px;font-size:0.82rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+    .modal input[type=text]:focus,.modal textarea:focus{border-color:var(--a)}
+    .modal textarea{resize:vertical;min-height:60px}
+    .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+    .type-opt{padding:6px 4px;border-radius:7px;border:2px solid transparent;cursor:pointer;font-size:0.68rem;font-weight:700;text-align:center;transition:all .15s;line-height:1.3}
+    .type-opt:hover{opacity:.85}
+    .type-opt.sel{border-color:white!important;opacity:1}
+    .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+    .modal-actions button{padding:8px 16px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:opacity .15s}
+    .modal-actions button:hover{opacity:.85}
+    .btn-cancel{background:var(--s2);color:var(--tm)}
+    .btn-save{background:var(--a);color:#fff}
+    .btn-delete{background:#2a1a1a;color:var(--a3);border:1px solid var(--a3)!important;margin-right:auto}
+    /* Add button on cells */
+    .cell-add{display:flex;align-items:center;justify-content:center;width:100%;margin-top:2px;padding:3px;border-radius:5px;border:1px dashed var(--b);color:var(--tm);font-size:0.65rem;cursor:pointer;transition:all .15s;background:none;font-family:'Inter',sans-serif}
+    .cell-add:hover{border-color:var(--a);color:var(--a);background:var(--s2)}
+    /* Edit indicator on chips */
+    .cp-edit{position:absolute;top:2px;right:2px;font-size:8px;opacity:0;transition:opacity .15s;cursor:pointer;background:rgba(0,0,0,.4);border-radius:3px;padding:1px 3px;color:#fff}
+    .cp:hover .cp-edit{opacity:1}
+    .cp{position:relative}
+
+  </style>
 </head>
 <body>
 <header>
@@ -461,17 +631,40 @@ function renderCal(){
       const ds=isoDate(d),posts=getCellPosts(ds,p.key,di);
       if(!posts.length){o+=`<div class="cell mt"></div>`;return}
       o+=`<div class="cell">`;
+      // Scheduled posts (with override support)
+      const overrides=getOverrides();
       posts.forEach(post=>{
         const id=pid(ds,p.key,post.label),done=!!checked[id];
-        const tip=(post.tip||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+        const ov=overrides[id];
+        const label=ov?ov.label:post.label;
+        const cls=ov?ov.cls:post.cls;
+        const tipRaw=ov?ov.tip:(post.tip||"");
+        const tip=tipRaw.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
         const click=post.link?`window.open('${post.link}','_blank')`:`showTip('${tip}')`;
-        o+=`<div class="cp ${post.cls}${done?" done":""}" id="${id}">
+        o+=`<div class="cp ${cls}${done?" done":""}" id="${id}">
           <div class="cp-check${done?" chk":""}" onclick="chk(event,'${id}')"></div>
           <div class="cp-body" onclick="${click}" title="${tip}">
-            <div class="cpt">${post.type||"post"}</div>${post.label}
+            <div class="cpt">${post.type||"post"}</div>${label}
           </div>
+          <div class="cp-edit" onclick="event.stopPropagation();openEditModal('${id}','${ds}','${p.key}',false)" title="Edit">✏️</div>
         </div>`;
       });
+      // Custom posts for this cell
+      const customKey="${ds}_${p.key}";
+      const cellCustoms=(getCustomPosts()[customKey]||[]);
+      cellCustoms.forEach(post=>{
+        const id=post.id,done=!!checked[id];
+        const tip=(post.tip||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+        o+=`<div class="cp ${post.cls}${done?" done":""}" id="${id}">
+          <div class="cp-check${done?" chk":""}" onclick="chk(event,'${id}')"></div>
+          <div class="cp-body" onclick="showTip('${tip}')" title="${tip}">
+            <div class="cpt">custom</div>${post.label}
+          </div>
+          <div class="cp-edit" onclick="event.stopPropagation();openEditModal('${id}','${ds}','${p.key}',true)" title="Edit">✏️</div>
+        </div>`;
+      });
+      // Add button
+      o+=`<button class="cell-add" onclick="openAddModal('${ds}','${p.key}')">+ add</button>`;
       o+=`</div>`;
     });
   });
@@ -581,7 +774,16 @@ function renderSb(){
       tasks.push({id:pid(today,p.key,post.label),label:post.label,platform:p.label,color:p.color});
     });
   });
-  customs.filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
+  // Custom calendar posts for today
+  const calCustomKey=today+"_"+null; // placeholder
+  PLATS.forEach(p=>{
+    const key=today+"_"+p.key;
+    (getCustomPosts()[key]||[]).forEach(post=>{
+      tasks.push({id:post.id,label:post.label,platform:p.label,color:p.color,isCustom:true,isCalCustom:true});
+    });
+  });
+  // Legacy custom tasks (from the text input)
+  getCustom().filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
 
   document.getElementById("todo-list").innerHTML=tasks.length?tasks.map(t=>{
     const done=!!checked[t.id];
@@ -662,6 +864,169 @@ buildSel();renderWeek();
     renderCal();renderSb();
   }
 })();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EDITABLE CALENDAR
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Content type definitions for the modal
+const CTYPES = [
+  {cls:"crl", label:"🎬 Reel",      bg:"#1a2030", border:"#ff9800", color:"#f0d0a0"},
+  {cls:"cn",  label:"📰 News",      bg:"#1a2a1a", border:"#00d4aa", color:"#a0f0dc"},
+  {cls:"cca", label:"🎠 Carousel",  bg:"#2a1a2a", border:"#e1306c", color:"#f0a0c0"},
+  {cls:"cst", label:"📊 Stat",      bg:"#2a2a1a", border:"#ffd93d", color:"#f0e0a0"},
+  {cls:"cpo", label:"🗳️ Poll",      bg:"#1a2a2a", border:"#00bcd4", color:"#a0e0f0"},
+  {cls:"clp", label:"🚀 Launch",    bg:"#1f1a2e", border:"#9c27b0", color:"#d4a0f0"},
+  {cls:"cv",  label:"📹 Video",     bg:"#1a2744", border:"#6c63ff", color:"#c5c0ff"},
+  {cls:"crp", label:"♻️ Repurpose", bg:"#1e1e1e", border:"#555",    color:"#aaa"},
+  {cls:"cht", label:"💬 Other",     bg:"#2a1a1a", border:"#ff6b6b", color:"#f0c0c0"},
+];
+
+// Custom posts storage: { "dateStr_platKey": [{id, label, cls, tip}, ...] }
+function getCustomPosts(){try{return JSON.parse(localStorage.getItem("hw_custom_posts")||"{}")}catch{return{}}}
+function setCustomPosts(d){localStorage.setItem("hw_custom_posts",JSON.stringify(d))}
+
+// Overrides storage: { "pid": {label, cls, tip} } — for editing scheduled posts
+function getOverrides(){try{return JSON.parse(localStorage.getItem("hw_overrides")||"{}")}catch{return{}}}
+function setOverrides(d){localStorage.setItem("hw_overrides",JSON.stringify(d))}
+
+// Modal state
+let _modal = {dateStr:null, platKey:null, postId:null, isCustom:false, selectedCls:"cn"};
+
+function openAddModal(dateStr, platKey){
+  _modal = {dateStr, platKey, postId:null, isCustom:true, selectedCls:"cn"};
+  document.getElementById("modal-title").textContent = "Add Post";
+  document.getElementById("modal-label").value = "";
+  document.getElementById("modal-tip").value = "";
+  document.getElementById("modal-delete").style.display = "none";
+  buildTypeGrid("cn");
+  document.getElementById("post-modal").style.display = "flex";
+  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
+}
+
+function openEditModal(postId, dateStr, platKey, isCustom){
+  const overrides = getOverrides();
+  const customs = getCustomPosts();
+  let label="", cls="cn", tip="";
+
+  if(isCustom){
+    const key = dateStr+"_"+platKey;
+    const arr = customs[key]||[];
+    const post = arr.find(p=>p.id===postId);
+    if(post){label=post.label;cls=post.cls;tip=post.tip||"";}
+  } else {
+    // Scheduled post — check for override first
+    if(overrides[postId]){
+      label=overrides[postId].label;cls=overrides[postId].cls;tip=overrides[postId].tip||"";
+    } else {
+      // Find original from SCHED or LAUNCH_EVENTS or SUMMIT_REELS
+      const el=document.getElementById(postId);
+      if(el){
+        label=el.querySelector(".cp-body")?.childNodes[1]?.textContent?.trim()||"";
+        cls=Array.from(el.classList).find(c=>c.startsWith("c")&&c.length<=4&&c!=="cp"&&c!=="cv"||c==="cv")||"cn";
+      }
+    }
+  }
+
+  _modal = {dateStr, platKey, postId, isCustom, selectedCls:cls};
+  document.getElementById("modal-title").textContent = isCustom ? "Edit Post" : "Edit Scheduled Post";
+  document.getElementById("modal-label").value = label;
+  document.getElementById("modal-tip").value = tip;
+  document.getElementById("modal-delete").style.display = isCustom ? "inline-flex" : "none";
+  buildTypeGrid(cls);
+  document.getElementById("post-modal").style.display = "flex";
+  setTimeout(()=>document.getElementById("modal-label").focus(), 50);
+}
+
+function buildTypeGrid(selectedCls){
+  const grid = document.getElementById("type-grid");
+  grid.innerHTML = CTYPES.map(t=>`
+    <div class="type-opt${t.cls===selectedCls?" sel":""}"
+      style="background:${t.bg};border-color:${t.cls===selectedCls?"white":t.border};color:${t.color}"
+      onclick="selectType('${t.cls}')">${t.label}</div>
+  `).join("");
+}
+
+function selectType(cls){
+  _modal.selectedCls = cls;
+  buildTypeGrid(cls);
+}
+
+function savePost(){
+  const label = document.getElementById("modal-label").value.trim();
+  if(!label){document.getElementById("modal-label").focus();return;}
+  const tip = document.getElementById("modal-tip").value.trim();
+  const cls = _modal.selectedCls;
+
+  if(_modal.isCustom){
+    // Save custom post
+    const customs = getCustomPosts();
+    const key = _modal.dateStr+"_"+_modal.platKey;
+    if(!customs[key]) customs[key]=[];
+    if(_modal.postId){
+      // Edit existing custom
+      const idx = customs[key].findIndex(p=>p.id===_modal.postId);
+      if(idx>=0) customs[key][idx]={id:_modal.postId,label,cls,tip};
+    } else {
+      // New custom post
+      customs[key].push({id:"c_"+Date.now(),label,cls,tip});
+    }
+    setCustomPosts(customs);
+  } else {
+    // Save override for scheduled post
+    const overrides = getOverrides();
+    overrides[_modal.postId]={label,cls,tip};
+    setOverrides(overrides);
+  }
+
+  closeModal();
+  renderCal();
+  renderSb();
+}
+
+function deletePost(){
+  if(!_modal.isCustom||!_modal.postId) return;
+  const customs = getCustomPosts();
+  const key = _modal.dateStr+"_"+_modal.platKey;
+  if(customs[key]){
+    customs[key]=customs[key].filter(p=>p.id!==_modal.postId);
+    if(!customs[key].length) delete customs[key];
+  }
+  setCustomPosts(customs);
+  closeModal();
+  renderCal();
+  renderSb();
+}
+
+function closeModal(){
+  document.getElementById("post-modal").style.display="none";
+}
+
+// Keyboard shortcut: Escape closes modal
+document.addEventListener("keydown", e=>{if(e.key==="Escape") closeModal();});
+
 </script>
+
+<!-- ── Post Edit/Add Modal ── -->
+<div class="modal-overlay" id="post-modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3>
+      <span id="modal-title">Add Post</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </h3>
+    <label>Label</label>
+    <input type="text" id="modal-label" placeholder="e.g. 🎬 Logan's Reel" maxlength="60"/>
+    <label>Content Type</label>
+    <div class="type-grid" id="type-grid"></div>
+    <label>Tip / Notes (optional)</label>
+    <textarea id="modal-tip" placeholder="Add any notes or reminders for this post…" rows="2"></textarea>
+    <div class="modal-actions">
+      <button class="btn-delete" id="modal-delete" onclick="deletePost()" style="display:none">🗑 Delete</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="savePost()">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
