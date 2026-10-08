@@ -1,639 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>HW Media — Social Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-:root{--bg:#0f1117;--s:#1a1d27;--s2:#22263a;--b:#2e3250;--a:#6c63ff;--a2:#00d4aa;--a3:#ff6b6b;--a4:#ffd93d;--t:#e8eaf6;--tm:#8b92b8}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
-header{background:linear-gradient(135deg,#1a1d27,#12152a);border-bottom:1px solid var(--b);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.hl h1{font-size:1.3rem;font-weight:800;background:linear-gradient(90deg,#6c63ff,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hl p{color:var(--tm);font-size:0.76rem;margin-top:2px}
-nav{display:flex;gap:2px;padding:0 32px;background:#12152a;border-bottom:1px solid var(--b)}
-.tb{padding:11px 20px;font-size:0.82rem;font-weight:600;color:var(--tm);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s,border-color .15s;text-decoration:none;display:inline-flex;align-items:center}
-.tb:hover{color:var(--t)}.tb.on{color:var(--a);border-bottom-color:var(--a)}
-.tp{display:none}.tp.on{display:block}
-main{padding:22px 32px;max-width:1600px;margin:0 auto}
-.sec{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.sec::after{content:'';flex:1;height:1px;background:var(--b)}
-.pd{width:8px;height:8px;border-radius:50%}
-/* KPIs */
-.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:13px;margin-bottom:22px}
-.kc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:15px 17px;position:relative;overflow:hidden;transition:transform .15s,border-color .15s}
-.kc:hover{transform:translateY(-2px);border-color:var(--a)}
-.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cc,var(--a))}
-.kl{font-size:0.67rem;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
-.kv{font-size:1.55rem;font-weight:800;line-height:1}
-.ks{font-size:0.73rem;margin-top:4px;font-weight:500}
-.ks.up{color:var(--a2)}.ks.dn{color:var(--a3)}.ks.ne{color:var(--tm)}
-/* Platform cards */
-.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:13px;margin-bottom:22px}
-.pc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:15px;transition:transform .15s}
-.pc:hover{transform:translateY(-2px)}
-.ph{display:flex;align-items:center;gap:8px;margin-bottom:11px}
-.pn{font-weight:700;font-size:0.88rem}
-.ps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.sl{font-size:0.63rem;color:var(--tm);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
-.sv{font-size:1rem;font-weight:700}
-.sc{font-size:0.68rem;font-weight:500}
-.sc.up{color:var(--a2)}.sc.dn{color:var(--a3)}.sc.ne{color:var(--tm)}
-/* Charts */
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
-@media(max-width:860px){.cg{grid-template-columns:1fr}}
-.cc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px}
-.cc.w{grid-column:1/-1}
-.ct{font-size:0.8rem;font-weight:700;margin-bottom:12px}
-.cw{position:relative;height:220px}.cw.t{height:280px}
-/* Benchmarks */
-.bg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:11px;margin-bottom:22px}
-.bc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:13px 15px}
-.bh{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.bn{font-weight:700;font-size:0.85rem;display:flex;align-items:center;gap:6px}
-.bb{height:6px;background:var(--s2);border-radius:3px;overflow:hidden;margin-bottom:4px}
-.bf{height:100%;border-radius:3px;transition:width .8s ease}
-.bls{display:flex;justify-content:space-between;font-size:0.67rem}
-.bw{color:var(--a3);font-weight:600}.bi{color:var(--a)}
-/* Top posts */
-.og{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:13px;margin-bottom:22px}
-.oc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:13px;transition:border-color .15s}
-.oc:hover{border-color:var(--a)}
-.oh{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.op{display:flex;align-items:center;gap:6px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.or{font-size:0.68rem;color:var(--tm);background:var(--s2);padding:2px 7px;border-radius:10px}
-.oca{font-size:0.76rem;color:var(--t);line-height:1.5;margin-bottom:9px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.os{display:flex;gap:11px}
-.ost{font-size:0.73rem;color:var(--tm)}
-.ost span{color:var(--t);font-weight:600}
-.ol{display:inline-block;margin-top:7px;font-size:0.7rem;color:var(--a);text-decoration:none}
-.ol:hover{text-decoration:underline}
-footer{text-align:center;padding:20px;color:var(--tm);font-size:0.72rem;border-top:1px solid var(--b);margin-top:8px}
-footer a{color:var(--a);text-decoration:none}
-
-/* ══ CALENDAR ══ */
-.cal-outer{display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;transition:grid-template-columns .3s ease}
-.cal-outer.sb-off{grid-template-columns:1fr 0px}
-.cal-outer.sb-off .cal-sidebar{opacity:0;pointer-events:none;overflow:hidden}
-@media(max-width:1100px){.cal-outer,.cal-outer.sb-off{grid-template-columns:1fr!important}.cal-outer.sb-off .cal-sidebar{opacity:1;pointer-events:auto}}
-
-.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.cal-hdr h2{font-size:1rem;font-weight:700}
-.cal-hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.cal-nav{display:flex;align-items:center;gap:6px}
-.cal-nav button{background:var(--s);border:1px solid var(--b);color:var(--t);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:0.95rem;transition:border-color .15s;font-family:'Inter',sans-serif}
-.cal-nav button:hover{border-color:var(--a)}
-.cal-nav button.txt{width:auto;padding:0 10px;font-size:0.73rem;font-weight:600}
-.cwl{font-size:0.85rem;font-weight:600;min-width:175px;text-align:center}
-.sb-btn{background:var(--s);border:1px solid var(--b);color:var(--tm);padding:0 10px;height:28px;border-radius:7px;cursor:pointer;font-size:0.72rem;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
-.sb-btn:hover{border-color:var(--a);color:var(--a)}
-
-/* Legend */
-.leg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.li{display:flex;align-items:center;gap:4px;font-size:0.67rem;color:var(--tm)}
-.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
-/* Grid — full width */
-.cgrid{display:grid;grid-template-columns:80px repeat(5,1fr);gap:4px;margin-bottom:20px;width:100%}
-@media(max-width:700px){.cgrid{grid-template-columns:55px repeat(5,1fr)}}
-
-.cdh{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:7px 4px;text-align:center}
-.cdn{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tm)}
-.cdd{font-size:0.95rem;font-weight:800;margin-top:2px}
-.cdd.td{color:var(--a2)}
-.cpl{display:flex;align-items:center;gap:5px;padding:5px 7px;font-size:0.68rem;font-weight:700;border-radius:8px;background:var(--s);border:1px solid var(--b);white-space:nowrap;overflow:hidden}
-.cpd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.cell{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:4px;min-height:60px;display:flex;flex-direction:column;gap:3px}
-.cell.mt{background:var(--bg);border-style:dashed;opacity:.28}
-
-/* Post chips */
-.cp{border-radius:5px;padding:4px 5px;font-size:0.62rem;line-height:1.3;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:flex-start;gap:4px}
-.cp:hover{opacity:.82;transform:translateY(-1px)}
-.cp.done{opacity:.38!important}
-.cp.done .cp-body{text-decoration:line-through}
-.cp-check{width:11px;height:11px;border-radius:2px;border:1.5px solid currentColor;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:7px;cursor:pointer;transition:all .15s}
-.cp-check.chk{background:currentColor}
-.cp-check.chk::after{content:'✓';color:#0f1117;font-weight:900}
-.cp-body{flex:1;min-width:0}
-.cpt{font-weight:700;font-size:0.56rem;text-transform:uppercase;letter-spacing:.04em;opacity:.8;margin-bottom:1px}
-
-/* Content type colors */
-.cv {background:#1a2744;border-left:3px solid #6c63ff;color:#c5c0ff}
-.cn {background:#1a2a1a;border-left:3px solid #00d4aa;color:#a0f0dc}
-.cca{background:#2a1a2a;border-left:3px solid #e1306c;color:#f0a0c0}
-.cst{background:#2a2a1a;border-left:3px solid #ffd93d;color:#f0e0a0}
-.cpo{background:#1a2a2a;border-left:3px solid #00bcd4;color:#a0e0f0}
-.crp{background:#1e1e1e;border-left:3px solid #555;color:#aaa}
-.clp{background:#1f1a2e;border-left:3px solid #9c27b0;color:#d4a0f0}
-.crl{background:#1a2030;border-left:3px solid #ff9800;color:#f0d0a0}
-
-/* Sidebar */
-.cal-sidebar{display:flex;flex-direction:column;gap:12px;min-width:0;transition:opacity .3s}
-.sb-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:13px}
-.sb-title{font-size:0.76rem;font-weight:700;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between}
-.sb-title span{font-size:0.66rem;color:var(--tm);font-weight:500}
-.todo-list{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b) transparent}
-.todo-item{display:flex;align-items:flex-start;gap:7px;padding:6px 8px;background:var(--s2);border-radius:7px;border:1px solid var(--b)}
-.todo-item.done-item .todo-text{text-decoration:line-through;color:var(--tm)}
-.todo-cb{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--tm);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s}
-.todo-cb.chk{background:var(--a2);border-color:var(--a2);color:#0f1117;font-weight:900}
-.todo-text{font-size:0.73rem;line-height:1.4;flex:1}
-.todo-plat{font-size:0.6rem;font-weight:700;opacity:.7;margin-top:1px}
-.todo-del{font-size:0.68rem;color:var(--tm);cursor:pointer;opacity:0;transition:opacity .15s;padding:0 2px;flex-shrink:0}
-.todo-item:hover .todo-del{opacity:1}
-.todo-del:hover{color:var(--a3)}
-.add-task{display:flex;gap:5px;margin-top:9px}
-.add-task input{flex:1;background:var(--s2);border:1px solid var(--b);color:var(--t);border-radius:6px;padding:5px 8px;font-size:0.73rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;min-width:0}
-.add-task input:focus{border-color:var(--a)}
-.add-task input::placeholder{color:var(--tm)}
-.add-btn{background:var(--a);color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
-.add-btn:hover{opacity:.85}
-.prog-wrap{margin-top:9px}
-.prog-label{display:flex;justify-content:space-between;font-size:0.66rem;color:var(--tm);margin-bottom:4px}
-.prog-bar{height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:3px;transition:width .4s ease}
-
-/* Suggestions */
-.sgg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:11px;margin-bottom:20px}
-.sgc{background:var(--s);border:1px solid var(--b);border-radius:11px;padding:13px}
-.sgc h4{font-size:0.78rem;font-weight:700;margin-bottom:8px}
-.sgc ul{list-style:none;display:flex;flex-direction:column;gap:5px}
-.sgc li{font-size:0.72rem;color:var(--tm);padding:4px 8px;background:var(--s2);border-radius:5px;cursor:pointer;transition:color .15s,background .15s;line-height:1.4}
-.sgc li:hover{color:var(--t);background:var(--b)}
-.sgc li::before{content:"→ ";color:var(--a);font-weight:700}
-
-.tip-pop{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid var(--a);border-radius:11px;padding:13px 16px;font-size:0.79rem;color:var(--t);max-width:360px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.5);line-height:1.5;width:90%}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Media Command Center — HW Media</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="hl">
-    <h1>⚡ HW Media Social Dashboard</h1>
-    <p>Data updated Sept 11, 2026 · HousingWire</p>
+  <div>
+    <h1>Social Media Command Center</h1>
+    <p>HW Media &middot; Bella Rivera, Social Media Manager &middot; reports to Rachel</p>
+  </div>
+  <div class="header-right">
+    <div class="date" id="todayDateLabel">Loading...</div>
+    <div>Pipeline source: Social Request Form (Google Sheet, live)</div>
   </div>
 </header>
-<nav>
-  <button class="tb on" onclick="tab('dash',this)">📊 Dashboard</button>
-  <button class="tb" onclick="tab('cal',this)">📅 Posting Calendar</button>
-  <a href="launch.html" class="tb">🚀 HW Intelligence Launch</a>
-</nav>
 
-<div id="tab-dash" class="tp on">
 <main>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-    <label style="font-size:0.82rem;color:var(--tm);font-weight:500">📅 Week ending:</label>
-    <select id="ws" onchange="renderWeek()" style="background:var(--s);color:var(--t);border:1px solid var(--b);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:'Inter',sans-serif;cursor:pointer"></select>
-    <span id="lb" style="display:inline-block;font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--a2);color:#0f1117">Latest</span>
-  </div>
-  <div class="sec">Overview</div><div class="kg" id="kg"></div>
-  <div class="sec">Platform Breakdown</div><div class="pg" id="pg"></div>
-  <div class="sec">Trends</div>
-  <div class="cg">
-    <div class="cc w"><div class="ct">📈 8-Week Engagement Trend by Platform</div><div class="cw t"><canvas id="c1"></canvas></div></div>
-    <div class="cc"><div class="ct">👥 Follower Distribution</div><div class="cw"><canvas id="c2"></canvas></div></div>
-    <div class="cc"><div class="ct">📊 YTD Follower Growth</div><div class="cw"><canvas id="c3"></canvas></div></div>
-  </div>
-  <div class="sec">Engagement Rate vs. Industry Benchmark</div><div class="bg" id="bg"></div>
-  <div class="sec">🏆 Top Posts This Week</div><div class="og" id="og"></div>
-</main>
-</div>
+  <div id="loadingState">Loading live pipeline data from Google Sheets...</div>
+  <div id="errorState"></div>
+  <div id="appContent" style="display:none;">
 
-<div id="tab-cal" class="tp">
-<main>
-  <div class="cal-hdr">
-    <h2>📅 Weekly Posting Calendar</h2>
-    <div class="cal-hdr-right">
+    <div class="refresh-note">
+      <span>This page pulls live from the Social Request Form every time it loads. Reload the page any time for the latest.</span>
+      <button onclick="location.reload()">Reload now</button>
+    </div>
+
+    <h2 class="block-title">✅ Today's To-Do List <span id="todoDateLabel"></span></h2>
+    <div class="card checklist-card">
+      <p class="section-title">Pipeline deadlines due today <span class="pill pill-gray" id="dueTodayCount">0 items</span></p>
+      <ul class="todo-list" id="dueTodayList"></ul>
+
+      <p class="section-title" style="margin-top:18px;">3 unique posts today <span class="pill pill-gray">0 / 3 logged</span></p>
+      <ul class="todo-list">
+        <li><span class="checkbox"></span><div class="todo-text"><strong>Post 1</strong><span class="todo-meta">Not yet logged. This dashboard can't know your Sprout status automatically; log it manually or ask your assistant to track it.</span></div><span class="pill pill-gray">-</span></li>
+        <li><span class="checkbox"></span><div class="todo-text"><strong>Post 2</strong><span class="todo-meta">Not yet logged</span></div><span class="pill pill-gray">-</span></li>
+        <li><span class="checkbox"></span><div class="todo-text"><strong>Post 3</strong><span class="todo-meta">Not yet logged</span></div><span class="pill pill-gray">-</span></li>
+      </ul>
+
+      <p class="section-title" style="margin-top:18px;">Daily phone sweep <span class="pill pill-gray">one consolidated pass</span></p>
+      <ul class="todo-list todo-list-inline">
+        <li><span class="checkbox"></span><span class="platform-dot" style="background:#E1306C;"></span>Instagram</li>
+        <li><span class="checkbox"></span><span class="platform-dot" style="background:#0A66C2;"></span>LinkedIn</li>
+        <li><span class="checkbox"></span><span class="platform-dot" style="background:#000000;"></span>X</li>
+        <li><span class="checkbox"></span><span class="platform-dot" style="background:#1877F2;"></span>Facebook</li>
+        <li><span class="checkbox"></span><span class="platform-dot" style="background:#000000;"></span>TikTok</li>
+      </ul>
+    </div>
+    <p class="empty-note">SLA items above are computed live from your request form submissions. Checkboxes do not save state on reload (this is a static page, no login/backend).</p>
+
+    <h2 class="block-title">🗗️ SLA Calendar</h2>
+    <div class="card">
       <div class="cal-nav">
-        <button onclick="calNav(-1)">&#8249;</button>
-        <span class="cwl" id="cwl"></span>
-        <button onclick="calNav(1)">&#8250;</button>
-        <button class="txt" onclick="calNav(0)">Today</button>
+        <button onclick="shiftMonth(-1)">&larr; Prev</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button onclick="shiftMonth(1)">Next &rarr;</button>
       </div>
-      <button class="sb-btn" id="sb-btn" onclick="toggleSb()">Hide Sidebar ›</button>
-    </div>
-  </div>
-  <div class="leg">
-    <span style="font-size:.67rem;color:var(--tm);font-weight:700;margin-right:3px">TYPES:</span>
-    <div class="li"><div class="ld" style="background:#6c63ff"></div>Video</div>
-    <div class="li"><div class="ld" style="background:#00d4aa"></div>News</div>
-    <div class="li"><div class="ld" style="background:#e1306c"></div>Carousel</div>
-    <div class="li"><div class="ld" style="background:#ffd93d"></div>Stat</div>
-    <div class="li"><div class="ld" style="background:#00bcd4"></div>Poll</div>
-    <div class="li"><div class="ld" style="background:#ff9800"></div>Reel</div>
-    <div class="li"><div class="ld" style="background:#9c27b0"></div>🚀 Launch</div>
-    <div class="li"><div class="ld" style="background:#555"></div>Repurpose</div>
-  </div>
-  <div class="cal-outer" id="cal-outer">
-    <div>
-      <div class="cgrid" id="cgrid"></div>
-      <div class="sec">💡 Content Suggestions</div>
-      <div class="sgg" id="sgg"></div>
-      <div class="sec">📋 Weekly Posting Targets</div>
-      <div class="kg" style="margin-bottom:32px" id="tkg"></div>
-    </div>
-    <div class="cal-sidebar" id="cal-sb">
-      <div class="sb-card">
-        <div class="sb-title">📋 Today's To-Do <span id="todo-date"></span></div>
-        <div class="todo-list" id="todo-list"></div>
-        <div class="prog-wrap">
-          <div class="prog-label"><span id="prog-lbl">0 of 0 done</span><span id="prog-pct">0%</span></div>
-          <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-        </div>
-        <div class="add-task">
-          <input type="text" id="custom-inp" placeholder="Add custom task…" onkeydown="if(event.key==='Enter')addTask()"/>
-          <button class="add-btn" onclick="addTask()">+ Add</button>
-        </div>
-      </div>
-      <div class="sb-card">
-        <div class="sb-title">📊 This Week's Progress</div>
-        <div id="week-prog"></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <span><span class="legend-dot" style="background:#fdf1dc;"></span>1st draft due</span>
+        <span><span class="legend-dot" style="background:#e6f1fd;"></span>2nd draft / approval due</span>
+        <span><span class="legend-dot" style="background:#e4f7ec;"></span>Scheduled in Sprout by</span>
+        <span><span class="legend-dot" style="background:#fbe6e7;"></span>Live post date</span>
       </div>
     </div>
+
+    <h2 class="block-title">🗂縏 Request Pipeline — Full Detail</h2>
+    <div id="requestCards"></div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <p class="section-title">⚠️ SLA Protocol Reference</p>
+        <div class="sla-row"><span>1st draft sent</span><span>&ge; 7 days before post date (rush: 24-48 hrs)</span></div>
+        <div class="sla-row"><span>2nd draft / approval</span><span>&ge; 3 business days before Sprout scheduling</span></div>
+        <div class="sla-row"><span>Scheduled in Sprout</span><span>&ge; 2 days before launch</span></div>
+        <p class="empty-note">Deadlines auto-shift earlier when they would otherwise land on a Saturday or Sunday, since Bella does not work weekends.</p>
+      </div>
+      <div class="card">
+        <p class="section-title">👥 Team</p>
+        <div class="sla-row"><span>Social Media Manager</span><span>Bella Rivera (you)</span></div>
+        <div class="sla-row"><span>Reports to</span><span>Rachel</span></div>
+        <p class="empty-note">One-person social team. All drafting, approvals, and Sprout scheduling run through Bella; Rachel is manager/escalation point.</p>
+      </div>
+    </div>
+
+    <h2 class="block-title">🎨 Brand Style Rules</h2>
+    <div class="card">
+      <div class="style-grid">
+        <div class="style-item">AP style<span>Grammar, punctuation, titles</span></div>
+        <div class="style-item">No emojis<span>All platforms, all post types</span></div>
+        <div class="style-item">No em dashes<span>Use commas or periods instead</span></div>
+        <div class="style-item">Conversational tone<span>Housing-pro, not corporate</span></div>
+        <div class="style-item">LinkedIn link rule<span>Link in comments, not post body</span></div>
+        <div class="style-item">Instagram link rule<span>"Link in bio," no raw URLs</span></div>
+      </div>
+    </div>
+
+    <h2 class="block-title">📈 Performance Snapshot (Q1 2026)</h2>
+    <div class="grid grid-4">
+      <div class="card"><div class="kpi-label">Instagram</div><div class="kpi-value" style="font-size:21px;">59.9K <span style="font-size:12.5px;color:var(--muted);font-weight:600;">followers</span></div><div class="kpi-sub">2.7M views (-34.7%) &middot; organic reach declining, paid dependency up</div></div>
+      <div class="card"><div class="kpi-label">Facebook</div><div class="kpi-value" style="font-size:21px;">+128% <span style="font-size:12.5px;color:var(--muted);font-weight:600;">followers</span></div><div class="kpi-sub">2.7M views (+69.2%) &middot; strongest growth quarter across the board</div></div>
+      <div class="card"><div class="kpi-label">LinkedIn</div><div class="kpi-value" style="font-size:21px;">65.3K <span style="font-size:12.5px;color:var(--muted);font-weight:600;">followers</span></div><div class="kpi-sub">1.82M impressions (+158.1%) &middot; best persona alignment of any platform</div></div>
+      <div class="card"><div class="kpi-label">X / Twitter</div><div class="kpi-value" style="font-size:21px;">127.4K <span style="font-size:12.5px;color:var(--muted);font-weight:600;">followers</span></div><div class="kpi-sub">1.3M impressions (+71%) &middot; engagement rate declining (-21%)</div></div>
+    </div>
+    <p class="empty-note">Static figures from the last reported Q1 2026 audit. Not pulled from the live sheet.</p>
+
+    <h2 class="block-title">🗓️ Recurring Weekly Anchors</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Day</th><th>Content</th><th>Distribution</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Monday</strong></td><td>Housing Market Tracker video</td><td>IG, FB, X, LinkedIn, TikTok</td></tr>
+          <tr><td><strong>Thursday</strong></td><td>"Missed This Week's Headlines" video</td><td>IG, FB, X, LinkedIn, TikTok</td></tr>
+          <tr><td><strong>Ad hoc</strong></td><td>Breaking news graphics (headline, quote, or deep-dive carousel)</td><td>LinkedIn, IG, FB (excluded from TikTok)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </main>
-</div>
 
-<footer>Data: <a href="https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk" target="_blank">HousingWire Social Dashboard</a> · Benchmarks: Hootsuite 2026 · HW Media</footer>
-
-<script src="data.js"></script>
-<script>
-
-const PM={linkedin:{label:"LinkedIn",color:"#0077b5"},instagram:{label:"Instagram",color:"#e1306c"},facebook:{label:"Facebook",color:"#1877f2"},x:{label:"X (Twitter)",color:"#e7e9ea"},tiktok:{label:"TikTok",color:"#69c9d0"}};
-const BENCH={linkedin:2.8,instagram:3.2,facebook:1.75,x:1.7,tiktok:1.8};
-const allWeeks=[...new Set(WEEKLY.map(r=>r.week_ending))].sort();
-let selWeek=allWeeks[allWeeks.length-1],charts={},calOff=0,sbOn=true,sheetPosts=[];
-
-function lsGet(k,def){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(def))}catch{return def}}
-function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function getChecked(){return lsGet("hw_chk",{})}
-function setChecked(d){lsSet("hw_chk",d)}
-function getCustom(){return lsGet("hw_custom",[])}
-function setCustom(v){lsSet("hw_custom",v)}
-
-function tab(id,btn){
-  document.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));
-  document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
-  document.getElementById("tab-"+id).classList.add("on");
-  btn.classList.add("on");
-  if(id==="cal"){fetchCalendarPosts();renderCal();renderSb()}
-}
-
-function toggleSb(){
-  sbOn=!sbOn;
-  document.getElementById("cal-outer").classList.toggle("sb-off",!sbOn);
-  document.getElementById("sb-btn").textContent=sbOn?"Hide Sidebar ›":"Show Sidebar ‹";
-}
-
-function fmt(n){if(isNaN(n)||n==null)return"—";return Math.abs(n)>=1000?(n/1000).toFixed(1)+"K":n.toLocaleString()}
-function dc(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
-function isoDate(d){return d.toISOString().slice(0,10)}
-function todayISO(){return isoDate(new Date())}
-function pid(ds,pl,lbl){return"p_"+ds+"_"+pl+"_"+lbl.replace(/[^a-z0-9]/gi,"_").toLowerCase().slice(0,40)}
-const CD={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#8b92b8",font:{size:11}}}},scales:{x:{ticks:{color:"#8b92b8",font:{size:10}},grid:{color:"#2e3250"}},y:{ticks:{color:"#8b92b8",font:{size:10}},grid:{color:"#2e3250"}}}};
-
-function buildSel(){
-  const s=document.getElementById("ws");s.innerHTML="";
-  [...allWeeks].reverse().forEach((w,i)=>{const o=document.createElement("option");o.value=w;o.textContent="Week of "+w+(i===0?" ✦ Latest":"");s.appendChild(o)});
-  s.value=selWeek;
-}
-function renderWeek(){
-  selWeek=document.getElementById("ws").value;
-  document.getElementById("lb").style.display=selWeek===allWeeks[allWeeks.length-1]?"inline":"none";
-  const rows=WEEKLY.filter(r=>r.week_ending===selWeek),pi=allWeeks.indexOf(selWeek),prev=pi>0?WEEKLY.filter(r=>r.week_ending===allWeeks[pi-1]):[];
-  renderKPIs(rows,prev);renderPlats(rows,prev);renderBench(rows);renderPosts();
-  setTimeout(()=>{renderTrend();renderPie(rows);renderYTD()},50);
-}
-function renderKPIs(rows,prev){
-  const tf=rows.reduce((s,r)=>s+r.followers,0),te=rows.reduce((s,r)=>s+r.total_engagement,0),pf=prev.reduce((s,r)=>s+r.followers,0),pe=prev.reduce((s,r)=>s+r.total_engagement,0),nf=tf-pf,ec=te-pe,ep=pe?((ec/pe)*100).toFixed(1):"—";
-  const top=[...rows].sort((a,b)=>b.total_engagement-a.total_engagement)[0];
-  document.getElementById("kg").innerHTML=[{l:"Total Followers",v:fmt(tf),s:(nf>=0?"+":"")+fmt(nf)+" this week",d:nf>=0?"up":"dn",c:"#6c63ff"},{l:"Total Engagement",v:fmt(te),s:(ec>=0?"+":"")+fmt(ec)+" vs last week ("+ep+"%)",d:ec>=0?"up":"dn",c:"#00d4aa"},{l:"New Followers",v:"+"+(fmt(nf)),s:"week over week",d:"ne",c:"#ffd93d"},{l:"Top Platform",v:top?PM[top.platform]?.label||top.platform:"—",s:top?fmt(top.total_engagement)+" engagements":"",d:"ne",c:top?PM[top.platform]?.color:"#6c63ff"},{l:"Platforms Active",v:rows.filter(r=>r.total_engagement>0).length+"/"+rows.length,s:"with engagement",d:"ne",c:"#ff6b6b"}].map(k=>`<div class="kc" style="--cc:${k.c}"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks ${k.d}">${k.s}</div></div>`).join("");
-}
-function renderPlats(rows,prev){
-  document.getElementById("pg").innerHTML=["linkedin","instagram","facebook","x","tiktok"].map(p=>{
-    const c=rows.find(r=>r.platform===p),pr=prev.find(r=>r.platform===p);if(!c)return"";
-    const m=PM[p],fg=pr?c.followers-pr.followers:0,fp=pr?((fg/pr.followers)*100).toFixed(2):"—",ec=pr?c.total_engagement-pr.total_engagement:0,er=c.followers>0?((c.total_engagement/c.followers)*100).toFixed(3):"0.000";
-    return`<div class="pc" style="border-top:3px solid ${m.color}"><div class="ph"><div class="pd" style="background:${m.color}"></div><div class="pn">${m.label}</div></div><div class="ps"><div><div class="sl">Followers</div><div class="sv">${fmt(c.followers)}</div><div class="sc ${fg>=0?"up":"dn"}">${fg>=0?"+":""}${fmt(fg)} (${fp}%)</div></div><div><div class="sl">Engagement</div><div class="sv">${fmt(c.total_engagement)}</div><div class="sc ${ec>=0?"up":"dn"}">${ec>=0?"+":""}${fmt(ec)} WoW</div></div><div><div class="sl">Eng. Rate</div><div class="sv">${er}%</div><div class="sc ne">vs ${BENCH[p]}% bench</div></div></div></div>`;
-  }).join("");
-}
-function renderTrend(){
-  const w8=allWeeks.slice(-9),plats=["linkedin","instagram","facebook","x"];
-  dc("c1");charts.c1=new Chart(document.getElementById("c1"),{type:"line",data:{labels:w8.map(w=>w.slice(5)),datasets:plats.map(p=>({label:PM[p].label,data:w8.map(w=>{const r=WEEKLY.find(d=>d.week_ending===w&&d.platform===p);return r?r.total_engagement:null}),borderColor:PM[p].color,backgroundColor:PM[p].color+"22",tension:.4,fill:false,pointRadius:3}))},options:{...CD}});
-}
-function renderPie(rows){
-  const plats=["linkedin","instagram","facebook","x","tiktok"];
-  dc("c2");charts.c2=new Chart(document.getElementById("c2"),{type:"doughnut",data:{labels:plats.map(p=>PM[p].label),datasets:[{data:plats.map(p=>rows.find(r=>r.platform===p)?.followers||0),backgroundColor:plats.map(p=>PM[p].color),borderColor:"#1a1d27",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"right",labels:{color:"#8b92b8",font:{size:11},padding:10}}}}});
-}
-function renderYTD(){
-  const yw=allWeeks.filter(w=>w>="2026-01-01"),plats=["linkedin","instagram","facebook","x"];
-  dc("c3");charts.c3=new Chart(document.getElementById("c3"),{type:"line",data:{labels:yw.map(w=>w.slice(5)),datasets:plats.map(p=>{const base=WEEKLY.find(d=>d.week_ending===yw[0]&&d.platform===p)?.followers||0;return{label:PM[p].label,data:yw.map(w=>{const r=WEEKLY.find(d=>d.week_ending===w&&d.platform===p);return r&&base?r.followers-base:null}),borderColor:PM[p].color,backgroundColor:PM[p].color+"22",tension:.4,fill:false,pointRadius:2}})},options:{...CD,scales:{...CD.scales,x:{...CD.scales.x,ticks:{...CD.scales.x.ticks,maxTicksLimit:8}}}}});
-}
-function renderBench(rows){
-  document.getElementById("bg").innerHTML=["linkedin","instagram","facebook","x","tiktok"].map(p=>{
-    const m=PM[p],c=rows.find(r=>r.platform===p),er=c&&c.followers>0?(c.total_engagement/c.followers)*100:0,pct=Math.min((er/BENCH[p])*100,100);
-    return`<div class="bc"><div class="bh"><div class="bn"><div class="pd" style="background:${m.color}"></div>${m.label}</div></div><div class="bb"><div class="bf" style="width:100%;background:${m.color};opacity:.25"></div></div><div class="bb" style="margin-top:-12px"><div class="bf" style="width:${pct}%;background:${m.color}"></div></div><div class="bls"><span class="bw">HW: ${er.toFixed(3)}%</span><span class="bi">Bench: ${BENCH[p]}%</span></div></div>`;
-  }).join("");
-}
-function renderPosts(){
-  const wp=POSTS.filter(p=>p.week_ending===selWeek);
-  if(!wp.length){document.getElementById("og").innerHTML='<p style="color:var(--tm);font-size:0.82rem">No top posts data for this week.</p>';return}
-  document.getElementById("og").innerHTML=wp.map(p=>{
-    const m=PM[p.platform]||{label:p.platform,color:"#6c63ff"},tot=(p.likes||0)+(p.comments||0)+(p.shares||0);
-    return`<div class="oc"><div class="oh"><div class="op" style="color:${m.color}"><div class="pd" style="background:${m.color}"></div>${m.label}</div><span class="or">#${p.rank}</span></div><div class="oca">${p.caption}</div><div class="os">${p.likes?`<div class="ost">❤️ <span>${fmt(p.likes)}</span></div>`:""}${p.comments?`<div class="ost">💬 <span>${fmt(p.comments)}</span></div>`:""}${p.shares?`<div class="ost">🔁 <span>${fmt(p.shares)}</span></div>`:""}${tot?`<div class="ost">⚡ <span>${fmt(tot)}</span></div>`:""}</div>${p.link?`<a class="ol" href="${p.link}" target="_blank">View post →</a>`:""}</div>`;
-  }).join("");
-}
-
-// ── Calendar schedule ─────────────────────────────────────────────────────────
-// Rules: Launch events > Summit Reels > Normal schedule (one-offs replace normal)
-// No hot takes. X = 1 recycled news/day. Friday LinkedIn = Stat.
-const SCHED={
-  linkedin:[
-    {day:0,type:"video",label:"🎬 Logan's Market Video",cls:"cv",tip:"Share Logan's weekly housing market breakdown. Tag @LoganMohtashami and link to the article in the first comment."},
-    {day:1,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Pull from HW Intelligence this week: Inventory 865,709 (↓7,224 WoW) · Rate 6.91% · Price cuts 36.88% · Spread 1.92% · Purchase apps +5% YoY. Go to housingwire.com/intelligence for your metro-level data."},
-    {day:2,type:"carousel",label:"🎠 Carousel / Deep Dive",cls:"cca",tip:"Break down a complex topic in 5–8 slides. Best topics: M&A deals, Fed decisions, AI in mortgage, GSE reform."},
-    {day:3,type:"poll",label:"🗳️ Poll / Question",cls:"cpo",tip:"Ask something timely. Polls get 3–5x more reach on LinkedIn. Keep it to 2–4 options."},
-    {day:4,type:"stat",label:"📊 Stat / Data Callout",cls:"cst",tip:"📊 Friday stat from HW Intelligence: Try a local/metro angle — e.g. Sun Belt price cuts (FL: 43.6%), Northeast absorption (Boston: 21.4%), or months of supply (national: ~2.6). Pull your metro from housingwire.com/intelligence."},
-  ],
-  instagram:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel",cls:"crl",tip:"Post Logan's weekly market breakdown as a Reel. Add captions, use trending audio, include housing hashtags: #HousingMarket #MortgageRates #HousingWire"},
-    {day:1,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 This week's top HW articles: UWM lawsuit 'frivolous' (Two Harbors) · CPI cools in July · Mortgage delinquencies eased Q2 · Figure Q2 revenue jump · Newrez $15.5M settlement · Fix-and-flip strain · Where boomers are moving. Check housingwire.com for today's breaking story."},
-    {day:2,type:"carousel",label:"🎠 Carousel",cls:"cca",tip:"Repurpose or adapt the LinkedIn carousel. Instagram carousels average 3.2% engagement."},
-    {day:3,type:"stat",label:"📊 Stat Graphic",cls:"cst",tip:"📊 This week's bold stats from HW Intelligence: 865,709 active listings · 6.91% rate · 36.88% price cuts · 1.92% spread. Pick ONE number, make it big, add short context. housingwire.com/intelligence for metro data."},
-    {day:4,type:"news",label:"📰 Single Graphic News",cls:"cn",tip:"📰 Friday wrap: Use the week's biggest story or Logan's Housing Market Tracker update. This week's top picks: UWM/Two Harbors lawsuit · CPI inflation report · Mortgage delinquencies Q2 · Fix-and-flip strain. housingwire.com for the latest."},
-  ],
-  x:[
-    {day:0,type:"news",label:"📰 News + 🎬 Video Link",cls:"cn",tip:"📰 Recycle today's top HW story as a tweet + Logan's video link. This week: UWM lawsuit · CPI report · Delinquencies · Figure earnings. Keep it under 280 chars. Add the article URL."},
-    {day:1,type:"news",label:"📰 News",cls:"cn",tip:"Tweet today's top HW story. Keep it punchy, under 280 chars. Add the article URL. Breaking news, M&A, rate moves, and GSE news perform best on X."},
-    {day:2,type:"news",label:"📰 News / Carousel Clip",cls:"cn",tip:"Wednesday: tweet today's top HW story. If you're posting an Instagram carousel today, pull a key stat or slide from it as a tweet — same asset, adapted for X."},
-    {day:3,type:"news",label:"📰 News",cls:"cn",tip:"Tweet today's top HW story. Fannie/Freddie, GSE, rate data, and M&A news performs best on X. Add a relevant stat or quote to boost retweets."},
-    {day:4,type:"news",label:"📰 News",cls:"cn",tip:"Friday: tweet the week's biggest story or pull a stat from your Friday LinkedIn stat callout. Great end-of-week touchpoint."},
-  ],
-  facebook:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel (share)",cls:"crl",tip:"Share Logan's Reel to Facebook. Facebook Reels get boosted reach — great low-effort post to keep the page active."},
-    {day:1,type:"repurpose",label:"♻️ Repurpose LinkedIn",cls:"crp",tip:"Share the LinkedIn stat graphic to Facebook. Adjust caption tone slightly."},
-    {day:3,type:"repurpose",label:"♻️ Repurpose Graphic",cls:"crp",tip:"Repurpose Thursday's Instagram stat graphic to Facebook."},
-    {day:4,type:"repurpose",label:"♻️ Repurpose Graphic",cls:"crp",tip:"Share Friday's Instagram news graphic to Facebook."},
-  ],
-  tiktok:[
-    {day:0,type:"reel",label:"🎬 Logan's Reel Clip",cls:"crl",tip:"Post a 30–60s clip from Logan's Reel. Add text overlay with the key stat from his tracker. TikTok's algorithm rewards consistent weekly posting."},
-    {day:2,type:"reel",label:"🎬 Housing Trend Reel",cls:"crl",tip:"Short reel reacting to a housing trend. Authenticity wins on TikTok — no heavy production needed."},
-  ],
-};
-
-const PLATS=[{key:"linkedin",label:"LinkedIn",color:"#0077b5"},{key:"instagram",label:"Instagram",color:"#e1306c"},{key:"x",label:"X (Twitter)",color:"#e7e9ea"},{key:"facebook",label:"Facebook",color:"#1877f2"},{key:"tiktok",label:"TikTok",color:"#69c9d0"}];
-const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday"];
-
-// Priority: Launch > Summit Reel > Normal
-// One-offs REPLACE the normal post for that platform+day
-function getCellPosts(ds,platKey,dayIdx){
-  const launches=LAUNCH_EVENTS.filter(e=>e.date===ds&&e.platforms.includes(platKey));
-  const reels=SUMMIT_REELS.filter(e=>e.date===ds&&e.platform===platKey);
-  if(launches.length||reels.length){
-    return[
-      ...launches.map(e=>({...e,type:"launch",cls:"clp"})),
-      ...reels,
-    ];
-  }
-  return(SCHED[platKey]||[]).filter(s=>s.day===dayIdx);
-}
-
-function getWeekDates(off){
-  const now=new Date(),day=now.getDay(),mon=new Date(now);
-  mon.setDate(now.getDate()-(day===0?6:day-1)+off*7);
-  return Array.from({length:5},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});
-}
-function fd(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}
-function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()}
-
-// ── Fetch custom posts from Google Sheet CalendarPosts tab ────────────────────
-const CAL_URL='https://docs.google.com/spreadsheets/d/16xSSv5WkRKg-ICv1jeTruJ4Q6H4POWpuwAJLHmVk1Pk/gviz/tq?tqx=out:csv&sheet=CalendarPosts';
-function fetchCalendarPosts(){
-  fetch(CAL_URL+'&t='+Date.now())
-    .then(r=>r.text())
-    .then(txt=>{
-      const lines=txt.trim().split('\n');
-      if(lines.length<2){sheetPosts=[];return;}
-      const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
-      sheetPosts=lines.slice(1).map(line=>{
-        const vals=[];let cur='',inQ=false;
-        for(const c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){vals.push(cur);cur='';}else cur+=c;}
-        vals.push(cur);
-        const obj={};headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/"/g,'').trim());
-        return obj;
-      }).filter(r=>r.date&&r.platform&&r.label);
-      if(document.getElementById('tab-cal').classList.contains('on')) renderCal();
-    })
-    .catch(()=>{sheetPosts=[];});
-}
-
-function calNav(d){calOff=d===0?0:calOff+d;renderCal();renderSb()}
-
-function renderCal(){
-  const dates=getWeekDates(calOff),checked=getChecked();
-  document.getElementById("cwl").textContent=fd(dates[0])+" – "+fd(dates[4])+", "+dates[0].getFullYear();
-  let o=`<div></div>`;
-  dates.forEach((d,i)=>o+=`<div class="cdh"><div class="cdn">${DAYS[i]}</div><div class="cdd${isToday(d)?" td":""}">${fd(d)}</div></div>`);
-  PLATS.forEach(p=>{
-    o+=`<div class="cpl"><div class="cpd" style="background:${p.color}"></div>${p.label}</div>`;
-    dates.forEach((d,di)=>{
-      const ds=isoDate(d),posts=getCellPosts(ds,p.key,di);
-      if(!posts.length){o+=`<div class="cell mt"></div>`;return}
-      o+=`<div class="cell">`;
-      posts.forEach(post=>{
-        const id=pid(ds,p.key,post.label),done=!!checked[id];
-        const tip=(post.tip||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
-        const click=post.link?`window.open('${post.link}','_blank')`:`showTip('${tip}')`;
-        o+=`<div class="cp ${post.cls}${done?" done":""}" id="${id}">
-          <div class="cp-check${done?" chk":""}" onclick="chk(event,'${id}')"></div>
-          <div class="cp-body" onclick="${click}" title="${tip}">
-            <div class="cpt">${post.type||"post"}</div>${post.label}
-          </div>
-        </div>`;
-      });
-      o+=`</div>`;
-    });
-  });
-  document.getElementById("cgrid").innerHTML=o;
-
-  // ── Suggestions with live HW data + real article links ──────────────────
-  const SUGG_DATA = [
-    {
-      icon:"📊",
-      title:"Stat / Data Callout — This Week (from HW Intelligence)",
-      cls:"cst",
-      items:[
-        "📦 Inventory: 865,709 active listings — down 7,224 from last week (housingwire.com/intelligence)",
-        "💰 30-yr fixed rate: 6.91% — down 0.01% this week (housingwire.com/intelligence)",
-        "✂️ Price cuts: 36.88% of active listings have reduced price — use your local metro data from HW Intelligence",
-        "📈 Mortgage spread: 1.92% — keeping rates lower than they'd otherwise be at this 10-yr yield",
-        "🏠 Months of supply: ~2.6 nationally — seller-favorable but more balanced than 2022–24",
-        "📋 Purchase apps: up 5% YoY — pull the latest weekly number from Logan's tracker",
-        "🌎 Sun Belt strain: Florida price-cut rate at 43.6% — great local market stat from HW Intelligence",
-        "🏙️ Northeast strength: Boston absorption rate 21.4% — pull your metro's number from HW Intelligence dashboard",
-      ]
-    },
-    {
-      icon:"📰",
-      title:"Single Graphic News — This Week's Top HW Articles",
-      cls:"cn",
-      items:[
-        "Two Harbors calls UWM lawsuit 'frivolous,' slams management for $600M hedge loss → housingwire.com",
-        "Real estate leaders weigh buying vs building AI tools (AI Summit recap) → housingwire.com",
-        "CPI inflation cools in July as shelter rises 0.1% → housingwire.com",
-        "Mortgage delinquencies eased in Q2, still higher than 2025 → housingwire.com",
-        "Figure posts Q2 revenue jump, net take rate holds at 3.6% → housingwire.com",
-        "Newrez agrees to $15.5M settlement over forced-place insurance → housingwire.com",
-        "DOJ, Rocket Mortgage seek pause in fair housing case → housingwire.com",
-        "Fix-and-flip market shows signs of strain as mortgage rates climb → housingwire.com",
-        "Where are boomers and Gen X moving in 2026? → housingwire.com",
-        "Will a cooling labor market keep mortgage rates below 7%? → housingwire.com",
-      ]
-    },
-    {
-      icon:"🎠",
-      title:"Carousel / Deep Dive Ideas",
-      cls:"cca",
-      items:[
-        "Regional housing market breakdown: Northeast vs Sun Belt vs Midwest — use HW Intelligence data",
-        "Q2 2026 earnings recap: What the numbers mean for the housing market",
-        "AI in mortgage: what the top 25 lenders are actually doing right now",
-        "M&A deal breakdown: PennyMac + Cenlar — what it means for servicers",
-        "5 things the CPI report means for mortgage rates and housing demand",
-        "HW AI Summit: 5 key takeaways from the best minds in housing",
-      ]
-    },
-    {
-      icon:"🗳️",
-      title:"Poll / Question Ideas (LinkedIn)",
-      cls:"cpo",
-      items:[
-        "Sun Belt or Northeast — where are you seeing more buyer activity right now?",
-        "Will the Fed cut rates before year end? Yes / No / Too early to say",
-        "Which AI use case excites you most in mortgage? Underwriting / Servicing / Customer experience / Compliance",
-        "Are you seeing more buyers or sellers in your market right now?",
-        "What's your biggest challenge: rates, inventory, or affordability?",
-      ]
-    },
-    {
-      icon:"🎬",
-      title:"Reel / Video Ideas",
-      cls:"crl",
-      items:[
-        "Logan's weekly market breakdown — Monday anchor (housingwire.com/intelligence tracker)",
-        "AI Summit speaker highlight clips — 4 reels scheduled Aug 14/17/19/21",
-        "'What does 6.91% mortgage rate mean for buyers right now?' — 30s explainer",
-        "Sun Belt vs Northeast housing market — show the HW Intelligence dashboard",
-        "Behind the scenes at a HousingWire event",
-      ]
-    },
-    {
-      icon:"🔥",
-      title:"Breaking News Best Practices",
-      cls:"cn",
-      items:[
-        "Use 🚨 BREAKING: prefix — drives 3–5x more engagement on LinkedIn",
-        "Post within 15 minutes of story going live for maximum algorithmic reach",
-        "Put the article link in the first comment on LinkedIn (not the post itself)",
-        "M&A deals, rate moves, GSE news, lender strategy = your highest-engagement topics",
-        "Tag companies and executives mentioned when possible to expand reach",
-      ]
-    },
-  ];
-  document.getElementById("sgg").innerHTML=SUGG_DATA.map(s=>`<div class="sgc"><h4>${s.icon} ${s.title}</h4><ul>${s.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("");
-
-  document.getElementById("tkg").innerHTML=[["#0077b5","LinkedIn","5","posts/week"],["#e1306c","Instagram","5","posts/week"],["#e7e9ea","X (Twitter)","5","posts/week"],["#1877f2","Facebook","4","posts/week"],["#69c9d0","TikTok","2","posts/week"],["#6c63ff","Total","~21","across all platforms"]].map(([c,l,v,s])=>`<div class="kc" style="--cc:${c}"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks ne">${s}</div></div>`).join("");
-}
-
-function chk(e,id){
-  e.stopPropagation();
-  const d=getChecked();
-  if(d[id])delete d[id];else d[id]=true;
-  setChecked(d);
-  const el=document.getElementById(id);
-  if(el){el.classList.toggle("done",!!d[id]);el.querySelector(".cp-check").classList.toggle("chk",!!d[id])}
-  renderSb();
-}
-
-function renderSb(){
-  const today=todayISO(),now=new Date(),checked=getChecked(),customs=getCustom();
-  document.getElementById("todo-date").textContent=now.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-  const calDay=now.getDay()===0?6:now.getDay()-1;
-  let tasks=[];
-  PLATS.forEach(p=>{
-    getCellPosts(today,p.key,calDay).forEach(post=>{
-      tasks.push({id:pid(today,p.key,post.label),label:post.label,platform:p.label,color:p.color});
-    });
-  });
-  getCustom().filter(t=>t.date===today).forEach(t=>tasks.push({id:t.id,label:t.label,platform:"Custom",color:"#6c63ff",isCustom:true}));
-  // Sheet calendar posts for today
-  sheetPosts.filter(r=>r.date===today).forEach(r=>{
-    const pm=PM[r.platform]||{label:r.platform,color:"#6c63ff"};
-    const id='sp_'+today+'_'+r.platform+'_'+(r.label||'').replace(/\W/g,'_').slice(0,20);
-    tasks.push({id,label:r.label,platform:pm.label,color:pm.color});
-  });
-
-  document.getElementById("todo-list").innerHTML=tasks.length?tasks.map(t=>{
-    const done=!!checked[t.id];
-    return`<div class="todo-item${done?" done-item":""}">
-      <div class="todo-cb${done?" chk":""}" onclick="togTodo('${t.id}')">${done?"✓":""}</div>
-      <div style="flex:1;min-width:0"><div class="todo-text">${t.label}</div><div class="todo-plat" style="color:${t.color}">${t.platform}</div></div>
-      ${t.isCustom?`<div class="todo-del" onclick="delTask('${t.id}')">✕</div>`:""}
-    </div>`;
-  }).join(""):`<div style="font-size:0.73rem;color:var(--tm);text-align:center;padding:12px">No posts scheduled for today.</div>`;
-
-  const total=tasks.length,done=tasks.filter(t=>!!checked[t.id]).length,pct=total?Math.round((done/total)*100):0;
-  document.getElementById("prog-lbl").textContent=done+" of "+total+" done";
-  document.getElementById("prog-pct").textContent=pct+"%";
-  document.getElementById("prog-fill").style.width=pct+"%";
-
-  const dates=getWeekDates(calOff);
-  let wt=0,wd=0;
-  dates.forEach(d=>{
-    const ds=isoDate(d),di=d.getDay()===0?6:d.getDay()-1;
-    PLATS.forEach(p=>{
-      const posts=getCellPosts(ds,p.key,di);
-      wt+=posts.length;
-      wd+=posts.filter(post=>!!checked[pid(ds,p.key,post.label)]).length;
-    });
-  });
-  const wpct=wt?Math.round((wd/wt)*100):0;
-  document.getElementById("week-prog").innerHTML=`<div style="font-size:0.73rem;color:var(--tm);margin-bottom:7px">${wd} of ${wt} posts completed this week</div><div class="prog-bar"><div class="prog-fill" style="width:${wpct}%"></div></div><div style="font-size:0.66rem;color:var(--tm);margin-top:4px;text-align:right">${wpct}% complete</div>`;
-}
-
-function togTodo(id){
-  const d=getChecked();
-  if(d[id])delete d[id];else d[id]=true;
-  setChecked(d);
-  renderSb();
-  const chip=document.getElementById(id);
-  if(chip){chip.classList.toggle("done",!!d[id]);chip.querySelector(".cp-check").classList.toggle("chk",!!d[id])}
-}
-
-function addTask(){
-  const inp=document.getElementById("custom-inp"),val=inp.value.trim();
-  if(!val)return;
-  const c=getCustom(),id="c_"+Date.now();
-  c.push({id,label:val,date:todayISO()});
-  setCustom(c);inp.value="";renderSb();
-}
-
-function delTask(id){
-  setCustom(getCustom().filter(t=>t.id!==id));
-  const d=getChecked();delete d[id];setChecked(d);
-  renderSb();
-}
-
-function showTip(tip){
-  document.querySelectorAll(".tip-pop").forEach(e=>e.remove());
-  if(!tip)return;
-  const p=document.createElement("div");p.className="tip-pop";
-  p.innerHTML=`<strong>💡 Tip</strong><br>${tip}<br><span style="color:var(--tm);font-size:.7rem;margin-top:5px;display:block">Tap anywhere to dismiss</span>`;
-  document.body.appendChild(p);
-  setTimeout(()=>document.addEventListener("click",()=>p.remove(),{once:true}),100);
-}
-
-buildSel();renderWeek();fetchCalendarPosts();
-</script>
+<footer>Social Media Command Center &middot; Source: Social Request Form Google Sheet (live CSV) &middot; Hosted on GitHub Pages</footer><script src="app.js"></script>
 </body>
 </html>
