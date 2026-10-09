@@ -70,14 +70,31 @@ function dateKey(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// Parse a free-text date string like "Monday October 12th post date" or "October 23rd" into a Date for a given reference year
+// Month name/abbreviation lookup (handles "Nov.", "Dec", "Jan", etc. as used in free-text form responses)
+const MONTH_MAP = {
+  'january':0,'jan':0,
+  'february':1,'feb':1,
+  'march':2,'mar':2,
+  'april':3,'apr':3,
+  'may':4,
+  'june':5,'jun':5,
+  'july':6,'jul':6,
+  'august':7,'aug':7,
+  'september':8,'sep':8,'sept':8,
+  'october':9,'oct':9,
+  'november':10,'nov':10,
+  'december':11,'dec':11
+};
+const MONTH_PATTERN_NAMES = Object.keys(MONTH_MAP).sort((a,b) => b.length - a.length);
+const MONTH_REGEX_SOURCE = `(${MONTH_PATTERN_NAMES.join('|')})\\.?\\s+(\\d{1,2})(st|nd|rd|th)?`;
+
+// Parse a free-text date string like "Monday October 12th post date" or "Nov. 23rd" into a Date for a given reference year
 function extractDate(text, refYear){
   if(!text) return null;
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const re = new RegExp(`(${months.join('|')})\\.?\\s+(\\d{1,2})(st|nd|rd|th)?`, 'i');
+  const re = new RegExp(MONTH_REGEX_SOURCE, 'i');
   const m = text.match(re);
   if(!m) return null;
-  const monthIdx = months.findIndex(mo => mo.toLowerCase() === m[1].toLowerCase());
+  const monthIdx = MONTH_MAP[m[1].toLowerCase()];
   const day = parseInt(m[2],10);
   let year = refYear;
   // crude year rollover: if month is well before the submission month, assume next year
@@ -161,11 +178,10 @@ async function loadData(){
       // Extract one or more post dates from campaignTimeline or postDateText
       const sourceText = campaignTimeline || postDateText;
       const allDatesFound = [];
-      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      const reAll = new RegExp(`(${months.join('|')})\\.?\\s+(\\d{1,2})(st|nd|rd|th)?`, 'gi');
+      const reAll = new RegExp(MONTH_REGEX_SOURCE, 'gi');
       let match;
       while((match = reAll.exec(sourceText)) !== null){
-        const monthIdx = months.findIndex(mo => mo.toLowerCase() === match[1].toLowerCase());
+        const monthIdx = MONTH_MAP[match[1].toLowerCase()];
         const day = parseInt(match[2],10);
         let year = refYear;
         // if this month is earlier than the submission month by a lot, could be next year; simple heuristic
