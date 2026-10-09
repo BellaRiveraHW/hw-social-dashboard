@@ -35,25 +35,22 @@
       <p class="section-title">Pipeline deadlines due today <span class="pill pill-gray" id="dueTodayCount">0 items</span></p>
       <ul class="todo-list" id="dueTodayList"></ul>
 
-      <p class="section-title" style="margin-top:18px;">3 unique posts today <span class="pill pill-gray">0 / 3 logged</span></p>
-      <ul class="todo-list">
-        <li><span class="checkbox"></span><div class="todo-text"><strong>Post 1</strong><span class="todo-meta">Not yet logged. This dashboard can't know your Sprout status automatically; log it manually or ask your assistant to track it.</span></div><span class="pill pill-gray">-</span></li>
-        <li><span class="checkbox"></span><div class="todo-text"><strong>Post 2</strong><span class="todo-meta">Not yet logged</span></div><span class="pill pill-gray">-</span></li>
-        <li><span class="checkbox"></span><div class="todo-text"><strong>Post 3</strong><span class="todo-meta">Not yet logged</span></div><span class="pill pill-gray">-</span></li>
-      </ul>
+      <p class="section-title" style="margin-top:18px;">3 unique posts today <span class="pill pill-gray" id="postsLoggedCount">0 / 3 logged</span></p>
+      <ul class="todo-list" id="postsTodayList"></ul>
+      <p class="empty-note" style="margin:4px 0 0;">Saved in this browser only. Switching browsers or devices starts fresh, and it resets automatically at the start of each new day.</p>
 
       <p class="section-title" style="margin-top:18px;">Daily phone sweep <span class="pill pill-gray">one consolidated pass</span></p>
-      <ul class="todo-list todo-list-inline">
-        <li><span class="checkbox"></span><span class="platform-dot" style="background:#E1306C;"></span>Instagram</li>
-        <li><span class="checkbox"></span><span class="platform-dot" style="background:#0A66C2;"></span>LinkedIn</li>
-        <li><span class="checkbox"></span><span class="platform-dot" style="background:#000000;"></span>X</li>
-        <li><span class="checkbox"></span><span class="platform-dot" style="background:#1877F2;"></span>Facebook</li>
-        <li><span class="checkbox"></span><span class="platform-dot" style="background:#000000;"></span>TikTok</li>
+      <ul class="todo-list todo-list-inline" id="sweepList">
+        <li data-platform="instagram"><span class="checkbox"></span><span class="platform-dot" style="background:#E1306C;"></span>Instagram</li>
+        <li data-platform="linkedin"><span class="checkbox"></span><span class="platform-dot" style="background:#0A66C2;"></span>LinkedIn</li>
+        <li data-platform="x"><span class="checkbox"></span><span class="platform-dot" style="background:#000000;"></span>X</li>
+        <li data-platform="facebook"><span class="checkbox"></span><span class="platform-dot" style="background:#1877F2;"></span>Facebook</li>
+        <li data-platform="tiktok"><span class="checkbox"></span><span class="platform-dot" style="background:#000000;"></span>TikTok</li>
       </ul>
     </div>
-    <p class="empty-note">SLA items above are computed live from your request form submissions. Checkboxes do not save state on reload (this is a static page, no login/backend).</p>
+    <p class="empty-note">SLA items above are computed live from your request form submissions. Checked items and typed posts are saved in this browser and clear automatically each new day.</p>
 
-    <h2 class="block-title">🗗️ SLA Calendar</h2>
+    <h2 class="block-title">🗓️ SLA Calendar</h2>
     <div class="card">
       <div class="cal-nav">
         <button onclick="shiftMonth(-1)">&larr; Prev</button>
@@ -69,7 +66,7 @@
       </div>
     </div>
 
-    <h2 class="block-title">🗂縏 Request Pipeline — Full Detail</h2>
+    <h2 class="block-title">🗂️ Request Pipeline — Full Detail</h2>
     <div id="requestCards"></div>
 
     <div class="grid grid-2">

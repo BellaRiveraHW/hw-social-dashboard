@@ -224,6 +224,28 @@ function statusForMilestone(m){
   return {label:`On track — draft due in ${daysOut}d`, cls:"pill-green"};
 }
 
+// ---- Local persistence (per-browser, resets daily) ----
+const STORAGE_KEY = `smcc_state_${dateKey(today)}`;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return { checks:{}, sweep:{}, posts:["","",""], postStatus:["Not started","Not started","Not started"] };
+    const parsed = JSON.parse(raw);
+    return Object.assign({ checks:{}, sweep:{}, posts:["","",""], postStatus:["Not started","Not started","Not started"] }, parsed);
+  } catch(e){
+    return { checks:{}, sweep:{}, posts:["","",""], postStatus:["Not started","Not started","Not started"] };
+  }
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  } catch(e){ /* storage unavailable, silently ignore */ }
+}
+
+let appState = loadState();
+
 function render(){
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
@@ -231,6 +253,8 @@ function render(){
   document.getElementById('todoDateLabel').textContent = "— " + today.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
 
   renderTodos();
+  renderPosts();
+  wireSweepList();
 
   viewMonth = today.getMonth();
   viewYear = today.getFullYear();
@@ -247,16 +271,19 @@ function renderTodos(){
   requests.forEach(req => {
     req.milestones.forEach(m => {
       const checks = [
-        {date:m.draft1, label:`Write 1st draft — ${req.projectName}`, meta:`${req.platforms || 'Platforms TBD'} · posts ${fmtShort(m.postDate)}`},
-        {date:m.approval, label:`Get approval — ${req.projectName}`, meta:`Approval checkpoint before Sprout scheduling`},
-        {date:m.sprout, label:`Schedule in Sprout — ${req.projectName}`, meta:`Must go live by ${fmtShort(m.postDate)}`},
+        {id:`draft1_${req.projectName}_${m.label}`, date:m.draft1, label:`Write 1st draft — ${req.projectName}`, meta:`${req.platforms || 'Platforms TBD'} · posts ${fmtShort(m.postDate)}`},
+        {id:`approval_${req.projectName}_${m.label}`, date:m.approval, label:`Get approval — ${req.projectName}`, meta:`Approval checkpoint before Sprout scheduling`},
+        {id:`sprout_${req.projectName}_${m.label}`, date:m.sprout, label:`Schedule in Sprout — ${req.projectName}`, meta:`Must go live by ${fmtShort(m.postDate)}`},
       ];
       checks.forEach(c => {
         if(dateKey(c.date) === dateKey(today)){
           count++;
+          const isChecked = !!appState.checks[c.id];
           const li = document.createElement('li');
-          li.innerHTML = `<span class="checkbox"></span><div class="todo-text"><strong>${c.label}</strong><span class="todo-meta">${c.meta}</span></div><span class="pill pill-red">Due today</span>`;
+          if(isChecked) li.classList.add('is-checked');
+          li.innerHTML = `<span class="checkbox${isChecked ? ' checked' : ''}" data-id="${c.id}"></span><div class="todo-text"><strong>${c.label}</strong><span class="todo-meta">${c.meta}</span></div><span class="pill ${isChecked ? 'pill-green' : 'pill-red'}">${isChecked ? 'Done' : 'Due today'}</span>`;
           list.appendChild(li);
+          li.querySelector('.checkbox').addEventListener('click', () => toggleCheck(c.id, li));
         }
       });
     });
@@ -266,6 +293,78 @@ function renderTodos(){
     list.innerHTML = '<li><span class="checkbox"></span><div class="todo-text"><strong>No pipeline deadlines today</strong><span class="todo-meta">Nothing from the request form is due today. Check the calendar below for what is coming up.</span></div><span class="pill pill-green">Clear</span></li>';
   }
   document.getElementById('dueTodayCount').textContent = `${count} item${count===1?'':'s'}`;
+}
+
+function toggleCheck(id, li){
+  appState.checks[id] = !appState.checks[id];
+  saveState();
+  const checked = appState.checks[id];
+  const box = li.querySelector('.checkbox');
+  const pill = li.querySelector('.pill');
+  box.classList.toggle('checked', checked);
+  li.classList.toggle('is-checked', checked);
+  if(pill){
+    pill.textContent = checked ? 'Done' : 'Due today';
+    pill.className = 'pill ' + (checked ? 'pill-green' : 'pill-red');
+  }
+}
+
+function wireSweepList(){
+  const items = document.querySelectorAll('#sweepList li[data-platform]');
+  items.forEach(li => {
+    const platform = li.getAttribute('data-platform');
+    const box = li.querySelector('.checkbox');
+    const checked = !!appState.sweep[platform];
+    box.classList.toggle('checked', checked);
+    li.classList.toggle('is-checked', checked);
+    li.onclick = () => {
+      appState.sweep[platform] = !appState.sweep[platform];
+      saveState();
+      const nowChecked = appState.sweep[platform];
+      box.classList.toggle('checked', nowChecked);
+      li.classList.toggle('is-checked', nowChecked);
+    };
+  });
+}
+
+function renderPosts(){
+  const container = document.getElementById('postsTodayList');
+  container.innerHTML = '';
+  const statusOptions = ['Not started','Drafting','Asset ready','Scheduled in Sprout','Posted'];
+
+  for(let i=0;i<3;i++){
+    const row = document.createElement('div');
+    row.className = 'post-row';
+    const statusOptsHtml = statusOptions.map(s => `<option value="${s}"${appState.postStatus[i]===s ? ' selected' : ''}>${s}</option>`).join('');
+    row.innerHTML = `
+      <label>Post ${i+1}</label>
+      <input type="text" class="post-input" placeholder="What's going out (platform, format, topic)" value="${(appState.posts[i] || '').replace(/"/g,'&quot;')}" data-idx="${i}">
+      <select class="post-status" data-idx="${i}">${statusOptsHtml}</select>
+    `;
+    container.appendChild(row);
+
+    const input = row.querySelector('.post-input');
+    input.addEventListener('input', (e) => {
+      appState.posts[i] = e.target.value;
+      saveState();
+      updatePostsLoggedCount();
+    });
+
+    const select = row.querySelector('.post-status');
+    select.addEventListener('change', (e) => {
+      appState.postStatus[i] = e.target.value;
+      saveState();
+      updatePostsLoggedCount();
+    });
+  }
+  updatePostsLoggedCount();
+}
+
+function updatePostsLoggedCount(){
+  const loggedCount = appState.posts.filter(p => p && p.trim().length > 0).length;
+  const postedCount = appState.postStatus.filter(s => s === 'Posted').length;
+  const el = document.getElementById('postsLoggedCount');
+  if(el) el.textContent = `${loggedCount} / 3 logged · ${postedCount} posted`;
 }
 
 function shiftMonth(delta){
