@@ -111,6 +111,17 @@ function buildSLA(postDate){
   return { draft1, approval, sprout, postDate };
 }
 
+// ---- Recurring weekly posts (fixed schedule, not from the request form) ----
+// dayOfWeek: 0 = Sunday ... 6 = Saturday
+const RECURRING_POSTS = [
+  { dayOfWeek: 1, label: "Housing Market Tracker video (Logan)", platforms: "IG, FB, X, LinkedIn, TikTok" }
+];
+
+function getRecurringPostsForToday(){
+  const dow = today.getDay();
+  return RECURRING_POSTS.filter(p => p.dayOfWeek === dow);
+}
+
 async function loadData(){
   try{
     const res = await fetch(CSV_URL, {cache:"no-store"});
@@ -246,6 +257,27 @@ function saveState(){
 
 let appState = loadState();
 
+// Build the list of posts already expected to go out today: recurring weekly items
+// plus any pipeline request whose live post date is today. These auto-fill the
+// 3-post slots (locked, not editable) so manual entries only cover what's left.
+function getAutoPostsForToday(){
+  const auto = [];
+
+  getRecurringPostsForToday().forEach(rp => {
+    auto.push({ text: rp.label, meta: rp.platforms, source: 'recurring' });
+  });
+
+  requests.forEach(req => {
+    req.milestones.forEach(m => {
+      if(dateKey(m.postDate) === dateKey(today)){
+        auto.push({ text: req.projectName, meta: req.platforms || 'Platforms TBD', source: 'pipeline' });
+      }
+    });
+  });
+
+  return auto.slice(0, 3);
+}
+
 function render(){
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
@@ -267,6 +299,17 @@ function renderTodos(){
   const list = document.getElementById('dueTodayList');
   list.innerHTML = '';
   let count = 0;
+
+  getRecurringPostsForToday().forEach(rp => {
+    count++;
+    const id = `recurring_${rp.label}`;
+    const isChecked = !!appState.checks[id];
+    const li = document.createElement('li');
+    if(isChecked) li.classList.add('is-checked');
+    li.innerHTML = `<span class="checkbox${isChecked ? ' checked' : ''}" data-id="${id}"></span><div class="todo-text"><strong>Post recurring: ${rp.label}</strong><span class="todo-meta">${rp.platforms}</span></div><span class="pill ${isChecked ? 'pill-green' : 'pill-amber'}">${isChecked ? 'Done' : 'Recurring today'}</span>`;
+    list.appendChild(li);
+    li.querySelector('.checkbox').addEventListener('click', () => toggleCheck(id, li));
+  });
 
   requests.forEach(req => {
     req.milestones.forEach(m => {
@@ -304,8 +347,8 @@ function toggleCheck(id, li){
   box.classList.toggle('checked', checked);
   li.classList.toggle('is-checked', checked);
   if(pill){
-    pill.textContent = checked ? 'Done' : 'Due today';
-    pill.className = 'pill ' + (checked ? 'pill-green' : 'pill-red');
+    pill.textContent = checked ? 'Done' : (pill.textContent.includes('Recurring') ? 'Recurring today' : 'Due today');
+    pill.className = 'pill ' + (checked ? 'pill-green' : (pill.textContent === 'Recurring today' ? 'pill-amber' : 'pill-red'));
   }
 }
 
@@ -331,16 +374,35 @@ function renderPosts(){
   const container = document.getElementById('postsTodayList');
   container.innerHTML = '';
   const statusOptions = ['Not started','Drafting','Asset ready','Scheduled in Sprout','Posted'];
+  const autoPosts = getAutoPostsForToday();
 
   for(let i=0;i<3;i++){
     const row = document.createElement('div');
     row.className = 'post-row';
-    const statusOptsHtml = statusOptions.map(s => `<option value="${s}"${appState.postStatus[i]===s ? ' selected' : ''}>${s}</option>`).join('');
-    row.innerHTML = `
-      <label>Post ${i+1}</label>
-      <input type="text" class="post-input" placeholder="What's going out (platform, format, topic)" value="${(appState.posts[i] || '').replace(/"/g,'&quot;')}" data-idx="${i}">
-      <select class="post-status" data-idx="${i}">${statusOptsHtml}</select>
-    `;
+    const auto = autoPosts[i];
+
+    if(auto){
+      // Auto-filled from recurring schedule or pipeline post date due today.
+      // Still editable (requester may want to tweak wording) but pre-populated so it is not forgotten,
+      // and always counts toward the 3 unless the text is cleared out entirely.
+      if(!appState.posts[i]){
+        appState.posts[i] = auto.text;
+      }
+      const statusOptsHtml = statusOptions.map(s => `<option value="${s}"${appState.postStatus[i]===s ? ' selected' : ''}>${s}</option>`).join('');
+      row.innerHTML = `
+        <label>Post ${i+1}</label>
+        <input type="text" class="post-input" placeholder="What's going out (platform, format, topic)" value="${(appState.posts[i] || '').replace(/"/g,'&quot;')}" data-idx="${i}">
+        <select class="post-status" data-idx="${i}">${statusOptsHtml}</select>
+        <span class="pill pill-blue" style="align-self:center;">${auto.source === 'recurring' ? 'Recurring' : 'Pipeline due today'}</span>
+      `;
+    } else {
+      const statusOptsHtml = statusOptions.map(s => `<option value="${s}"${appState.postStatus[i]===s ? ' selected' : ''}>${s}</option>`).join('');
+      row.innerHTML = `
+        <label>Post ${i+1}</label>
+        <input type="text" class="post-input" placeholder="What's going out (platform, format, topic)" value="${(appState.posts[i] || '').replace(/"/g,'&quot;')}" data-idx="${i}">
+        <select class="post-status" data-idx="${i}">${statusOptsHtml}</select>
+      `;
+    }
     container.appendChild(row);
 
     const input = row.querySelector('.post-input');
@@ -357,6 +419,7 @@ function renderPosts(){
       updatePostsLoggedCount();
     });
   }
+  saveState();
   updatePostsLoggedCount();
 }
 
@@ -424,6 +487,16 @@ function renderCalendar(){
     num.className = 'cal-daynum';
     num.textContent = day;
     cell.appendChild(num);
+    if(cellDate.getDay() === 1){
+      RECURRING_POSTS.forEach(rp => {
+        if(rp.dayOfWeek === 1){
+          const span = document.createElement('span');
+          span.className = 'cal-tag tag-post';
+          span.textContent = rp.label.length > 20 ? rp.label.slice(0,20) + '…' : rp.label;
+          cell.appendChild(span);
+        }
+      });
+    }
     const tags = tagMap[dateKey(cellDate)] || [];
     tags.forEach(t => {
       const span = document.createElement('span');
