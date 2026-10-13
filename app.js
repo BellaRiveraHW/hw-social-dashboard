@@ -3,6 +3,7 @@ const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?forma
 
 let viewMonth, viewYear;
 let requests = [];
+let unscheduledRequests = [];
 const today = new Date();
 today.setHours(0,0,0,0);
 
@@ -101,6 +102,28 @@ function extractDate(text, refYear){
   return new Date(year, monthIdx, day);
 }
 
+// Fallback parser for relative phrases like "today", "tomorrow", "this week", "ASAP",
+// used when no explicit month+day is found anywhere in the submitted text.
+// Anchored to the submission date, not "today" the viewer is loading the page on,
+// so a request submitted last week that said "today" still resolves to the day it was submitted.
+function parseRelativeDate(text, submittedDate){
+  if(!text) return null;
+  const t = text.toLowerCase();
+  const base = new Date(submittedDate);
+  base.setHours(0,0,0,0);
+
+  if(/\basap\b/.test(t)) return new Date(base);
+  if(/\btoday\b/.test(t)) return new Date(base);
+  if(/\btomorrow\b/.test(t)) return addDays(base, 1);
+  if(/\bnext week\b/.test(t)) return addDays(base, 7);
+  if(/\bthis week\b/.test(t)) return addDays(base, 2);
+
+  const inDaysMatch = t.match(/in\s+(\d+)\s+days?/);
+  if(inDaysMatch) return addDays(base, parseInt(inDaysMatch[1], 10));
+
+  return null;
+}
+
 function buildSLA(postDate){
   const draft1 = subtractDaysAvoidWeekend(postDate, 7);
   const sprout = subtractDaysAvoidWeekend(postDate, 2);
@@ -164,7 +187,7 @@ async function loadData(){
     let examplesIdx = -1;
     header.forEach((h,i) => { if(h.trim().startsWith("Examples & Inspiration") || h.trim().startsWith("Please provide a link to other graphic assets")) { if(examplesIdx === -1) examplesIdx = i; } });
 
-    requests = dataRows.map(r => {
+    const allResults = dataRows.map(r => {
       const timestamp = r[iTimestamp];
       const submittedDate = new Date(timestamp);
       const refYear = isNaN(submittedDate.getFullYear()) ? today.getFullYear() : submittedDate.getFullYear();
@@ -203,6 +226,15 @@ async function loadData(){
         const single = extractDate(postDateText, refYear) || extractDate(campaignTimeline, refYear);
         if(single) allDatesFound.push(single);
       }
+      // Fallback: relative phrases like "today", "tomorrow", "ASAP" when no explicit date was found anywhere.
+      let usedRelativeDate = false;
+      if(allDatesFound.length === 0){
+        const relative = parseRelativeDate(postDateText, submittedDate) || parseRelativeDate(campaignTimeline, submittedDate) || parseRelativeDate(additional, submittedDate);
+        if(relative){
+          allDatesFound.push(relative);
+          usedRelativeDate = true;
+        }
+      }
 
       const milestones = allDatesFound.map((pd, i) => ({
         label: allDatesFound.length > 1 ? `Post ${i+1}` : "Post",
@@ -212,9 +244,14 @@ async function loadData(){
       return {
         projectName, brief, contentType, campaignType, campaignTimeline, platforms,
         copyNeeded, captionCopy, link, tag, postDateText, hardDeadline, meeting,
-        additional, examples, email, submittedDate, milestones
+        additional, examples, email, submittedDate, milestones, usedRelativeDate
       };
-    }).filter(r => r.milestones.length > 0);
+    });
+
+    requests = allResults.filter(r => r.milestones.length > 0);
+    // Requests where no date could be parsed at all (explicit or relative) are never silently dropped;
+    // they are surfaced separately so a submission is never missed just because of unusual date phrasing.
+    unscheduledRequests = allResults.filter(r => r.milestones.length === 0);
 
     render();
   } catch(err){
@@ -293,6 +330,7 @@ function render(){
   renderCalendar();
 
   renderRequestCards();
+  renderUnscheduled();
 }
 
 function renderTodos(){
@@ -332,6 +370,19 @@ function renderTodos(){
     });
   });
 
+  if(unscheduledRequests.length > 0){
+    count += unscheduledRequests.length;
+    unscheduledRequests.forEach(req => {
+      const id = `unscheduled_${req.projectName}_${req.submittedDate.getTime()}`;
+      const isChecked = !!appState.checks[id];
+      const li = document.createElement('li');
+      if(isChecked) li.classList.add('is-checked');
+      li.innerHTML = `<span class="checkbox${isChecked ? ' checked' : ''}" data-id="${id}"></span><div class="todo-text"><strong>Needs a date — ${req.projectName}</strong><span class="todo-meta">Could not find a post date in the submission. Check the request and confirm a date with the requester.</span></div><span class="pill ${isChecked ? 'pill-green' : 'pill-amber'}">${isChecked ? 'Done' : 'Needs date'}</span>`;
+      list.appendChild(li);
+      li.querySelector('.checkbox').addEventListener('click', () => toggleCheck(id, li));
+    });
+  }
+
   if(count === 0){
     list.innerHTML = '<li><span class="checkbox"></span><div class="todo-text"><strong>No pipeline deadlines today</strong><span class="todo-meta">Nothing from the request form is due today. Check the calendar below for what is coming up.</span></div><span class="pill pill-green">Clear</span></li>';
   }
@@ -347,8 +398,12 @@ function toggleCheck(id, li){
   box.classList.toggle('checked', checked);
   li.classList.toggle('is-checked', checked);
   if(pill){
-    pill.textContent = checked ? 'Done' : (pill.textContent.includes('Recurring') ? 'Recurring today' : 'Due today');
-    pill.className = 'pill ' + (checked ? 'pill-green' : (pill.textContent === 'Recurring today' ? 'pill-amber' : 'pill-red'));
+    const wasAmber = pill.className.includes('pill-amber') || pill.textContent.includes('Recurring') || pill.textContent.includes('Needs date');
+    let label = 'Due today';
+    if(pill.textContent.includes('Recurring')) label = 'Recurring today';
+    else if(pill.textContent.includes('Needs date')) label = 'Needs date';
+    pill.textContent = checked ? 'Done' : label;
+    pill.className = 'pill ' + (checked ? 'pill-green' : (wasAmber ? 'pill-amber' : 'pill-red'));
   }
 }
 
@@ -534,7 +589,7 @@ function renderRequestCards(){
     card.innerHTML = `
       <div class="req-header">
         <div>
-          <div class="req-title">${req.projectName}</div>
+          <div class="req-title">${req.projectName}${req.usedRelativeDate ? ' <span class="pill pill-amber" style="margin-left:6px;">Date inferred from text</span>' : ''}</div>
           <div class="req-sub">Submitted ${req.submittedDate.toLocaleDateString('en-US')} by ${req.email || 'unknown'} &middot; ${req.contentType || 'Content type n/a'} &middot; ${req.campaignType || 'n/a'}</div>
         </div>
         <span class="pill ${overallStatus.cls}">${overallStatus.label}</span>
@@ -551,6 +606,37 @@ function renderRequestCards(){
         <div class="field field-full"><b>Destination link</b>${req.link ? `<a href="${req.link}" target="_blank">${req.link}</a>` : 'None provided'}</div>
         <div class="field field-full"><b>Assets/examples</b>${req.examples || 'None uploaded'}</div>
         ${req.additional ? `<div class="field field-full"><b>Additional info</b>${req.additional}</div>` : ''}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderUnscheduled(){
+  let container = document.getElementById('unscheduledCards');
+  if(!container){
+    return;
+  }
+  container.innerHTML = '';
+  if(unscheduledRequests.length === 0){
+    container.innerHTML = '<p class="empty-note">Nothing unresolved. Every submission in the sheet has a usable date.</p>';
+    return;
+  }
+  unscheduledRequests.forEach(req => {
+    const card = document.createElement('div');
+    card.className = 'req-card';
+    card.innerHTML = `
+      <div class="req-header">
+        <div>
+          <div class="req-title">${req.projectName}</div>
+          <div class="req-sub">Submitted ${req.submittedDate.toLocaleDateString('en-US')} by ${req.email || 'unknown'} &middot; ${req.contentType || 'Content type n/a'}</div>
+        </div>
+        <span class="pill pill-amber">Needs a date</span>
+      </div>
+      <div class="req-fields">
+        <div class="field field-full"><b>Brief / description</b>${req.brief || 'None provided'}</div>
+        <div class="field field-full"><b>Raw post date text submitted</b>${req.postDateText || req.campaignTimeline || 'Nothing entered in the date field'}</div>
+        <div class="field field-full"><b>Additional info</b>${req.additional || 'None'}</div>
       </div>
     `;
     container.appendChild(card);

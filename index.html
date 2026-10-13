@@ -6,7 +6,7 @@
 <title>Social Media Command Center — HW Media</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <header>
@@ -69,6 +69,10 @@
     <h2 class="block-title">🗂️ Request Pipeline — Full Detail</h2>
     <div id="requestCards"></div>
 
+    <h2 class="block-title">⚠️ Needs a Date — Action Required</h2>
+    <p class="empty-note">These submissions came through the request form but did not include a post date we could read (no month/day, and no phrase like "today," "tomorrow," or "ASAP"). They will not appear on the calendar or SLA tracking until a date is confirmed. Follow up with the requester.</p>
+    <div id="unscheduledCards"></div>
+
     <div class="grid grid-2">
       <div class="card">
         <p class="section-title">⚠️ SLA Protocol Reference</p>
@@ -119,6 +123,6 @@
   </div>
 </main>
 
-<footer>Social Media Command Center &middot; Source: Social Request Form Google Sheet (live CSV) &middot; Hosted on GitHub Pages</footer><script src="app.js?v=5"></script>
+<footer>Social Media Command Center &middot; Source: Social Request Form Google Sheet (live CSV) &middot; Hosted on GitHub Pages</footer><script src="app.js?v=6"></script>
 </body>
 </html>
