@@ -160,12 +160,7 @@ function getRecurringPostsForToday(){
 
 async function loadData(){
   try{
-    // Abort the fetch after 10 seconds so a stalled or blocked request shows an
-    // error instead of leaving the page stuck on "Loading..." with no feedback.
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(CSV_URL, {cache:"no-store", signal: controller.signal});
-    clearTimeout(timeoutId);
+    const res = await fetch(CSV_URL, {cache:"no-store"});
     if(!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`);
     const text = await res.text();
     const rows = parseCSV(text);
@@ -187,4 +182,478 @@ async function loadData(){
     let campaignTimelineIdx = -1;
     header.forEach((h,i) => { if(h.trim().startsWith("If campaign, what is the timeframe")) campaignTimelineIdx = i; });
     let platformsIdx = -1;
-    header.forEach((h,i) => { if(h.t
+    header.forEach((h,i) => { if(h.trim().startsWith("Do you have specific social platforms")) platformsIdx = i; });
+    let copyIdx = -1;
+    header.forEach((h,i) => { if(h.trim().startsWith("Design copy/verbiage")) copyIdx = i; });
+    let captionIdx = -1;
+    header.forEach((h,i) => { if(h.trim().startsWith("Do you have caption copy")) captionIdx = i; });
+    let linkIdx = -1;
+    header.forEach((h,i) => { if(h.trim().startsWith("Please provide the link you want this post")) linkIdx = i; });
+    let tagIdx = -1;
+    header.forEach((h,i) => { if(h.trim().startsWith("Is there anyone/any company")) tagIdx = i; });
+    let postDateIdx = -1;
+    header.forEach((h,i) => { if(h.trim().startsWith("Desired Post Date")) postDateIdx = i; });
+    let hardDeadlineIdx = -1;
+    header.forEach((h,i) => { if(h.trim() === "Is this a hard deadline?") hardDeadlineIdx = i; });
+    let meetingIdx = header.findIndex(h => h.trim().startsWith("Would you like to schedule"));
+    let additionalIdx = header.findIndex(h => h.trim() === "Additional Information");
+    let examplesIdx = -1;
+    header.forEach((h,i) => { if(h.trim().startsWith("Examples & Inspiration") || h.trim().startsWith("Please provide a link to other graphic assets")) { if(examplesIdx === -1) examplesIdx = i; } });
+
+    const allResults = dataRows.map(r => {
+      const timestamp = r[iTimestamp];
+      const submittedDate = new Date(timestamp);
+      const refYear = isNaN(submittedDate.getFullYear()) ? today.getFullYear() : submittedDate.getFullYear();
+
+      const projectName = r[projectNameIdx] || "(untitled project)";
+      const brief = r[briefIdx] || "";
+      const contentType = r[contentTypeIdx] || "";
+      const campaignType = r[campaignTypeIdx] || "";
+      const campaignTimeline = r[campaignTimelineIdx] || "";
+      const platforms = r[platformsIdx] || "";
+      const copyNeeded = r[copyIdx] || "";
+      const captionCopy = r[captionIdx] || "";
+      const link = r[linkIdx] || "";
+      const tag = r[tagIdx] || "";
+      const postDateText = r[postDateIdx] || "";
+      const hardDeadline = r[hardDeadlineIdx] || "";
+      const meeting = r[meetingIdx] || "";
+      const additional = r[additionalIdx] || "";
+      const examples = r[examplesIdx] || "";
+      const email = r[iEmail] || "";
+
+      // Extract one or more post dates from campaignTimeline or postDateText
+      const sourceText = campaignTimeline || postDateText;
+      const allDatesFound = [];
+      const reAll = new RegExp(MONTH_REGEX_SOURCE, 'gi');
+      let match;
+      while((match = reAll.exec(sourceText)) !== null){
+        const monthIdx = MONTH_MAP[match[1].toLowerCase()];
+        const day = parseInt(match[2],10);
+        let year = refYear;
+        // if this month is earlier than the submission month by a lot, could be next year; simple heuristic
+        if(monthIdx < submittedDate.getMonth() - 2) year += 1;
+        allDatesFound.push(new Date(year, monthIdx, day));
+      }
+      if(allDatesFound.length === 0){
+        const single = extractDate(postDateText, refYear) || extractDate(campaignTimeline, refYear);
+        if(single) allDatesFound.push(single);
+      }
+      // Fallback: relative phrases like "today", "tomorrow", "ASAP" when no explicit date was found anywhere.
+      let usedRelativeDate = false;
+      if(allDatesFound.length === 0){
+        const relative = parseRelativeDate(postDateText, submittedDate) || parseRelativeDate(campaignTimeline, submittedDate) || parseRelativeDate(additional, submittedDate);
+        if(relative){
+          allDatesFound.push(relative);
+          usedRelativeDate = true;
+        }
+      }
+
+      const milestones = allDatesFound.map((pd, i) => ({
+        label: allDatesFound.length > 1 ? `Post ${i+1}` : "Post",
+        ...buildSLA(pd)
+      }));
+
+      return {
+        projectName, brief, contentType, campaignType, campaignTimeline, platforms,
+        copyNeeded, captionCopy, link, tag, postDateText, hardDeadline, meeting,
+        additional, examples, email, submittedDate, milestones, usedRelativeDate
+      };
+    });
+
+    requests = allResults.filter(r => r.milestones.length > 0 && !isHiddenFromDashboard(r.projectName));
+    // Requests where no date could be parsed at all (explicit or relative) are never silently dropped;
+    // they are surfaced separately so a submission is never missed just because of unusual date phrasing.
+    unscheduledRequests = allResults.filter(r => r.milestones.length === 0);
+
+    render();
+  } catch(err){
+    document.getElementById('loadingState').style.display = 'none';
+    const errBox = document.getElementById('errorState');
+    errBox.style.display = 'block';
+    errBox.textContent = "Could not load live data from the Google Sheet. " + err.message + " Make sure the sheet is shared as \"Anyone with the link\" can view, then reload this page.";
+    document.getElementById('appContent').style.display = 'block';
+  }
+}
+
+function statusForMilestone(m){
+  if(today > m.postDate) return {label:"Past", cls:"pill-gray"};
+  if(today > m.sprout) return {label:"Overdue — schedule now", cls:"pill-red"};
+  if(today > m.draft1) return {label:"RUSH — past 1st draft SLA", cls:"pill-red"};
+  if(today >= m.draft1) return {label:"Draft due now", cls:"pill-amber"};
+  const daysOut = Math.round((m.draft1 - today)/86400000);
+  return {label:`On track — draft due in ${daysOut}d`, cls:"pill-green"};
+}
+
+// ---- Local persistence (per-browser, resets daily) ----
+const STORAGE_KEY = `smcc_state_${dateKey(today)}`;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return { checks:{}, sweep:{}, posts:["","",""], postStatus:["Not started","Not started","Not started"] };
+    const parsed = JSON.parse(raw);
+    return Object.assign({ checks:{}, sweep:{}, posts:["","",""], postStatus:["Not started","Not started","Not started"] }, parsed);
+  } catch(e){
+    return { checks:{}, sweep:{}, posts:["","",""], postStatus:["Not started","Not started","Not started"] };
+  }
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  } catch(e){ /* storage unavailable, silently ignore */ }
+}
+
+let appState = loadState();
+
+// Build the list of posts already expected to go out today: recurring weekly items
+// plus any pipeline request whose live post date is today. These auto-fill the
+// 3-post slots (locked, not editable) so manual entries only cover what's left.
+function getAutoPostsForToday(){
+  const auto = [];
+
+  getRecurringPostsForToday().forEach(rp => {
+    auto.push({ text: rp.label, meta: rp.platforms, source: 'recurring' });
+  });
+
+  requests.forEach(req => {
+    req.milestones.forEach(m => {
+      if(dateKey(m.postDate) === dateKey(today)){
+        auto.push({ text: req.projectName, meta: req.platforms || 'Platforms TBD', source: 'pipeline' });
+      }
+    });
+  });
+
+  return auto.slice(0, 3);
+}
+
+function render(){
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('appContent').style.display = 'block';
+  document.getElementById('todayDateLabel').textContent = fmtDate(today);
+  document.getElementById('todoDateLabel').textContent = "— " + today.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+
+  renderTodos();
+  renderPosts();
+  wireSweepList();
+
+  viewMonth = today.getMonth();
+  viewYear = today.getFullYear();
+  renderCalendar();
+
+  renderRequestCards();
+  renderUnscheduled();
+}
+
+function renderTodos(){
+  const list = document.getElementById('dueTodayList');
+  list.innerHTML = '';
+  let count = 0;
+
+  getRecurringPostsForToday().forEach(rp => {
+    count++;
+    const id = `recurring_${rp.label}`;
+    const isChecked = !!appState.checks[id];
+    const li = document.createElement('li');
+    if(isChecked) li.classList.add('is-checked');
+    li.innerHTML = `<span class="checkbox${isChecked ? ' checked' : ''}" data-id="${id}"></span><div class="todo-text"><strong>Post recurring: ${rp.label}</strong><span class="todo-meta">${rp.platforms}</span></div><span class="pill ${isChecked ? 'pill-green' : 'pill-amber'}">${isChecked ? 'Done' : 'Recurring today'}</span>`;
+    list.appendChild(li);
+    li.querySelector('.checkbox').addEventListener('click', () => toggleCheck(id, li));
+  });
+
+  requests.forEach(req => {
+    req.milestones.forEach(m => {
+      const checks = [
+        {id:`draft1_${req.projectName}_${m.label}`, date:m.draft1, label:`Write 1st draft — ${req.projectName}`, meta:`${req.platforms || 'Platforms TBD'} · posts ${fmtShort(m.postDate)}`},
+        {id:`approval_${req.projectName}_${m.label}`, date:m.approval, label:`Get approval — ${req.projectName}`, meta:`Approval checkpoint before Sprout scheduling`},
+        {id:`sprout_${req.projectName}_${m.label}`, date:m.sprout, label:`Schedule in Sprout — ${req.projectName}`, meta:`Must go live by ${fmtShort(m.postDate)}`},
+      ];
+      checks.forEach(c => {
+        if(dateKey(c.date) === dateKey(today){
+          count++;
+          const isChecked = !!appState.checks[c.id];
+          const li = document.createElement('li');
+          if(isChecked) li.classList.add('is-checked');
+          li.innerHTML = `<span class="checkbox${isChecked ? ' checked' : ''}" data-id="${c.id}"></span><div class="todo-text"><strong>${c.label}</strong><span class="todo-meta">${c.meta}</span></div><span class="pill ${isChecked ? 'pill-green' : 'pill-red'}">${isChecked ? 'Done' : 'Due today'}</span>`;
+          list.appendChild(li);
+          li.querySelector('.checkbox').addEventListener('click', () => toggleCheck(c.id, li));
+        }
+      });
+    });
+  });
+
+  if(unscheduledRequests.length > 0){
+    count += unscheduledRequests.length;
+    unscheduledRequests.forEach(req => {
+      const id = `unscheduled_${req.projectName}_${req.submittedDate.getTime()}`;
+      const isChecked = !!appState.checks[id];
+      const li = document.createElement('li');
+      if(isChecked) li.classList.add('is-checked');
+      li.innerHTML = `<span class="checkbox${isChecked ? ' checked' : ''}" data-id="${id}"></span><div class="todo-text"><strong>Needs a date — ${req.projectName}</strong><span class="todo-meta">Could not find a post date in the submission. Check the request and confirm a date with the requester.</span></div><span class="pill ${isChecked ? 'pill-green' : 'pill-amber'}">${isChecked ? 'Done' : 'Needs date'}</span>`;
+      list.appendChild(li);
+      li.querySelector('.checkbox').addEventListener('click', () => toggleCheck(id, li));
+    });
+  }
+
+  if(count === 0){
+    list.innerHTML = '<li><span class="checkbox"></span><div class="todo-text"><strong>No pipeline deadlines today</strong><span class="todo-meta">Nothing from the request form is due today. Check the calendar below for what is coming up.</span></div><span class="pill pill-green">Clear</span></li>';
+  }
+  document.getElementById('dueTodayCount').textContent = `${count} item${count===1?'':'s'}`;
+}
+
+function toggleCheck(id, li){
+  appState.checks[id] = !appState.checks[id];
+  saveState();
+  const checked = appState.checks[id];
+  const box = li.querySelector('.checkbox');
+  const pill = li.querySelector('.pill');
+  box.classList.toggle('checked', checked);
+  li.classList.toggle('is-checked', checked);
+  if(pill){
+    const wasAmber = pill.className.includes('pill-amber') || pill.textContent.includes('Recurring') || pill.textContent.includes('Needs date');
+    let label = 'Due today';
+    if(pill.textContent.includes('Recurring')) label = 'Recurring today';
+    else if(pill.textContent.includes('Needs date')) label = 'Needs date';
+    pill.textContent = checked ? 'Done' : label;
+    pill.className = 'pill ' + (checked ? 'pill-green' : (wasAmber ? 'pill-amber' : 'pill-red'));
+  }
+}
+
+function wireSweepList(){
+  const items = document.querySelectorAll('#sweepList li[data-platform]');
+  items.forEach(li => {
+    const platform = li.getAttribute('data-platform');
+    const box = li.querySelector('.checkbox');
+    const checked = !!appState.sweep[platform];
+    box.classList.toggle('checked', checked);
+    li.classList.toggle('is-checked', checked);
+    li.onclick = () => {
+      appState.sweep[platform] = !appState.sweep[platform];
+      saveState();
+      const nowChecked = appState.sweep[platform];
+      box.classList.toggle('checked', nowChecked);
+      li.classList.toggle('is-checked', nowChecked);
+    };
+  });
+}
+
+function renderPosts(){
+  const container = document.getElementById('postsTodayList');
+  container.innerHTML = '';
+  const statusOptions = ['Not started','Drafting','Asset ready','Scheduled in Sprout','Posted'];
+  const autoPosts = getAutoPostsForToday();
+
+  for(let i=0;i<3;i++){
+    const row = document.createElement('div');
+    row.className = 'post-row';
+    const auto = autoPosts[i];
+
+    if(auto){
+      // Auto-filled from recurring schedule or pipeline post date due today.
+      // Still editable (requester may want to tweak wording) but pre-populated so it is not forgotten,
+      // and always counts toward the 3 unless the text is cleared out entirely.
+      if(!appState.posts[i]){
+        appState.posts[i] = auto.text;
+      }
+      const statusOptsHtml = statusOptions.map(s => `<option value="${s}"${appState.postStatus[i]===s ? ' selected' : ''}>${s}</option>`).join('');
+      row.innerHTML = `
+        <label>Post ${i+1}</label>
+        <input type="text" class="post-input" placeholder="What's going out (platform, format, topic)" value="${(appState.posts[i] || '').replace(/"/g,'&quot;')}" data-idx="${i}">
+        <select class="post-status" data-idx="${i}">${statusOptsHtml}</select>
+        <span class="pill pill-blue" style="align-self:center;">${auto.source === 'recurring' ? 'Recurring' : 'Pipeline due today'}</span>
+      `;
+    } else {
+      const statusOptsHtml = statusOptions.map(s => `<option value="${s}"${appState.postStatus[i]===s ? ' selected' : ''}>${s}</option>`).join('');
+      row.innerHTML = `
+        <label>Post ${i+1}</label>
+        <input type="text" class="post-input" placeholder="What's going out (platform, format, topic)" value="${(appState.posts[i] || '').replace(/"/g,'&quot;')}" data-idx="${i}">
+        <select class="post-status" data-idx="${i}">${statusOptsHtml}</select>
+      `;
+    }
+    container.appendChild(row);
+
+    const input = row.querySelector('.post-input');
+    input.addEventListener('input', (e) => {
+      appState.posts[i] = e.target.value;
+      saveState();
+      updatePostsLoggedCount();
+    });
+
+    const select = row.querySelector('.post-status');
+    select.addEventListener('change', (e) => {
+      appState.postStatus[i] = e.target.value;
+      saveState();
+      updatePostsLoggedCount();
+    });
+  }
+  saveState();
+  updatePostsLoggedCount();
+}
+
+function updatePostsLoggedCount(){
+  const loggedCount = appState.posts.filter(p => p && p.trim().length > 0).length;
+  const postedCount = appState.postStatus.filter(s => s === 'Posted').length;
+  const el = document.getElementById('postsLoggedCount');
+  if(el) el.textContent = `${loggedCount} / 3 logged · ${postedCount} posted`;
+}
+
+function shiftMonth(delta){
+  viewMonth += delta;
+  if(viewMonth < 0){ viewMonth = 11; viewYear--; }
+  if(viewMonth > 11){ viewMonth = 0; viewYear++; }
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const label = new Date(viewYear, viewMonth, 1).toLocaleDateString('en-US', {month:'long', year:'numeric'});
+  document.getElementById('calMonthLabel').textContent = label;
+
+  const dows = ['Sun','Mon','Tue','Wed','Fri','Sat'];
+  dows.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+
+  // build map of date -> tags
+  const tagMap = {};
+  function addTag(date, text, cls){
+    const key = dateKey(date);
+    if(!tagMap[key]) tagMap[key] = [];
+    tagMap[key].push({text, cls});
+  }
+  requests.forEach(req => {
+    req.milestones.forEach(m => {
+      addTag(m.draft1, `${req.projectName.slice(0,18)}: 1st draft due`, 'tag-draft1');
+      addTag(m.approval, `${req.projectName.slice(0,18)}: approval due`, 'tag-draft2');
+      addTag(m.sprout, `${req.projectName.slice(0,18)}: schedule in Sprout`, 'tag-sprout');
+      addTag(m.postDate, `POST: ${req.projectName.slice(0,18)}`, 'tag-post');
+    });
+  });
+
+  for(let i=0;i<startOffset;i++){
+    const blank = document.createElement('div');
+    blank.className = 'cal-cell blank';
+    grid.appendChild(blank);
+  }
+  for(let day=1; day<=daysInMonth; day++){
+    const cellDate = new Date(viewYear, viewMonth, day);
+    const cell = document.createElement('div');
+    let cls = 'cal-cell';
+    if(isWeekend(cellDate)) cls += ' weekend';
+    if(dateKey(cellDate) === dateKey(today)) cls += ' today';
+    cell.className = cls;
+    const num = document.createElement('div');
+    num.className = 'cal-daynum';
+    num.textContent = day;
+    cell.appendChild(num);
+    if(cellDate.getDay() === 1){
+      RECURRING_POSTS.forEach(rp => {
+        if(rp.dayOfWeek === 1){
+          const span = document.createElement('span');
+          span.className = 'cal-tag tag-post';
+          span.textContent = rp.label.length > 20 ? rp.label.slice(0,20) + '…' : rp.label;
+          cell.appendChild(span);
+        }
+      });
+    }
+    const tags = tagMap[dateKey(cellDate)] || [];
+    tags.forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'cal-tag ' + t.cls;
+      span.textContent = t.text;
+      cell.appendChild(span);
+    });
+    grid.appendChild(cell);
+  }
+}
+
+function renderRequestCards(){
+  const container = document.getElementById('requestCards');
+  container.innerHTML = '';
+  if(requests.length === 0){
+    container.innerHTML = '<p class="empty-note">No open requests found in the sheet right now.</p>';
+    return;
+  }
+  requests.forEach(req => {
+    const card = document.createElement('div');
+    card.className = 'req-card';
+
+    const overallStatus = statusForMilestone(req.milestones[0]);
+
+    let slaChips = '';
+    req.milestones.forEach(m => {
+      slaChips += `
+        <div class="sla-chip tag-draft1"><b>${m.label} — 1st draft due</b>${fmtDate(m.draft1)}</div>
+        <div class="sla-chip tag-draft2"><b>${m.label} — Approval due</b>${fmtDate(m.approval)}</div>
+        <div class="sla-chip tag-sprout"><b>${m.label} — Schedule in Sprout by</b>${fmtDate(m.sprout)}</div>
+        <div class="sla-chip tag-post"><b>${m.label} — Target post date</b>${fmtDate(m.postDate)}</div>
+      `;
+    });
+
+    card.innerHTML = `
+      <div class="req-header">
+        <div>
+          <div class="req-title">${req.projectName}${req.usedRelativeDate ? ' <span class="pill pill-amber" style="margin-left:6px;">Date inferred from text</span>' : ''}</div>
+          <div class="req-sub">Submitted ${req.submittedDate.toLocaleDateString('en-US')} by ${req.email || 'unknown'} &middot; ${req.contentType || 'Content type n/a'} &middot; ${req.campaignType || 'n/a'}</div>
+        </div>
+        <span class="pill ${overallStatus.cls}">${overallStatus.label}</span>
+      </div>
+      <div class="sla-strip">${slaChips}</div>
+      <div class="req-fields">
+        <div class="field"><b>Platforms requested</b>${req.platforms || 'Not specified'}</div>
+        <div class="field"><b>Hard deadline</b>${req.hardDeadline || 'Not specified'}</div>
+        <div class="field"><b>Tag/collaborate</b>${req.tag || 'None'}</div>
+        <div class="field"><b>Meeting requested</b>${req.meeting || 'No'}</div>
+        <div class="field field-full"><b>Brief / description</b>${req.brief || 'None provided'}</div>
+        <div class="field field-full"><b>Copy/verbiage needed on graphic</b>${req.copyNeeded || 'None supplied'}</div>
+        <div class="field field-full"><b>Caption copy supplied</b>${req.captionCopy || 'None provided — write from brief'}</div>
+        <div class="field field-full"><b>Destination link</b>${req.link ? `<a href="${req.link}" target="_blank">${req.link}</a>` : 'None provided'}</div>
+        <div class="field field-full"><b>Assets/examples</b>${req.examples || 'None uploaded'}</div>
+        ${req.additional ? `<div class="field field-full"><b>Additional info</b>${req.additional}</div>` : ''}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderUnscheduled(){
+  let container = document.getElementById('unscheduledCards');
+  if(!container){
+    return;
+  }
+  container.innerHTML = '';
+  if(unscheduledRequests.length === 0){
+    container.innerHTML = '<p class="empty-note">Nothing unresolved. Every submission in the sheet has a usable date.</p>';
+    return;
+  }
+  unscheduledRequests.forEach(req => {
+    const card = document.createElement('div');
+    card.className = 'req-card';
+    card.innerHTML = `
+      <div class="req-header">
+        <div>
+          <div class="req-title">${req.projectName}</div>
+          <div class="req-sub">Submitted ${req.submittedDate.toLocaleDateString('en-US')} by ${req.email || 'unknown'} &middot; ${req.contentType || 'Content type n/a'}</div>
+        </div>
+        <span class="pill pill-amber">Needs a date</span>
+      </div>
+      <div class="req-fields">
+        <div class="field field-full"><b>Brief / description</b>${req.brief || 'None provided'}</div>
+        <div class="field field-full"><b>Raw post date text submitted</b>${req.postDateText || req.campaignTimeline || 'Nothing entered in the date field'}</div>
+        <div class="field field-full"><b>Additional info</b>${req.additional || 'None'}</div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+loadData();
